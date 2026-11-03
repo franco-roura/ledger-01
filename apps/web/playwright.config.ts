@@ -15,6 +15,8 @@ const apiEnv = {
     ...["desktop", "mobile"].flatMap((p) => [
       `e2e-hh-owner-${p}@example.com`,
       `e2e-hh-partner-${p}@example.com`,
+      `e2e-search-${p}@example.com`,
+      `e2e-search-other-${p}@example.com`,
     ]),
   ].join(","),
 };

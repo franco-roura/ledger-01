@@ -4,7 +4,7 @@
 
 Everything Ledger/01 does today, shown with a made-up household.
 
-**On this page:** [Wallets](#wallets) · [Transactions](#transactions) ·
+**On this page:** [Wallets](#wallets) · [Transactions](#transactions) · [Search](#search-across-wallets) ·
 [Transfers between currencies](#transfers-between-currencies) · [Dashboards](#dashboards) ·
 [Budgets](#budgets) · [Recurring transactions](#recurring-transactions-and-the-future-view) ·
 [On your phone](#on-your-phone) · [Sign-in and households](#sign-in-and-households) ·
@@ -30,6 +30,16 @@ label.
 > [!TIP]
 > The new transaction sheet opens on its first field, and every pick moves you to the next one. A
 > typical expense takes four taps on a phone once the wallet is open.
+
+## Search across wallets
+
+Choose **Search** in the navigation to find expenses, income and transfers across your household's
+wallets, including hidden and archived wallets. Search notes and narrow the date range, wallets,
+categories, labels or transaction types, then choose **Search transactions**.
+
+Each result keeps its wallet's currency and links back to that wallet. More results load in pages of
+50. Filters stay in the URL, so reloading the page or returning to a saved link restores the search.
+Future-dated transactions stay in the Future view until their date arrives.
 
 ## Transfers between currencies
 

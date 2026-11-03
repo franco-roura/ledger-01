@@ -36,6 +36,9 @@ const (
 	// TransactionServiceListTransactionsProcedure is the fully-qualified name of the
 	// TransactionService's ListTransactions RPC.
 	TransactionServiceListTransactionsProcedure = "/ledger.v1.TransactionService/ListTransactions"
+	// TransactionServiceSearchTransactionsProcedure is the fully-qualified name of the
+	// TransactionService's SearchTransactions RPC.
+	TransactionServiceSearchTransactionsProcedure = "/ledger.v1.TransactionService/SearchTransactions"
 	// TransactionServiceListUpcomingTransactionsProcedure is the fully-qualified name of the
 	// TransactionService's ListUpcomingTransactions RPC.
 	TransactionServiceListUpcomingTransactionsProcedure = "/ledger.v1.TransactionService/ListUpcomingTransactions"
@@ -63,6 +66,8 @@ const (
 type TransactionServiceClient interface {
 	// Newest first (date, then creation time), up to filter.today. Paginated with opaque page tokens.
 	ListTransactions(context.Context, *connect.Request[v1.ListTransactionsRequest]) (*connect.Response[v1.ListTransactionsResponse], error)
+	// Search the active household across wallets. Amounts retain each wallet's currency.
+	SearchTransactions(context.Context, *connect.Request[v1.SearchTransactionsRequest]) (*connect.Response[v1.SearchTransactionsResponse], error)
 	// Rows dated after today (pre-created recurring occurrences and future-dated entries), soonest
 	// first.
 	ListUpcomingTransactions(context.Context, *connect.Request[v1.ListUpcomingTransactionsRequest]) (*connect.Response[v1.ListUpcomingTransactionsResponse], error)
@@ -90,6 +95,12 @@ func NewTransactionServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			httpClient,
 			baseURL+TransactionServiceListTransactionsProcedure,
 			connect.WithSchema(transactionServiceMethods.ByName("ListTransactions")),
+			connect.WithClientOptions(opts...),
+		),
+		searchTransactions: connect.NewClient[v1.SearchTransactionsRequest, v1.SearchTransactionsResponse](
+			httpClient,
+			baseURL+TransactionServiceSearchTransactionsProcedure,
+			connect.WithSchema(transactionServiceMethods.ByName("SearchTransactions")),
 			connect.WithClientOptions(opts...),
 		),
 		listUpcomingTransactions: connect.NewClient[v1.ListUpcomingTransactionsRequest, v1.ListUpcomingTransactionsResponse](
@@ -140,6 +151,7 @@ func NewTransactionServiceClient(httpClient connect.HTTPClient, baseURL string, 
 // transactionServiceClient implements TransactionServiceClient.
 type transactionServiceClient struct {
 	listTransactions         *connect.Client[v1.ListTransactionsRequest, v1.ListTransactionsResponse]
+	searchTransactions       *connect.Client[v1.SearchTransactionsRequest, v1.SearchTransactionsResponse]
 	listUpcomingTransactions *connect.Client[v1.ListUpcomingTransactionsRequest, v1.ListUpcomingTransactionsResponse]
 	getPeriodSummary         *connect.Client[v1.GetPeriodSummaryRequest, v1.GetPeriodSummaryResponse]
 	createTransaction        *connect.Client[v1.CreateTransactionRequest, v1.CreateTransactionResponse]
@@ -152,6 +164,11 @@ type transactionServiceClient struct {
 // ListTransactions calls ledger.v1.TransactionService.ListTransactions.
 func (c *transactionServiceClient) ListTransactions(ctx context.Context, req *connect.Request[v1.ListTransactionsRequest]) (*connect.Response[v1.ListTransactionsResponse], error) {
 	return c.listTransactions.CallUnary(ctx, req)
+}
+
+// SearchTransactions calls ledger.v1.TransactionService.SearchTransactions.
+func (c *transactionServiceClient) SearchTransactions(ctx context.Context, req *connect.Request[v1.SearchTransactionsRequest]) (*connect.Response[v1.SearchTransactionsResponse], error) {
+	return c.searchTransactions.CallUnary(ctx, req)
 }
 
 // ListUpcomingTransactions calls ledger.v1.TransactionService.ListUpcomingTransactions.
@@ -193,6 +210,8 @@ func (c *transactionServiceClient) UpdateTransfer(ctx context.Context, req *conn
 type TransactionServiceHandler interface {
 	// Newest first (date, then creation time), up to filter.today. Paginated with opaque page tokens.
 	ListTransactions(context.Context, *connect.Request[v1.ListTransactionsRequest]) (*connect.Response[v1.ListTransactionsResponse], error)
+	// Search the active household across wallets. Amounts retain each wallet's currency.
+	SearchTransactions(context.Context, *connect.Request[v1.SearchTransactionsRequest]) (*connect.Response[v1.SearchTransactionsResponse], error)
 	// Rows dated after today (pre-created recurring occurrences and future-dated entries), soonest
 	// first.
 	ListUpcomingTransactions(context.Context, *connect.Request[v1.ListUpcomingTransactionsRequest]) (*connect.Response[v1.ListUpcomingTransactionsResponse], error)
@@ -216,6 +235,12 @@ func NewTransactionServiceHandler(svc TransactionServiceHandler, opts ...connect
 		TransactionServiceListTransactionsProcedure,
 		svc.ListTransactions,
 		connect.WithSchema(transactionServiceMethods.ByName("ListTransactions")),
+		connect.WithHandlerOptions(opts...),
+	)
+	transactionServiceSearchTransactionsHandler := connect.NewUnaryHandler(
+		TransactionServiceSearchTransactionsProcedure,
+		svc.SearchTransactions,
+		connect.WithSchema(transactionServiceMethods.ByName("SearchTransactions")),
 		connect.WithHandlerOptions(opts...),
 	)
 	transactionServiceListUpcomingTransactionsHandler := connect.NewUnaryHandler(
@@ -264,6 +289,8 @@ func NewTransactionServiceHandler(svc TransactionServiceHandler, opts ...connect
 		switch r.URL.Path {
 		case TransactionServiceListTransactionsProcedure:
 			transactionServiceListTransactionsHandler.ServeHTTP(w, r)
+		case TransactionServiceSearchTransactionsProcedure:
+			transactionServiceSearchTransactionsHandler.ServeHTTP(w, r)
 		case TransactionServiceListUpcomingTransactionsProcedure:
 			transactionServiceListUpcomingTransactionsHandler.ServeHTTP(w, r)
 		case TransactionServiceGetPeriodSummaryProcedure:
@@ -289,6 +316,10 @@ type UnimplementedTransactionServiceHandler struct{}
 
 func (UnimplementedTransactionServiceHandler) ListTransactions(context.Context, *connect.Request[v1.ListTransactionsRequest]) (*connect.Response[v1.ListTransactionsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.TransactionService.ListTransactions is not implemented"))
+}
+
+func (UnimplementedTransactionServiceHandler) SearchTransactions(context.Context, *connect.Request[v1.SearchTransactionsRequest]) (*connect.Response[v1.SearchTransactionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.TransactionService.SearchTransactions is not implemented"))
 }
 
 func (UnimplementedTransactionServiceHandler) ListUpcomingTransactions(context.Context, *connect.Request[v1.ListUpcomingTransactionsRequest]) (*connect.Response[v1.ListUpcomingTransactionsResponse], error) {

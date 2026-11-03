@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@ledger-01/ui/components/dropdown-menu";
 import { NavBar } from "@ledger-01/ui/components/nav-bar";
+import { cn } from "@ledger-01/ui/lib/utils";
 import { LogOut, Settings, Tags, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,6 +49,7 @@ export function AppNav({
           desktopOnly: true,
         },
         { label: "Budgets", href: "/budgets", active: path.startsWith("/budgets") },
+        { label: "Search", href: "/transactions", active: path.startsWith("/transactions") },
         {
           label: "Wallets",
           href: "/wallets",
@@ -60,7 +62,13 @@ export function AppNav({
           desktopOnly: true,
         },
       ]}
-      renderLink={(item, props) => <Link href={item.href} {...props} />}
+      renderLink={(item, props) => (
+        <Link
+          href={item.href}
+          {...props}
+          className={cn(props.className, "max-sm:px-1", item.desktopOnly && "max-lg:hidden")}
+        />
+      )}
       end={
         <DropdownMenu>
           <DropdownMenuTrigger

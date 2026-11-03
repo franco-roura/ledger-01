@@ -120,6 +120,8 @@ message TransactionFilter {
 service TransactionService {
   // Newest first (date, then creation time), up to filter.today. Paginated with opaque page tokens.
   rpc ListTransactions(ListTransactionsRequest) returns (ListTransactionsResponse);
+  // Search the active household across wallets. Amounts retain each wallet's currency.
+  rpc SearchTransactions(SearchTransactionsRequest) returns (SearchTransactionsResponse);
   // Rows dated after today (pre-created recurring occurrences and future-dated entries), soonest
   // first.
   rpc ListUpcomingTransactions(ListUpcomingTransactionsRequest) returns (ListUpcomingTransactionsResponse);
@@ -139,6 +141,25 @@ message ListTransactionsRequest {
 }
 
 message ListTransactionsResponse {
+  repeated Transaction transactions = 1;
+  string next_page_token = 2;
+}
+
+message SearchTransactionsRequest {
+  DateRange period = 1;
+  // Empty selections mean all; selections within each group match any, groups match all.
+  repeated string wallet_ids = 2;
+  repeated string category_ids = 3;
+  repeated string label_ids = 4;
+  repeated TransactionKind kinds = 5;
+  string note_query = 6;
+  // The caller's local date; upcoming rows are excluded. Empty defaults to UTC today.
+  string today = 7;
+  int32 page_size = 8;
+  string page_token = 9;
+}
+
+message SearchTransactionsResponse {
   repeated Transaction transactions = 1;
   string next_page_token = 2;
 }
