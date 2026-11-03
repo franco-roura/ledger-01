@@ -1,10 +1,45 @@
 package ledger
 
 import (
+	"errors"
+	"math"
 	"math/big"
 	"testing"
 	"time"
 )
+
+func TestConverterInt64Range(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		amount   int64
+		rate     string
+		want     int64
+		overflow bool
+	}{
+		{"maximum", math.MaxInt64, "1", math.MaxInt64, false},
+		{"minimum", math.MinInt64, "1", math.MinInt64, false},
+		{"positive overflow", MaxAmount, "10000", 0, true},
+		{"negative overflow", -MaxAmount, "10000", 0, true},
+		{"rounding above maximum", 6148914691236517205, "1.5", 0, true},
+		{"rounding to minimum", -6148914691236517205, "1.5", math.MinInt64, false},
+		{"below minimum", -6148914691236517206, "1.5", 0, true},
+		{"half even within range", math.MaxInt64, "0.5", 4611686018427387904, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := NewConverter([]RatePoint{{On: d("2026-10-01"), From: "USD", To: "UYU", Rate: rat(tc.rate)}},
+				map[string]int{"USD": 2, "UYU": 2})
+			got, ok, err := c.Convert(tc.amount, "USD", "UYU", d("2026-10-01"))
+			if tc.overflow {
+				var conflict *ConflictError
+				if !errors.As(err, &conflict) || ok || got != 0 {
+					t.Fatalf("overflow returned %d, %v, %v", got, ok, err)
+				}
+			} else if err != nil || !ok || got != tc.want {
+				t.Fatalf("Convert = %d, %v, %v; want %d", got, ok, err, tc.want)
+			}
+		})
+	}
+}
 
 func d(s string) time.Time {
 	t, _ := time.Parse(time.DateOnly, s)
@@ -39,7 +74,10 @@ func TestConverter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok := c.Convert(tt.amount, tt.from, tt.to, d(tt.on))
+			got, ok, err := c.Convert(tt.amount, tt.from, tt.to, d(tt.on))
+			if err != nil {
+				t.Fatal(err)
+			}
 			if ok != tt.ok || got != tt.want {
 				t.Fatalf("Convert = %d, %v; want %d, %v", got, ok, tt.want, tt.ok)
 			}

@@ -183,12 +183,15 @@ func (s *Service) loadReport(ctx context.Context, a Actor, f ReportFilter, b Buc
 
 // convert converts to the base currency, recording currencies with no known rate. Amounts
 // that can't be converted are left out of totals and counts.
-func (r *report) convert(amount int64, currency string, on time.Time) (int64, bool) {
-	v, ok := r.conv.Convert(amount, currency, r.base, on)
+func (r *report) convert(amount int64, currency string, on time.Time) (int64, bool, error) {
+	v, ok, err := r.conv.Convert(amount, currency, r.base, on)
+	if err != nil {
+		return 0, false, err
+	}
 	if !ok {
 		r.missing[currency] = true
 	}
-	return v, ok
+	return v, ok, nil
 }
 
 func (r *report) unconverted() []string {
@@ -239,7 +242,10 @@ func (s *Service) Dashboard(ctx context.Context, a Actor, f ReportFilter, b Buck
 			t := r.txs[ti]
 			cur := r.wallets[t.WalletID].Currency
 			running[cur] += signed(t.Kind, t.AmountMinor)
-			v, ok := r.convert(t.AmountMinor, cur, t.OccurredOn)
+			v, ok, err := r.convert(t.AmountMinor, cur, t.OccurredOn)
+			if err != nil {
+				return Dashboard{}, err
+			}
 			if !ok || !f.flowMatch(t.Note, v) {
 				continue
 			}
@@ -281,7 +287,10 @@ func (s *Service) Dashboard(ctx context.Context, a Actor, f ReportFilter, b Buck
 		}
 		var bal int64
 		for cur, amount := range running {
-			v, _ := r.convert(amount, cur, end)
+			v, _, err := r.convert(amount, cur, end)
+			if err != nil {
+				return Dashboard{}, err
+			}
 			bal += v
 		}
 		out.Series[i].Balance = bal
@@ -339,7 +348,10 @@ func (s *Service) CategoryReportFor(ctx context.Context, a Actor, categoryID uui
 		if t.CategoryID == nil || *t.CategoryID != categoryID {
 			continue
 		}
-		v, ok := r.convert(t.AmountMinor, r.wallets[t.WalletID].Currency, t.OccurredOn)
+		v, ok, err := r.convert(t.AmountMinor, r.wallets[t.WalletID].Currency, t.OccurredOn)
+		if err != nil {
+			return CategoryReport{}, err
+		}
 		if !ok || !f.flowMatch(t.Note, v) {
 			continue
 		}
@@ -373,7 +385,10 @@ func (s *Service) CategoryReportFor(ctx context.Context, a Actor, categoryID uui
 	}
 	for _, row := range rows {
 		if f.NoteQuery != "" || f.MinAmount != nil || f.MaxAmount != nil {
-			v, ok := r.conv.Convert(row.AmountMinor, strings.TrimSpace(row.Currency), r.base, row.OccurredOn)
+			v, ok, err := r.conv.Convert(row.AmountMinor, strings.TrimSpace(row.Currency), r.base, row.OccurredOn)
+			if err != nil {
+				return CategoryReport{}, err
+			}
 			if !ok || !f.flowMatch(row.Note, v) {
 				continue
 			}

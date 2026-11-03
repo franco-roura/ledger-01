@@ -105,17 +105,22 @@ func (c *Converter) Rate(from, to string, on time.Time) (*big.Rat, bool) {
 }
 
 // Convert turns minor units of `from` into minor units of `to` (half-even rounding).
-func (c *Converter) Convert(amount int64, from, to string, on time.Time) (int64, bool) {
+// A missing rate returns false; an unrepresentable result returns an explicit error.
+func (c *Converter) Convert(amount int64, from, to string, on time.Time) (int64, bool, error) {
 	if from == to {
-		return amount, true
+		return amount, true, nil
 	}
 	rate, ok := c.Rate(from, to, on)
 	if !ok {
-		return 0, false
+		return 0, false, nil
 	}
 	v := new(big.Rat).Mul(new(big.Rat).SetInt64(amount), rate)
 	v.Mul(v, pow10(c.minorUnits[to]-c.minorUnits[from]))
-	return roundHalfEven(v), true
+	rounded := roundedHalfEven(v)
+	if !rounded.IsInt64() {
+		return 0, false, conflict("converted amount from %s to %s is outside the supported range", from, to)
+	}
+	return rounded.Int64(), true, nil
 }
 
 func pow10(n int) *big.Rat {
@@ -127,6 +132,10 @@ func pow10(n int) *big.Rat {
 }
 
 func roundHalfEven(r *big.Rat) int64 {
+	return roundedHalfEven(r).Int64()
+}
+
+func roundedHalfEven(r *big.Rat) *big.Int {
 	num, den := new(big.Int).Set(r.Num()), r.Denom()
 	neg := num.Sign() < 0
 	num.Abs(num)
@@ -138,5 +147,5 @@ func roundHalfEven(r *big.Rat) int64 {
 	if neg {
 		q.Neg(q)
 	}
-	return q.Int64()
+	return q
 }

@@ -208,13 +208,16 @@ type spendConverter struct {
 	missing map[string]bool
 }
 
-func (c *spendConverter) convert(row dbq.BudgetExpensesRow, to string) (int64, bool) {
+func (c *spendConverter) convert(row dbq.BudgetExpensesRow, to string) (int64, bool, error) {
 	cur := strings.TrimSpace(row.Currency)
-	v, ok := c.conv.Convert(row.AmountMinor, cur, to, row.OccurredOn)
+	v, ok, err := c.conv.Convert(row.AmountMinor, cur, to, row.OccurredOn)
+	if err != nil {
+		return 0, false, err
+	}
 	if !ok {
 		c.missing[cur] = true
 	}
-	return v, ok
+	return v, ok, nil
 }
 
 func (c *spendConverter) unconverted() []string {
@@ -255,7 +258,11 @@ func (s *Service) ListBudgets(ctx context.Context, a Actor, today time.Time) ([]
 		}
 		var spent int64
 		for _, e := range exp {
-			if v, ok := sc.convert(e, b.Currency); ok {
+			v, ok, err := sc.convert(e, b.Currency)
+			if err != nil {
+				return nil, nil, err
+			}
+			if ok {
 				spent += v
 			}
 		}
@@ -301,7 +308,10 @@ func (s *Service) BudgetDetailFor(ctx context.Context, a Actor, id uuid.UUID, to
 				CreatedBy: e.CreatedBy, CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt,
 			})
 		}
-		v, ok := sc.convert(e, b.Currency)
+		v, ok, err := sc.convert(e, b.Currency)
+		if err != nil {
+			return BudgetDetail{}, err
+		}
 		if !ok {
 			continue
 		}
