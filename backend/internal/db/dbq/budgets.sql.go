@@ -344,24 +344,30 @@ func (q *Queries) ListBudgets(ctx context.Context, householdID uuid.UUID) ([]Lis
 }
 
 const reassignBudgetCategories = `-- name: ReassignBudgetCategories :exec
-INSERT INTO budget_categories (budget_id, category_id)
-SELECT DISTINCT bc.budget_id, $1::uuid
-FROM budget_categories bc
-JOIN budgets b ON b.id = bc.budget_id
-WHERE b.household_id = $2 AND bc.category_id = ANY($3::uuid[])
-ON CONFLICT DO NOTHING
+WITH reassigned AS (
+    INSERT INTO budget_categories (budget_id, category_id)
+    SELECT DISTINCT bc.budget_id, $3::uuid
+    FROM budget_categories bc
+    JOIN budgets b ON b.id = bc.budget_id
+    WHERE b.household_id = $1 AND bc.category_id = ANY($2::uuid[])
+    ON CONFLICT DO NOTHING
+)
+DELETE FROM budget_categories bc
+USING budgets b
+WHERE b.id = bc.budget_id AND b.household_id = $1
+  AND bc.category_id = ANY($2::uuid[])
 `
 
 type ReassignBudgetCategoriesParams struct {
-	ToID        uuid.UUID
 	HouseholdID uuid.UUID
 	FromIds     []uuid.UUID
+	ToID        uuid.UUID
 }
 
 // Before categories are merged or deleted with a replacement, budgets that counted them count
 // the replacement instead.
 func (q *Queries) ReassignBudgetCategories(ctx context.Context, arg ReassignBudgetCategoriesParams) error {
-	_, err := q.db.Exec(ctx, reassignBudgetCategories, arg.ToID, arg.HouseholdID, arg.FromIds)
+	_, err := q.db.Exec(ctx, reassignBudgetCategories, arg.HouseholdID, arg.FromIds, arg.ToID)
 	return err
 }
 
