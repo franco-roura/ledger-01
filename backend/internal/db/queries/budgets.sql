@@ -44,12 +44,18 @@ SELECT @budget_id, unnest(@category_ids::uuid[]);
 -- name: ReassignBudgetCategories :exec
 -- Before categories are merged or deleted with a replacement, budgets that counted them count
 -- the replacement instead.
-INSERT INTO budget_categories (budget_id, category_id)
-SELECT DISTINCT bc.budget_id, @to_id::uuid
-FROM budget_categories bc
-JOIN budgets b ON b.id = bc.budget_id
-WHERE b.household_id = @household_id AND bc.category_id = ANY(@from_ids::uuid[])
-ON CONFLICT DO NOTHING;
+WITH reassigned AS (
+    INSERT INTO budget_categories (budget_id, category_id)
+    SELECT DISTINCT bc.budget_id, @to_id::uuid
+    FROM budget_categories bc
+    JOIN budgets b ON b.id = bc.budget_id
+    WHERE b.household_id = @household_id AND bc.category_id = ANY(@from_ids::uuid[])
+    ON CONFLICT DO NOTHING
+)
+DELETE FROM budget_categories bc
+USING budgets b
+WHERE b.id = bc.budget_id AND b.household_id = @household_id
+  AND bc.category_id = ANY(@from_ids::uuid[]);
 
 -- name: CountWalletsByIDs :one
 SELECT count(*) FROM wallets WHERE household_id = @household_id AND id = ANY(@ids::uuid[]);
