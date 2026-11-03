@@ -5,6 +5,13 @@ export type SignDisplay = "auto" | "always" | "never";
 
 const pow10 = (n: number) => 10n ** BigInt(n);
 
+/** Validates dot-decimal input and comma grouping before removing the group separators. */
+export function normalizeDecimalInput(input: string): string | null {
+  const s = input.trim();
+  if (!/^(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?|\.\d+)$/.test(s)) return null;
+  return s.replace(/,/g, "");
+}
+
 /** Exact decimal string for a minor-unit amount: (123456n, 2) -> "1234.56". */
 export function minorToDecimal(amount: bigint, minorUnits: number): string {
   const neg = amount < 0n;
@@ -18,11 +25,11 @@ export function minorToDecimal(amount: bigint, minorUnits: number): string {
 
 /**
  * Parses user input like "1,234.5" or "1234.56" into minor units. Returns null for anything
- * that isn't a plain non-negative decimal with at most `minorUnits` decimals.
+ * that isn't a non-negative dot-decimal with valid grouping and at most `minorUnits` decimals.
  */
 export function parseAmount(input: string, minorUnits: number): bigint | null {
-  const s = input.trim().replace(/,/g, "");
-  if (!/^\d+(\.\d*)?$|^\.\d+$/.test(s)) return null;
+  const s = normalizeDecimalInput(input);
+  if (s === null) return null;
   const [whole = "0", frac = ""] = s.split(".");
   if (frac.length > minorUnits) return null;
   return BigInt(whole || "0") * pow10(minorUnits) + BigInt(frac.padEnd(minorUnits, "0") || "0");
