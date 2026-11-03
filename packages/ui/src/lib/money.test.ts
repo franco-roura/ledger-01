@@ -15,7 +15,17 @@ describe("parseAmount", () => {
     expect(parseAmount("0.99", 2)).toBe(99n);
     expect(parseAmount(".5", 2)).toBe(50n);
     expect(parseAmount("42", 0)).toBe(42n);
+    expect(parseAmount(" 1,234,567.89 ", 2)).toBe(123456789n);
+    expect(parseAmount("1,234", 0)).toBe(1234n);
+    expect(parseAmount("42.", 2)).toBe(4200n);
   });
+
+  test.each(["12,50", "1,2,3", "1234,567", "1,,234", ",123", "123,", "1.234,56", "1,234.5,6"])(
+    "rejects ambiguous or malformed comma input %s",
+    (input) => {
+      expect(parseAmount(input, 2)).toBeNull();
+    },
+  );
 
   test("rejects too many decimals, signs and junk", () => {
     expect(parseAmount("1.234", 2)).toBeNull();

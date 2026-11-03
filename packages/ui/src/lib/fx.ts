@@ -7,7 +7,7 @@
 // Before anything is touched the order (oldest first) is rate, to, from, so typing both amounts
 // derives the rate — the usual case when copying numbers from a bank statement.
 
-import { minorToDecimal, parseAmount } from "./money";
+import { minorToDecimal, normalizeDecimalInput, parseAmount } from "./money";
 
 export type FxField = "from" | "to" | "rate";
 
@@ -38,8 +38,8 @@ export function initialFxState(): FxState {
 
 /** Parses a positive decimal rate into a bigint scaled by 10^RATE_SCALE. */
 export function parseRate(input: string): bigint | null {
-  const s = input.trim().replace(/,/g, "");
-  if (!/^\d+(\.\d*)?$|^\.\d+$/.test(s)) return null;
+  const s = normalizeDecimalInput(input);
+  if (s === null) return null;
   const [whole = "0", frac = ""] = s.split(".");
   const scaled =
     BigInt(whole || "0") * SCALE + BigInt(frac.slice(0, RATE_SCALE).padEnd(RATE_SCALE, "0") || "0");

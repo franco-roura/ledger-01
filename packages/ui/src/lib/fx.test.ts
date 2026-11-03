@@ -59,6 +59,17 @@ describe("editFx touch order", () => {
 });
 
 describe("fxResult", () => {
+  test.each(["from", "to", "rate"] as const)(
+    "refuses a decimal-comma value in the %s field",
+    (field) => {
+      let s = initialFxState();
+      s = editFx(s, "from", "100", USD_UYU);
+      s = editFx(s, "to", "4000", USD_UYU);
+      s = editFx(s, field, "12,50", USD_UYU);
+      expect(fxResult(s, USD_UYU)).toBeNull();
+    },
+  );
+
   test("returns minor units and the precise rate", () => {
     let s = initialFxState();
     s = editFx(s, "from", "120.00", USD_UYU);
@@ -72,6 +83,20 @@ describe("fxResult", () => {
 });
 
 describe("helpers", () => {
+  test.each(["12,50", "1,2,3", "1234,567", "1,,234", ",123", "123,", "1.234,56", "1,234.5,6"])(
+    "parseRate rejects ambiguous or malformed comma input %s",
+    (input) => {
+      expect(parseRate(input)).toBeNull();
+    },
+  );
+
+  test("parseRate keeps valid grouping, decimal notation and precision", () => {
+    expect(parseRate(" 1,234,567.89 ")).toBe(12345678900000000n);
+    expect(parseRate(".5")).toBe(5000000000n);
+    expect(parseRate("42.")).toBe(420000000000n);
+    expect(parseRate("1,234.12345678909")).toBe(12341234567890n);
+  });
+
   test("divRoundHalfEven", () => {
     expect(divRoundHalfEven(5n, 2n)).toBe(2n);
     expect(divRoundHalfEven(7n, 2n)).toBe(4n);
