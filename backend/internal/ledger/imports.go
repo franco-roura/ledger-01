@@ -463,6 +463,12 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 	}
 	var imported int64
 	err := s.inTx(ctx, func(q *dbq.Queries) error {
+		if _, err := q.LockImportBatch(ctx, dbq.LockImportBatchParams{ID: batchID, HouseholdID: a.HouseholdID}); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return invalid("batch_id", "this upload has expired or was already imported; upload the file again")
+			}
+			return err
+		}
 		b, g, w, rows, err := s.readImport(ctx, q, a, batchID, m)
 		if err != nil {
 			return err

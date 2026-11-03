@@ -6,6 +6,12 @@ VALUES (@id, @household_id, @wallet_id, @file_name, @rows, @created_by, @expires
 SELECT id, wallet_id, file_name, rows FROM import_batches
 WHERE id = @id AND household_id = @household_id AND expires_at > now();
 
+-- name: LockImportBatch :one
+-- Serialize commits of a batch until the transaction consumes it or rolls back.
+SELECT id FROM import_batches
+WHERE id = @id AND household_id = @household_id AND expires_at > now()
+FOR UPDATE;
+
 -- name: DeleteImportBatch :exec
 DELETE FROM import_batches WHERE id = @id AND household_id = @household_id;
 
