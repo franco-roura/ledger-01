@@ -129,7 +129,9 @@ ten cents.
 ## Open source, open contract
 
 A Go API on Connect-RPC, a Next.js web app, and one protobuf contract that generates both clients.
-Run `task test` for integration tests against a real Postgres, and Playwright for end-to-end tests.
+Run `task test:unit` for unit tests without Docker, `task test:integration` for the full Go suite
+against real PostgreSQL, and `task e2e` for desktop/mobile browser tests. `task test:coverage`
+generates coverage reports. See [Testing](docs/testing.md) for setup, scope and CI artifacts.
 Every release follows semantic versioning.
 
 **[Read more: local development →](docs/development.md)**

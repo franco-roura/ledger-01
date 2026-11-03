@@ -30,6 +30,9 @@ var (
 // is reaped by testcontainers' Ryuk sidecar when the process exits.
 func Pool(t testing.TB) *pgxpool.Pool {
 	t.Helper()
+	if testing.Short() {
+		t.Skip("Postgres integration test (run without -short and with Docker)")
+	}
 	once.Do(func() {
 		ctx := context.Background()
 		var c *postgres.PostgresContainer
