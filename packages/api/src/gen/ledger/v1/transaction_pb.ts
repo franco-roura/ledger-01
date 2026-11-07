@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ledger/v1/transaction.proto.
  */
 export const file_ledger_v1_transaction: GenFile = /*@__PURE__*/
-  fileDesc("ChtsZWRnZXIvdjEvdHJhbnNhY3Rpb24ucHJvdG8SCWxlZGdlci52MSJjCgpSZWN1cnJlbmNlEjAKCWZyZXF1ZW5jeRgBIAEoDjIdLmxlZGdlci52MS5SZWN1cnJpbmdGcmVxdWVuY3kSEAoIZW5kX2RhdGUYAiABKAkSEQoJZW5kX2NvdW50GAMgASgFIogBChNUcmFuc2ZlckNvdW50ZXJwYXJ0EhMKC3RyYW5zZmVyX2lkGAEgASgJEhEKCXdhbGxldF9pZBgCIAEoCRITCgt3YWxsZXRfbmFtZRgDIAEoCRIUCgxhbW91bnRfbWlub3IYBCABKAMSEAoIY3VycmVuY3kYBSABKAkSDAoEcmF0ZRgGIAEoCSK4AwoLVHJhbnNhY3Rpb24SCgoCaWQYASABKAkSEQoJd2FsbGV0X2lkGAIgASgJEigKBGtpbmQYAyABKA4yGi5sZWRnZXIudjEuVHJhbnNhY3Rpb25LaW5kEhMKC2NhdGVnb3J5X2lkGAQgASgJEhQKDGFtb3VudF9taW5vchgFIAEoAxIQCghjdXJyZW5jeRgGIAEoCRITCgtvY2N1cnJlZF9vbhgHIAEoCRIMCgRub3RlGAggASgJEhEKCWxhYmVsX2lkcxgJIAMoCRIzCgtjb3VudGVycGFydBgKIAEoCzIeLmxlZGdlci52MS5UcmFuc2ZlckNvdW50ZXJwYXJ0EhIKCmNyZWF0ZWRfYnkYCyABKAkSLgoKY3JlYXRlZF9hdBgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGQoRcmVjdXJyaW5nX3J1bGVfaWQYDiABKAkSKQoKcmVjdXJyZW5jZRgPIAEoCzIVLmxlZGdlci52MS5SZWN1cnJlbmNlIrwBCghUcmFuc2ZlchIKCgJpZBgBIAEoCRIWCg5mcm9tX3dhbGxldF9pZBgCIAEoCRIUCgx0b193YWxsZXRfaWQYAyABKAkSGQoRZnJvbV9hbW91bnRfbWlub3IYBCABKAMSFwoPdG9fYW1vdW50X21pbm9yGAUgASgDEgwKBHJhdGUYBiABKAkSEwoLb2NjdXJyZWRfb24YByABKAkSDAoEbm90ZRgIIAEoCRIRCglsYWJlbF9pZHMYCSADKAkigQIKEVRyYW5zYWN0aW9uRmlsdGVyEhEKCXdhbGxldF9pZBgBIAEoCRIkCgZwZXJpb2QYAiABKAsyFC5sZWRnZXIudjEuRGF0ZVJhbmdlEhQKDGNhdGVnb3J5X2lkcxgDIAMoCRISCgpub3RlX3F1ZXJ5GAQgASgJEh0KEG1pbl9hbW91bnRfbWlub3IYBSABKANIAIgBARIdChBtYXhfYW1vdW50X21pbm9yGAYgASgDSAGIAQESDQoFdG9kYXkYByABKAkSEgoKbWVtYmVyX2lkcxgIIAMoCUITChFfbWluX2Ftb3VudF9taW5vckITChFfbWF4X2Ftb3VudF9taW5vciJuChdMaXN0VHJhbnNhY3Rpb25zUmVxdWVzdBIsCgZmaWx0ZXIYASABKAsyHC5sZWRnZXIudjEuVHJhbnNhY3Rpb25GaWx0ZXISEQoJcGFnZV9zaXplGAIgASgFEhIKCnBhZ2VfdG9rZW4YAyABKAkiYQoYTGlzdFRyYW5zYWN0aW9uc1Jlc3BvbnNlEiwKDHRyYW5zYWN0aW9ucxgBIAMoCzIWLmxlZGdlci52MS5UcmFuc2FjdGlvbhIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkiVwofTGlzdFVwY29taW5nVHJhbnNhY3Rpb25zUmVxdWVzdBIRCgl3YWxsZXRfaWQYASABKAkSDQoFdG9kYXkYAiABKAkSEgoKbWVtYmVyX2lkcxgDIAMoCSJQCiBMaXN0VXBjb21pbmdUcmFuc2FjdGlvbnNSZXNwb25zZRIsCgx0cmFuc2FjdGlvbnMYASADKAsyFi5sZWRnZXIudjEuVHJhbnNhY3Rpb24iRwoXR2V0UGVyaW9kU3VtbWFyeVJlcXVlc3QSLAoGZmlsdGVyGAEgASgLMhwubGVkZ2VyLnYxLlRyYW5zYWN0aW9uRmlsdGVyIqIBChhHZXRQZXJpb2RTdW1tYXJ5UmVzcG9uc2USEAoIY3VycmVuY3kYASABKAkSFQoNYmFsYW5jZV9taW5vchgCIAEoAxIUCgxjaGFuZ2VfbWlub3IYAyABKAMSFgoOZXhwZW5zZXNfbWlub3IYBCABKAMSFAoMaW5jb21lX21pbm9yGAUgASgDEhkKEXRyYW5zYWN0aW9uX2NvdW50GAYgASgDIu4BChhDcmVhdGVUcmFuc2FjdGlvblJlcXVlc3QSEQoJd2FsbGV0X2lkGAEgASgJEigKBGtpbmQYAiABKA4yGi5sZWRnZXIudjEuVHJhbnNhY3Rpb25LaW5kEhMKC2NhdGVnb3J5X2lkGAMgASgJEhQKDGFtb3VudF9taW5vchgEIAEoAxITCgtvY2N1cnJlZF9vbhgFIAEoCRIMCgRub3RlGAYgASgJEhEKCWxhYmVsX2lkcxgHIAMoCRIlCgZyZXBlYXQYCCABKAsyFS5sZWRnZXIudjEuUmVjdXJyZW5jZRINCgV0b2RheRgJIAEoCSJIChlDcmVhdGVUcmFuc2FjdGlvblJlc3BvbnNlEisKC3RyYW5zYWN0aW9uGAEgASgLMhYubGVkZ2VyLnYxLlRyYW5zYWN0aW9uIugBChhVcGRhdGVUcmFuc2FjdGlvblJlcXVlc3QSCgoCaWQYASABKAkSEwoLY2F0ZWdvcnlfaWQYAiABKAkSFAoMYW1vdW50X21pbm9yGAMgASgDEhMKC29jY3VycmVkX29uGAQgASgJEgwKBG5vdGUYBSABKAkSEQoJbGFiZWxfaWRzGAYgAygJEikKBXNjb3BlGAcgASgOMhoubGVkZ2VyLnYxLk9jY3VycmVuY2VTY29wZRIlCgZyZXBlYXQYCCABKAsyFS5sZWRnZXIudjEuUmVjdXJyZW5jZRINCgV0b2RheRgJIAEoCSJIChlVcGRhdGVUcmFuc2FjdGlvblJlc3BvbnNlEisKC3RyYW5zYWN0aW9uGAEgASgLMhYubGVkZ2VyLnYxLlRyYW5zYWN0aW9uImIKGURlbGV0ZVRyYW5zYWN0aW9uc1JlcXVlc3QSCwoDaWRzGAEgAygJEikKBXNjb3BlGAIgASgOMhoubGVkZ2VyLnYxLk9jY3VycmVuY2VTY29wZRINCgV0b2RheRgDIAEoCSIzChpEZWxldGVUcmFuc2FjdGlvbnNSZXNwb25zZRIVCg1kZWxldGVkX2NvdW50GAEgASgDIvMBChVDcmVhdGVUcmFuc2ZlclJlcXVlc3QSFgoOZnJvbV93YWxsZXRfaWQYASABKAkSFAoMdG9fd2FsbGV0X2lkGAIgASgJEhkKEWZyb21fYW1vdW50X21pbm9yGAMgASgDEhcKD3RvX2Ftb3VudF9taW5vchgEIAEoAxIMCgRyYXRlGAUgASgJEhMKC29jY3VycmVkX29uGAYgASgJEgwKBG5vdGUYByABKAkSEQoJbGFiZWxfaWRzGAggAygJEiUKBnJlcGVhdBgJIAEoCzIVLmxlZGdlci52MS5SZWN1cnJlbmNlEg0KBXRvZGF5GAogASgJIj8KFkNyZWF0ZVRyYW5zZmVyUmVzcG9uc2USJQoIdHJhbnNmZXIYASABKAsyEy5sZWRnZXIudjEuVHJhbnNmZXIiqgIKFVVwZGF0ZVRyYW5zZmVyUmVxdWVzdBIKCgJpZBgBIAEoCRIWCg5mcm9tX3dhbGxldF9pZBgCIAEoCRIUCgx0b193YWxsZXRfaWQYAyABKAkSGQoRZnJvbV9hbW91bnRfbWlub3IYBCABKAMSFwoPdG9fYW1vdW50X21pbm9yGAUgASgDEgwKBHJhdGUYBiABKAkSEwoLb2NjdXJyZWRfb24YByABKAkSDAoEbm90ZRgIIAEoCRIRCglsYWJlbF9pZHMYCSADKAkSKQoFc2NvcGUYCiABKA4yGi5sZWRnZXIudjEuT2NjdXJyZW5jZVNjb3BlEiUKBnJlcGVhdBgLIAEoCzIVLmxlZGdlci52MS5SZWN1cnJlbmNlEg0KBXRvZGF5GAwgASgJIj8KFlVwZGF0ZVRyYW5zZmVyUmVzcG9uc2USJQoIdHJhbnNmZXIYASABKAsyEy5sZWRnZXIudjEuVHJhbnNmZXIqswEKD1RyYW5zYWN0aW9uS2luZBIgChxUUkFOU0FDVElPTl9LSU5EX1VOU1BFQ0lGSUVEEAASHAoYVFJBTlNBQ1RJT05fS0lORF9FWFBFTlNFEAESGwoXVFJBTlNBQ1RJT05fS0lORF9JTkNPTUUQAhIhCh1UUkFOU0FDVElPTl9LSU5EX1RSQU5TRkVSX09VVBADEiAKHFRSQU5TQUNUSU9OX0tJTkRfVFJBTlNGRVJfSU4QBCrHAwoSUmVjdXJyaW5nRnJlcXVlbmN5EiMKH1JFQ1VSUklOR19GUkVRVUVOQ1lfVU5TUEVDSUZJRUQQABIdChlSRUNVUlJJTkdfRlJFUVVFTkNZX0RBSUxZEAESJAogUkVDVVJSSU5HX0ZSRVFVRU5DWV9FVkVSWV8yX0RBWVMQAhIgChxSRUNVUlJJTkdfRlJFUVVFTkNZX1dFRUtEQVlTEAMSHgoaUkVDVVJSSU5HX0ZSRVFVRU5DWV9XRUVLTFkQBBIlCiFSRUNVUlJJTkdfRlJFUVVFTkNZX0VWRVJZXzJfV0VFS1MQBRIlCiFSRUNVUlJJTkdfRlJFUVVFTkNZX0VWRVJZXzRfV0VFS1MQBhIfChtSRUNVUlJJTkdfRlJFUVVFTkNZX01PTlRITFkQBxImCiJSRUNVUlJJTkdfRlJFUVVFTkNZX0VWRVJZXzJfTU9OVEhTEAgSJgoiUkVDVVJSSU5HX0ZSRVFVRU5DWV9FVkVSWV8zX01PTlRIUxAJEiYKIlJFQ1VSUklOR19GUkVRVUVOQ1lfRVZFUllfNl9NT05USFMQChIeChpSRUNVUlJJTkdfRlJFUVVFTkNZX1lFQVJMWRALKnkKD09jY3VycmVuY2VTY29wZRIgChxPQ0NVUlJFTkNFX1NDT1BFX1VOU1BFQ0lGSUVEEAASHgoaT0NDVVJSRU5DRV9TQ09QRV9PTkxZX1RISVMQARIkCiBPQ0NVUlJFTkNFX1NDT1BFX1RISVNfQU5EX0ZVVFVSRRACMpQGChJUcmFuc2FjdGlvblNlcnZpY2USWwoQTGlzdFRyYW5zYWN0aW9ucxIiLmxlZGdlci52MS5MaXN0VHJhbnNhY3Rpb25zUmVxdWVzdBojLmxlZGdlci52MS5MaXN0VHJhbnNhY3Rpb25zUmVzcG9uc2UScwoYTGlzdFVwY29taW5nVHJhbnNhY3Rpb25zEioubGVkZ2VyLnYxLkxpc3RVcGNvbWluZ1RyYW5zYWN0aW9uc1JlcXVlc3QaKy5sZWRnZXIudjEuTGlzdFVwY29taW5nVHJhbnNhY3Rpb25zUmVzcG9uc2USWwoQR2V0UGVyaW9kU3VtbWFyeRIiLmxlZGdlci52MS5HZXRQZXJpb2RTdW1tYXJ5UmVxdWVzdBojLmxlZGdlci52MS5HZXRQZXJpb2RTdW1tYXJ5UmVzcG9uc2USXgoRQ3JlYXRlVHJhbnNhY3Rpb24SIy5sZWRnZXIudjEuQ3JlYXRlVHJhbnNhY3Rpb25SZXF1ZXN0GiQubGVkZ2VyLnYxLkNyZWF0ZVRyYW5zYWN0aW9uUmVzcG9uc2USXgoRVXBkYXRlVHJhbnNhY3Rpb24SIy5sZWRnZXIudjEuVXBkYXRlVHJhbnNhY3Rpb25SZXF1ZXN0GiQubGVkZ2VyLnYxLlVwZGF0ZVRyYW5zYWN0aW9uUmVzcG9uc2USYQoSRGVsZXRlVHJhbnNhY3Rpb25zEiQubGVkZ2VyLnYxLkRlbGV0ZVRyYW5zYWN0aW9uc1JlcXVlc3QaJS5sZWRnZXIudjEuRGVsZXRlVHJhbnNhY3Rpb25zUmVzcG9uc2USVQoOQ3JlYXRlVHJhbnNmZXISIC5sZWRnZXIudjEuQ3JlYXRlVHJhbnNmZXJSZXF1ZXN0GiEubGVkZ2VyLnYxLkNyZWF0ZVRyYW5zZmVyUmVzcG9uc2USVQoOVXBkYXRlVHJhbnNmZXISIC5sZWRnZXIudjEuVXBkYXRlVHJhbnNmZXJSZXF1ZXN0GiEubGVkZ2VyLnYxLlVwZGF0ZVRyYW5zZmVyUmVzcG9uc2VCqAEKDWNvbS5sZWRnZXIudjFCEFRyYW5zYWN0aW9uUHJvdG9QAVpAZ2l0aHViLmNvbS9mcmFuY28tcm91cmEvbGVkZ2VyLTAxL2JhY2tlbmQvZ2VuL2xlZGdlci92MTtsZWRnZXJ2MaICA0xYWKoCCUxlZGdlci5WMcoCCUxlZGdlclxWMeICFUxlZGdlclxWMVxHUEJNZXRhZGF0YeoCCkxlZGdlcjo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp, file_ledger_v1_common]);
+  fileDesc("ChtsZWRnZXIvdjEvdHJhbnNhY3Rpb24ucHJvdG8SCWxlZGdlci52MSJjCgpSZWN1cnJlbmNlEjAKCWZyZXF1ZW5jeRgBIAEoDjIdLmxlZGdlci52MS5SZWN1cnJpbmdGcmVxdWVuY3kSEAoIZW5kX2RhdGUYAiABKAkSEQoJZW5kX2NvdW50GAMgASgFIogBChNUcmFuc2ZlckNvdW50ZXJwYXJ0EhMKC3RyYW5zZmVyX2lkGAEgASgJEhEKCXdhbGxldF9pZBgCIAEoCRITCgt3YWxsZXRfbmFtZRgDIAEoCRIUCgxhbW91bnRfbWlub3IYBCABKAMSEAoIY3VycmVuY3kYBSABKAkSDAoEcmF0ZRgGIAEoCSK4AwoLVHJhbnNhY3Rpb24SCgoCaWQYASABKAkSEQoJd2FsbGV0X2lkGAIgASgJEigKBGtpbmQYAyABKA4yGi5sZWRnZXIudjEuVHJhbnNhY3Rpb25LaW5kEhMKC2NhdGVnb3J5X2lkGAQgASgJEhQKDGFtb3VudF9taW5vchgFIAEoAxIQCghjdXJyZW5jeRgGIAEoCRITCgtvY2N1cnJlZF9vbhgHIAEoCRIMCgRub3RlGAggASgJEhEKCWxhYmVsX2lkcxgJIAMoCRIzCgtjb3VudGVycGFydBgKIAEoCzIeLmxlZGdlci52MS5UcmFuc2ZlckNvdW50ZXJwYXJ0EhIKCmNyZWF0ZWRfYnkYCyABKAkSLgoKY3JlYXRlZF9hdBgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGQoRcmVjdXJyaW5nX3J1bGVfaWQYDiABKAkSKQoKcmVjdXJyZW5jZRgPIAEoCzIVLmxlZGdlci52MS5SZWN1cnJlbmNlIrwBCghUcmFuc2ZlchIKCgJpZBgBIAEoCRIWCg5mcm9tX3dhbGxldF9pZBgCIAEoCRIUCgx0b193YWxsZXRfaWQYAyABKAkSGQoRZnJvbV9hbW91bnRfbWlub3IYBCABKAMSFwoPdG9fYW1vdW50X21pbm9yGAUgASgDEgwKBHJhdGUYBiABKAkSEwoLb2NjdXJyZWRfb24YByABKAkSDAoEbm90ZRgIIAEoCRIRCglsYWJlbF9pZHMYCSADKAkigQIKEVRyYW5zYWN0aW9uRmlsdGVyEhEKCXdhbGxldF9pZBgBIAEoCRIkCgZwZXJpb2QYAiABKAsyFC5sZWRnZXIudjEuRGF0ZVJhbmdlEhQKDGNhdGVnb3J5X2lkcxgDIAMoCRISCgpub3RlX3F1ZXJ5GAQgASgJEh0KEG1pbl9hbW91bnRfbWlub3IYBSABKANIAIgBARIdChBtYXhfYW1vdW50X21pbm9yGAYgASgDSAGIAQESDQoFdG9kYXkYByABKAkSEgoKbWVtYmVyX2lkcxgIIAMoCUITChFfbWluX2Ftb3VudF9taW5vckITChFfbWF4X2Ftb3VudF9taW5vciJuChdMaXN0VHJhbnNhY3Rpb25zUmVxdWVzdBIsCgZmaWx0ZXIYASABKAsyHC5sZWRnZXIudjEuVHJhbnNhY3Rpb25GaWx0ZXISEQoJcGFnZV9zaXplGAIgASgFEhIKCnBhZ2VfdG9rZW4YAyABKAkiYQoYTGlzdFRyYW5zYWN0aW9uc1Jlc3BvbnNlEiwKDHRyYW5zYWN0aW9ucxgBIAMoCzIWLmxlZGdlci52MS5UcmFuc2FjdGlvbhIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAki8wEKGVNlYXJjaFRyYW5zYWN0aW9uc1JlcXVlc3QSJAoGcGVyaW9kGAEgASgLMhQubGVkZ2VyLnYxLkRhdGVSYW5nZRISCgp3YWxsZXRfaWRzGAIgAygJEhQKDGNhdGVnb3J5X2lkcxgDIAMoCRIRCglsYWJlbF9pZHMYBCADKAkSKQoFa2luZHMYBSADKA4yGi5sZWRnZXIudjEuVHJhbnNhY3Rpb25LaW5kEhIKCm5vdGVfcXVlcnkYBiABKAkSDQoFdG9kYXkYByABKAkSEQoJcGFnZV9zaXplGAggASgFEhIKCnBhZ2VfdG9rZW4YCSABKAkiYwoaU2VhcmNoVHJhbnNhY3Rpb25zUmVzcG9uc2USLAoMdHJhbnNhY3Rpb25zGAEgAygLMhYubGVkZ2VyLnYxLlRyYW5zYWN0aW9uEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSJXCh9MaXN0VXBjb21pbmdUcmFuc2FjdGlvbnNSZXF1ZXN0EhEKCXdhbGxldF9pZBgBIAEoCRINCgV0b2RheRgCIAEoCRISCgptZW1iZXJfaWRzGAMgAygJIlAKIExpc3RVcGNvbWluZ1RyYW5zYWN0aW9uc1Jlc3BvbnNlEiwKDHRyYW5zYWN0aW9ucxgBIAMoCzIWLmxlZGdlci52MS5UcmFuc2FjdGlvbiJHChdHZXRQZXJpb2RTdW1tYXJ5UmVxdWVzdBIsCgZmaWx0ZXIYASABKAsyHC5sZWRnZXIudjEuVHJhbnNhY3Rpb25GaWx0ZXIiogEKGEdldFBlcmlvZFN1bW1hcnlSZXNwb25zZRIQCghjdXJyZW5jeRgBIAEoCRIVCg1iYWxhbmNlX21pbm9yGAIgASgDEhQKDGNoYW5nZV9taW5vchgDIAEoAxIWCg5leHBlbnNlc19taW5vchgEIAEoAxIUCgxpbmNvbWVfbWlub3IYBSABKAMSGQoRdHJhbnNhY3Rpb25fY291bnQYBiABKAMi7gEKGENyZWF0ZVRyYW5zYWN0aW9uUmVxdWVzdBIRCgl3YWxsZXRfaWQYASABKAkSKAoEa2luZBgCIAEoDjIaLmxlZGdlci52MS5UcmFuc2FjdGlvbktpbmQSEwoLY2F0ZWdvcnlfaWQYAyABKAkSFAoMYW1vdW50X21pbm9yGAQgASgDEhMKC29jY3VycmVkX29uGAUgASgJEgwKBG5vdGUYBiABKAkSEQoJbGFiZWxfaWRzGAcgAygJEiUKBnJlcGVhdBgIIAEoCzIVLmxlZGdlci52MS5SZWN1cnJlbmNlEg0KBXRvZGF5GAkgASgJIkgKGUNyZWF0ZVRyYW5zYWN0aW9uUmVzcG9uc2USKwoLdHJhbnNhY3Rpb24YASABKAsyFi5sZWRnZXIudjEuVHJhbnNhY3Rpb24i6AEKGFVwZGF0ZVRyYW5zYWN0aW9uUmVxdWVzdBIKCgJpZBgBIAEoCRITCgtjYXRlZ29yeV9pZBgCIAEoCRIUCgxhbW91bnRfbWlub3IYAyABKAMSEwoLb2NjdXJyZWRfb24YBCABKAkSDAoEbm90ZRgFIAEoCRIRCglsYWJlbF9pZHMYBiADKAkSKQoFc2NvcGUYByABKA4yGi5sZWRnZXIudjEuT2NjdXJyZW5jZVNjb3BlEiUKBnJlcGVhdBgIIAEoCzIVLmxlZGdlci52MS5SZWN1cnJlbmNlEg0KBXRvZGF5GAkgASgJIkgKGVVwZGF0ZVRyYW5zYWN0aW9uUmVzcG9uc2USKwoLdHJhbnNhY3Rpb24YASABKAsyFi5sZWRnZXIudjEuVHJhbnNhY3Rpb24iYgoZRGVsZXRlVHJhbnNhY3Rpb25zUmVxdWVzdBILCgNpZHMYASADKAkSKQoFc2NvcGUYAiABKA4yGi5sZWRnZXIudjEuT2NjdXJyZW5jZVNjb3BlEg0KBXRvZGF5GAMgASgJIjMKGkRlbGV0ZVRyYW5zYWN0aW9uc1Jlc3BvbnNlEhUKDWRlbGV0ZWRfY291bnQYASABKAMi8wEKFUNyZWF0ZVRyYW5zZmVyUmVxdWVzdBIWCg5mcm9tX3dhbGxldF9pZBgBIAEoCRIUCgx0b193YWxsZXRfaWQYAiABKAkSGQoRZnJvbV9hbW91bnRfbWlub3IYAyABKAMSFwoPdG9fYW1vdW50X21pbm9yGAQgASgDEgwKBHJhdGUYBSABKAkSEwoLb2NjdXJyZWRfb24YBiABKAkSDAoEbm90ZRgHIAEoCRIRCglsYWJlbF9pZHMYCCADKAkSJQoGcmVwZWF0GAkgASgLMhUubGVkZ2VyLnYxLlJlY3VycmVuY2USDQoFdG9kYXkYCiABKAkiPwoWQ3JlYXRlVHJhbnNmZXJSZXNwb25zZRIlCgh0cmFuc2ZlchgBIAEoCzITLmxlZGdlci52MS5UcmFuc2ZlciKqAgoVVXBkYXRlVHJhbnNmZXJSZXF1ZXN0EgoKAmlkGAEgASgJEhYKDmZyb21fd2FsbGV0X2lkGAIgASgJEhQKDHRvX3dhbGxldF9pZBgDIAEoCRIZChFmcm9tX2Ftb3VudF9taW5vchgEIAEoAxIXCg90b19hbW91bnRfbWlub3IYBSABKAMSDAoEcmF0ZRgGIAEoCRITCgtvY2N1cnJlZF9vbhgHIAEoCRIMCgRub3RlGAggASgJEhEKCWxhYmVsX2lkcxgJIAMoCRIpCgVzY29wZRgKIAEoDjIaLmxlZGdlci52MS5PY2N1cnJlbmNlU2NvcGUSJQoGcmVwZWF0GAsgASgLMhUubGVkZ2VyLnYxLlJlY3VycmVuY2USDQoFdG9kYXkYDCABKAkiPwoWVXBkYXRlVHJhbnNmZXJSZXNwb25zZRIlCgh0cmFuc2ZlchgBIAEoCzITLmxlZGdlci52MS5UcmFuc2ZlciqzAQoPVHJhbnNhY3Rpb25LaW5kEiAKHFRSQU5TQUNUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABIcChhUUkFOU0FDVElPTl9LSU5EX0VYUEVOU0UQARIbChdUUkFOU0FDVElPTl9LSU5EX0lOQ09NRRACEiEKHVRSQU5TQUNUSU9OX0tJTkRfVFJBTlNGRVJfT1VUEAMSIAocVFJBTlNBQ1RJT05fS0lORF9UUkFOU0ZFUl9JThAEKscDChJSZWN1cnJpbmdGcmVxdWVuY3kSIwofUkVDVVJSSU5HX0ZSRVFVRU5DWV9VTlNQRUNJRklFRBAAEh0KGVJFQ1VSUklOR19GUkVRVUVOQ1lfREFJTFkQARIkCiBSRUNVUlJJTkdfRlJFUVVFTkNZX0VWRVJZXzJfREFZUxACEiAKHFJFQ1VSUklOR19GUkVRVUVOQ1lfV0VFS0RBWVMQAxIeChpSRUNVUlJJTkdfRlJFUVVFTkNZX1dFRUtMWRAEEiUKIVJFQ1VSUklOR19GUkVRVUVOQ1lfRVZFUllfMl9XRUVLUxAFEiUKIVJFQ1VSUklOR19GUkVRVUVOQ1lfRVZFUllfNF9XRUVLUxAGEh8KG1JFQ1VSUklOR19GUkVRVUVOQ1lfTU9OVEhMWRAHEiYKIlJFQ1VSUklOR19GUkVRVUVOQ1lfRVZFUllfMl9NT05USFMQCBImCiJSRUNVUlJJTkdfRlJFUVVFTkNZX0VWRVJZXzNfTU9OVEhTEAkSJgoiUkVDVVJSSU5HX0ZSRVFVRU5DWV9FVkVSWV82X01PTlRIUxAKEh4KGlJFQ1VSUklOR19GUkVRVUVOQ1lfWUVBUkxZEAsqeQoPT2NjdXJyZW5jZVNjb3BlEiAKHE9DQ1VSUkVOQ0VfU0NPUEVfVU5TUEVDSUZJRUQQABIeChpPQ0NVUlJFTkNFX1NDT1BFX09OTFlfVEhJUxABEiQKIE9DQ1VSUkVOQ0VfU0NPUEVfVEhJU19BTkRfRlVUVVJFEAIy9wYKElRyYW5zYWN0aW9uU2VydmljZRJbChBMaXN0VHJhbnNhY3Rpb25zEiIubGVkZ2VyLnYxLkxpc3RUcmFuc2FjdGlvbnNSZXF1ZXN0GiMubGVkZ2VyLnYxLkxpc3RUcmFuc2FjdGlvbnNSZXNwb25zZRJhChJTZWFyY2hUcmFuc2FjdGlvbnMSJC5sZWRnZXIudjEuU2VhcmNoVHJhbnNhY3Rpb25zUmVxdWVzdBolLmxlZGdlci52MS5TZWFyY2hUcmFuc2FjdGlvbnNSZXNwb25zZRJzChhMaXN0VXBjb21pbmdUcmFuc2FjdGlvbnMSKi5sZWRnZXIudjEuTGlzdFVwY29taW5nVHJhbnNhY3Rpb25zUmVxdWVzdBorLmxlZGdlci52MS5MaXN0VXBjb21pbmdUcmFuc2FjdGlvbnNSZXNwb25zZRJbChBHZXRQZXJpb2RTdW1tYXJ5EiIubGVkZ2VyLnYxLkdldFBlcmlvZFN1bW1hcnlSZXF1ZXN0GiMubGVkZ2VyLnYxLkdldFBlcmlvZFN1bW1hcnlSZXNwb25zZRJeChFDcmVhdGVUcmFuc2FjdGlvbhIjLmxlZGdlci52MS5DcmVhdGVUcmFuc2FjdGlvblJlcXVlc3QaJC5sZWRnZXIudjEuQ3JlYXRlVHJhbnNhY3Rpb25SZXNwb25zZRJeChFVcGRhdGVUcmFuc2FjdGlvbhIjLmxlZGdlci52MS5VcGRhdGVUcmFuc2FjdGlvblJlcXVlc3QaJC5sZWRnZXIudjEuVXBkYXRlVHJhbnNhY3Rpb25SZXNwb25zZRJhChJEZWxldGVUcmFuc2FjdGlvbnMSJC5sZWRnZXIudjEuRGVsZXRlVHJhbnNhY3Rpb25zUmVxdWVzdBolLmxlZGdlci52MS5EZWxldGVUcmFuc2FjdGlvbnNSZXNwb25zZRJVCg5DcmVhdGVUcmFuc2ZlchIgLmxlZGdlci52MS5DcmVhdGVUcmFuc2ZlclJlcXVlc3QaIS5sZWRnZXIudjEuQ3JlYXRlVHJhbnNmZXJSZXNwb25zZRJVCg5VcGRhdGVUcmFuc2ZlchIgLmxlZGdlci52MS5VcGRhdGVUcmFuc2ZlclJlcXVlc3QaIS5sZWRnZXIudjEuVXBkYXRlVHJhbnNmZXJSZXNwb25zZUKoAQoNY29tLmxlZGdlci52MUIQVHJhbnNhY3Rpb25Qcm90b1ABWkBnaXRodWIuY29tL2ZyYW5jby1yb3VyYS9sZWRnZXItMDEvYmFja2VuZC9nZW4vbGVkZ2VyL3YxO2xlZGdlcnYxogIDTFhYqgIJTGVkZ2VyLlYxygIJTGVkZ2VyXFYx4gIVTGVkZ2VyXFYxXEdQQk1ldGFkYXRh6gIKTGVkZ2VyOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp, file_ledger_v1_common]);
 
 /**
  * A repeat schedule. The first occurrence is the transaction's own date.
@@ -367,6 +367,89 @@ export const ListTransactionsResponseSchema: GenMessage<ListTransactionsResponse
   messageDesc(file_ledger_v1_transaction, 6);
 
 /**
+ * @generated from message ledger.v1.SearchTransactionsRequest
+ */
+export type SearchTransactionsRequest = Message<"ledger.v1.SearchTransactionsRequest"> & {
+  /**
+   * @generated from field: ledger.v1.DateRange period = 1;
+   */
+  period?: DateRange | undefined;
+
+  /**
+   * Empty selections mean all; selections within each group match any, groups match all.
+   *
+   * @generated from field: repeated string wallet_ids = 2;
+   */
+  walletIds: string[];
+
+  /**
+   * @generated from field: repeated string category_ids = 3;
+   */
+  categoryIds: string[];
+
+  /**
+   * @generated from field: repeated string label_ids = 4;
+   */
+  labelIds: string[];
+
+  /**
+   * @generated from field: repeated ledger.v1.TransactionKind kinds = 5;
+   */
+  kinds: TransactionKind[];
+
+  /**
+   * @generated from field: string note_query = 6;
+   */
+  noteQuery: string;
+
+  /**
+   * The caller's local date; upcoming rows are excluded. Empty defaults to UTC today.
+   *
+   * @generated from field: string today = 7;
+   */
+  today: string;
+
+  /**
+   * @generated from field: int32 page_size = 8;
+   */
+  pageSize: number;
+
+  /**
+   * @generated from field: string page_token = 9;
+   */
+  pageToken: string;
+};
+
+/**
+ * Describes the message ledger.v1.SearchTransactionsRequest.
+ * Use `create(SearchTransactionsRequestSchema)` to create a new message.
+ */
+export const SearchTransactionsRequestSchema: GenMessage<SearchTransactionsRequest> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_transaction, 7);
+
+/**
+ * @generated from message ledger.v1.SearchTransactionsResponse
+ */
+export type SearchTransactionsResponse = Message<"ledger.v1.SearchTransactionsResponse"> & {
+  /**
+   * @generated from field: repeated ledger.v1.Transaction transactions = 1;
+   */
+  transactions: Transaction[];
+
+  /**
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken: string;
+};
+
+/**
+ * Describes the message ledger.v1.SearchTransactionsResponse.
+ * Use `create(SearchTransactionsResponseSchema)` to create a new message.
+ */
+export const SearchTransactionsResponseSchema: GenMessage<SearchTransactionsResponse> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_transaction, 8);
+
+/**
  * @generated from message ledger.v1.ListUpcomingTransactionsRequest
  */
 export type ListUpcomingTransactionsRequest = Message<"ledger.v1.ListUpcomingTransactionsRequest"> & {
@@ -396,7 +479,7 @@ export type ListUpcomingTransactionsRequest = Message<"ledger.v1.ListUpcomingTra
  * Use `create(ListUpcomingTransactionsRequestSchema)` to create a new message.
  */
 export const ListUpcomingTransactionsRequestSchema: GenMessage<ListUpcomingTransactionsRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 7);
+  messageDesc(file_ledger_v1_transaction, 9);
 
 /**
  * @generated from message ledger.v1.ListUpcomingTransactionsResponse
@@ -415,7 +498,7 @@ export type ListUpcomingTransactionsResponse = Message<"ledger.v1.ListUpcomingTr
  * Use `create(ListUpcomingTransactionsResponseSchema)` to create a new message.
  */
 export const ListUpcomingTransactionsResponseSchema: GenMessage<ListUpcomingTransactionsResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 8);
+  messageDesc(file_ledger_v1_transaction, 10);
 
 /**
  * @generated from message ledger.v1.GetPeriodSummaryRequest
@@ -432,7 +515,7 @@ export type GetPeriodSummaryRequest = Message<"ledger.v1.GetPeriodSummaryRequest
  * Use `create(GetPeriodSummaryRequestSchema)` to create a new message.
  */
 export const GetPeriodSummaryRequestSchema: GenMessage<GetPeriodSummaryRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 9);
+  messageDesc(file_ledger_v1_transaction, 11);
 
 /**
  * @generated from message ledger.v1.GetPeriodSummaryResponse
@@ -482,7 +565,7 @@ export type GetPeriodSummaryResponse = Message<"ledger.v1.GetPeriodSummaryRespon
  * Use `create(GetPeriodSummaryResponseSchema)` to create a new message.
  */
 export const GetPeriodSummaryResponseSchema: GenMessage<GetPeriodSummaryResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 10);
+  messageDesc(file_ledger_v1_transaction, 12);
 
 /**
  * @generated from message ledger.v1.CreateTransactionRequest
@@ -545,7 +628,7 @@ export type CreateTransactionRequest = Message<"ledger.v1.CreateTransactionReque
  * Use `create(CreateTransactionRequestSchema)` to create a new message.
  */
 export const CreateTransactionRequestSchema: GenMessage<CreateTransactionRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 11);
+  messageDesc(file_ledger_v1_transaction, 13);
 
 /**
  * @generated from message ledger.v1.CreateTransactionResponse
@@ -562,7 +645,7 @@ export type CreateTransactionResponse = Message<"ledger.v1.CreateTransactionResp
  * Use `create(CreateTransactionResponseSchema)` to create a new message.
  */
 export const CreateTransactionResponseSchema: GenMessage<CreateTransactionResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 12);
+  messageDesc(file_ledger_v1_transaction, 14);
 
 /**
  * Replaces the editable fields of an expense or income.
@@ -626,7 +709,7 @@ export type UpdateTransactionRequest = Message<"ledger.v1.UpdateTransactionReque
  * Use `create(UpdateTransactionRequestSchema)` to create a new message.
  */
 export const UpdateTransactionRequestSchema: GenMessage<UpdateTransactionRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 13);
+  messageDesc(file_ledger_v1_transaction, 15);
 
 /**
  * @generated from message ledger.v1.UpdateTransactionResponse
@@ -643,7 +726,7 @@ export type UpdateTransactionResponse = Message<"ledger.v1.UpdateTransactionResp
  * Use `create(UpdateTransactionResponseSchema)` to create a new message.
  */
 export const UpdateTransactionResponseSchema: GenMessage<UpdateTransactionResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 14);
+  messageDesc(file_ledger_v1_transaction, 16);
 
 /**
  * @generated from message ledger.v1.DeleteTransactionsRequest
@@ -673,7 +756,7 @@ export type DeleteTransactionsRequest = Message<"ledger.v1.DeleteTransactionsReq
  * Use `create(DeleteTransactionsRequestSchema)` to create a new message.
  */
 export const DeleteTransactionsRequestSchema: GenMessage<DeleteTransactionsRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 15);
+  messageDesc(file_ledger_v1_transaction, 17);
 
 /**
  * @generated from message ledger.v1.DeleteTransactionsResponse
@@ -690,7 +773,7 @@ export type DeleteTransactionsResponse = Message<"ledger.v1.DeleteTransactionsRe
  * Use `create(DeleteTransactionsResponseSchema)` to create a new message.
  */
 export const DeleteTransactionsResponseSchema: GenMessage<DeleteTransactionsResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 16);
+  messageDesc(file_ledger_v1_transaction, 18);
 
 /**
  * @generated from message ledger.v1.CreateTransferRequest
@@ -756,7 +839,7 @@ export type CreateTransferRequest = Message<"ledger.v1.CreateTransferRequest"> &
  * Use `create(CreateTransferRequestSchema)` to create a new message.
  */
 export const CreateTransferRequestSchema: GenMessage<CreateTransferRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 17);
+  messageDesc(file_ledger_v1_transaction, 19);
 
 /**
  * @generated from message ledger.v1.CreateTransferResponse
@@ -773,7 +856,7 @@ export type CreateTransferResponse = Message<"ledger.v1.CreateTransferResponse">
  * Use `create(CreateTransferResponseSchema)` to create a new message.
  */
 export const CreateTransferResponseSchema: GenMessage<CreateTransferResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 18);
+  messageDesc(file_ledger_v1_transaction, 20);
 
 /**
  * @generated from message ledger.v1.UpdateTransferRequest
@@ -847,7 +930,7 @@ export type UpdateTransferRequest = Message<"ledger.v1.UpdateTransferRequest"> &
  * Use `create(UpdateTransferRequestSchema)` to create a new message.
  */
 export const UpdateTransferRequestSchema: GenMessage<UpdateTransferRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 19);
+  messageDesc(file_ledger_v1_transaction, 21);
 
 /**
  * @generated from message ledger.v1.UpdateTransferResponse
@@ -864,7 +947,7 @@ export type UpdateTransferResponse = Message<"ledger.v1.UpdateTransferResponse">
  * Use `create(UpdateTransferResponseSchema)` to create a new message.
  */
 export const UpdateTransferResponseSchema: GenMessage<UpdateTransferResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_transaction, 20);
+  messageDesc(file_ledger_v1_transaction, 22);
 
 /**
  * @generated from enum ledger.v1.TransactionKind
@@ -1025,6 +1108,16 @@ export const TransactionService: GenService<{
     methodKind: "unary";
     input: typeof ListTransactionsRequestSchema;
     output: typeof ListTransactionsResponseSchema;
+  },
+  /**
+   * Search the active household across wallets. Amounts retain each wallet's currency.
+   *
+   * @generated from rpc ledger.v1.TransactionService.SearchTransactions
+   */
+  searchTransactions: {
+    methodKind: "unary";
+    input: typeof SearchTransactionsRequestSchema;
+    output: typeof SearchTransactionsResponseSchema;
   },
   /**
    * Rows dated after today (pre-created recurring occurrences and future-dated entries), soonest

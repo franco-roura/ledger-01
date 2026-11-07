@@ -849,6 +849,168 @@ func (x *ListTransactionsResponse) GetNextPageToken() string {
 	return ""
 }
 
+type SearchTransactionsRequest struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Period *DateRange             `protobuf:"bytes,1,opt,name=period,proto3" json:"period,omitempty"`
+	// Empty selections mean all; selections within each group match any, groups match all.
+	WalletIds   []string          `protobuf:"bytes,2,rep,name=wallet_ids,json=walletIds,proto3" json:"wallet_ids,omitempty"`
+	CategoryIds []string          `protobuf:"bytes,3,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
+	LabelIds    []string          `protobuf:"bytes,4,rep,name=label_ids,json=labelIds,proto3" json:"label_ids,omitempty"`
+	Kinds       []TransactionKind `protobuf:"varint,5,rep,packed,name=kinds,proto3,enum=ledger.v1.TransactionKind" json:"kinds,omitempty"`
+	NoteQuery   string            `protobuf:"bytes,6,opt,name=note_query,json=noteQuery,proto3" json:"note_query,omitempty"`
+	// The caller's local date; upcoming rows are excluded. Empty defaults to UTC today.
+	Today         string `protobuf:"bytes,7,opt,name=today,proto3" json:"today,omitempty"`
+	PageSize      int32  `protobuf:"varint,8,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string `protobuf:"bytes,9,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchTransactionsRequest) Reset() {
+	*x = SearchTransactionsRequest{}
+	mi := &file_ledger_v1_transaction_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchTransactionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchTransactionsRequest) ProtoMessage() {}
+
+func (x *SearchTransactionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_transaction_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchTransactionsRequest.ProtoReflect.Descriptor instead.
+func (*SearchTransactionsRequest) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SearchTransactionsRequest) GetPeriod() *DateRange {
+	if x != nil {
+		return x.Period
+	}
+	return nil
+}
+
+func (x *SearchTransactionsRequest) GetWalletIds() []string {
+	if x != nil {
+		return x.WalletIds
+	}
+	return nil
+}
+
+func (x *SearchTransactionsRequest) GetCategoryIds() []string {
+	if x != nil {
+		return x.CategoryIds
+	}
+	return nil
+}
+
+func (x *SearchTransactionsRequest) GetLabelIds() []string {
+	if x != nil {
+		return x.LabelIds
+	}
+	return nil
+}
+
+func (x *SearchTransactionsRequest) GetKinds() []TransactionKind {
+	if x != nil {
+		return x.Kinds
+	}
+	return nil
+}
+
+func (x *SearchTransactionsRequest) GetNoteQuery() string {
+	if x != nil {
+		return x.NoteQuery
+	}
+	return ""
+}
+
+func (x *SearchTransactionsRequest) GetToday() string {
+	if x != nil {
+		return x.Today
+	}
+	return ""
+}
+
+func (x *SearchTransactionsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *SearchTransactionsRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+type SearchTransactionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Transactions  []*Transaction         `protobuf:"bytes,1,rep,name=transactions,proto3" json:"transactions,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchTransactionsResponse) Reset() {
+	*x = SearchTransactionsResponse{}
+	mi := &file_ledger_v1_transaction_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchTransactionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchTransactionsResponse) ProtoMessage() {}
+
+func (x *SearchTransactionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_transaction_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchTransactionsResponse.ProtoReflect.Descriptor instead.
+func (*SearchTransactionsResponse) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SearchTransactionsResponse) GetTransactions() []*Transaction {
+	if x != nil {
+		return x.Transactions
+	}
+	return nil
+}
+
+func (x *SearchTransactionsResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
 type ListUpcomingTransactionsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// One wallet's rows, or every non-archived wallet's when empty. Household-wide, a transfer is
@@ -863,7 +1025,7 @@ type ListUpcomingTransactionsRequest struct {
 
 func (x *ListUpcomingTransactionsRequest) Reset() {
 	*x = ListUpcomingTransactionsRequest{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[7]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -875,7 +1037,7 @@ func (x *ListUpcomingTransactionsRequest) String() string {
 func (*ListUpcomingTransactionsRequest) ProtoMessage() {}
 
 func (x *ListUpcomingTransactionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[7]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -888,7 +1050,7 @@ func (x *ListUpcomingTransactionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUpcomingTransactionsRequest.ProtoReflect.Descriptor instead.
 func (*ListUpcomingTransactionsRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{7}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListUpcomingTransactionsRequest) GetWalletId() string {
@@ -922,7 +1084,7 @@ type ListUpcomingTransactionsResponse struct {
 
 func (x *ListUpcomingTransactionsResponse) Reset() {
 	*x = ListUpcomingTransactionsResponse{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[8]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -934,7 +1096,7 @@ func (x *ListUpcomingTransactionsResponse) String() string {
 func (*ListUpcomingTransactionsResponse) ProtoMessage() {}
 
 func (x *ListUpcomingTransactionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[8]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -947,7 +1109,7 @@ func (x *ListUpcomingTransactionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUpcomingTransactionsResponse.ProtoReflect.Descriptor instead.
 func (*ListUpcomingTransactionsResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{8}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListUpcomingTransactionsResponse) GetTransactions() []*Transaction {
@@ -966,7 +1128,7 @@ type GetPeriodSummaryRequest struct {
 
 func (x *GetPeriodSummaryRequest) Reset() {
 	*x = GetPeriodSummaryRequest{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[9]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -978,7 +1140,7 @@ func (x *GetPeriodSummaryRequest) String() string {
 func (*GetPeriodSummaryRequest) ProtoMessage() {}
 
 func (x *GetPeriodSummaryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[9]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -991,7 +1153,7 @@ func (x *GetPeriodSummaryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPeriodSummaryRequest.ProtoReflect.Descriptor instead.
 func (*GetPeriodSummaryRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{9}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetPeriodSummaryRequest) GetFilter() *TransactionFilter {
@@ -1019,7 +1181,7 @@ type GetPeriodSummaryResponse struct {
 
 func (x *GetPeriodSummaryResponse) Reset() {
 	*x = GetPeriodSummaryResponse{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[10]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1031,7 +1193,7 @@ func (x *GetPeriodSummaryResponse) String() string {
 func (*GetPeriodSummaryResponse) ProtoMessage() {}
 
 func (x *GetPeriodSummaryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[10]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1044,7 +1206,7 @@ func (x *GetPeriodSummaryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPeriodSummaryResponse.ProtoReflect.Descriptor instead.
 func (*GetPeriodSummaryResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{10}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetPeriodSummaryResponse) GetCurrency() string {
@@ -1109,7 +1271,7 @@ type CreateTransactionRequest struct {
 
 func (x *CreateTransactionRequest) Reset() {
 	*x = CreateTransactionRequest{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[11]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1121,7 +1283,7 @@ func (x *CreateTransactionRequest) String() string {
 func (*CreateTransactionRequest) ProtoMessage() {}
 
 func (x *CreateTransactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[11]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1134,7 +1296,7 @@ func (x *CreateTransactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTransactionRequest.ProtoReflect.Descriptor instead.
 func (*CreateTransactionRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{11}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CreateTransactionRequest) GetWalletId() string {
@@ -1209,7 +1371,7 @@ type CreateTransactionResponse struct {
 
 func (x *CreateTransactionResponse) Reset() {
 	*x = CreateTransactionResponse{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[12]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1221,7 +1383,7 @@ func (x *CreateTransactionResponse) String() string {
 func (*CreateTransactionResponse) ProtoMessage() {}
 
 func (x *CreateTransactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[12]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1234,7 +1396,7 @@ func (x *CreateTransactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTransactionResponse.ProtoReflect.Descriptor instead.
 func (*CreateTransactionResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{12}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateTransactionResponse) GetTransaction() *Transaction {
@@ -1265,7 +1427,7 @@ type UpdateTransactionRequest struct {
 
 func (x *UpdateTransactionRequest) Reset() {
 	*x = UpdateTransactionRequest{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[13]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1277,7 +1439,7 @@ func (x *UpdateTransactionRequest) String() string {
 func (*UpdateTransactionRequest) ProtoMessage() {}
 
 func (x *UpdateTransactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[13]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1290,7 +1452,7 @@ func (x *UpdateTransactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTransactionRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTransactionRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{13}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *UpdateTransactionRequest) GetId() string {
@@ -1365,7 +1527,7 @@ type UpdateTransactionResponse struct {
 
 func (x *UpdateTransactionResponse) Reset() {
 	*x = UpdateTransactionResponse{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[14]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1377,7 +1539,7 @@ func (x *UpdateTransactionResponse) String() string {
 func (*UpdateTransactionResponse) ProtoMessage() {}
 
 func (x *UpdateTransactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[14]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1390,7 +1552,7 @@ func (x *UpdateTransactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTransactionResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTransactionResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{14}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UpdateTransactionResponse) GetTransaction() *Transaction {
@@ -1413,7 +1575,7 @@ type DeleteTransactionsRequest struct {
 
 func (x *DeleteTransactionsRequest) Reset() {
 	*x = DeleteTransactionsRequest{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[15]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1425,7 +1587,7 @@ func (x *DeleteTransactionsRequest) String() string {
 func (*DeleteTransactionsRequest) ProtoMessage() {}
 
 func (x *DeleteTransactionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[15]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1438,7 +1600,7 @@ func (x *DeleteTransactionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTransactionsRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTransactionsRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{15}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *DeleteTransactionsRequest) GetIds() []string {
@@ -1471,7 +1633,7 @@ type DeleteTransactionsResponse struct {
 
 func (x *DeleteTransactionsResponse) Reset() {
 	*x = DeleteTransactionsResponse{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[16]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1483,7 +1645,7 @@ func (x *DeleteTransactionsResponse) String() string {
 func (*DeleteTransactionsResponse) ProtoMessage() {}
 
 func (x *DeleteTransactionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[16]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1496,7 +1658,7 @@ func (x *DeleteTransactionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTransactionsResponse.ProtoReflect.Descriptor instead.
 func (*DeleteTransactionsResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{16}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DeleteTransactionsResponse) GetDeletedCount() int64 {
@@ -1526,7 +1688,7 @@ type CreateTransferRequest struct {
 
 func (x *CreateTransferRequest) Reset() {
 	*x = CreateTransferRequest{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[17]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1538,7 +1700,7 @@ func (x *CreateTransferRequest) String() string {
 func (*CreateTransferRequest) ProtoMessage() {}
 
 func (x *CreateTransferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[17]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1551,7 +1713,7 @@ func (x *CreateTransferRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTransferRequest.ProtoReflect.Descriptor instead.
 func (*CreateTransferRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{17}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CreateTransferRequest) GetFromWalletId() string {
@@ -1633,7 +1795,7 @@ type CreateTransferResponse struct {
 
 func (x *CreateTransferResponse) Reset() {
 	*x = CreateTransferResponse{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[18]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1645,7 +1807,7 @@ func (x *CreateTransferResponse) String() string {
 func (*CreateTransferResponse) ProtoMessage() {}
 
 func (x *CreateTransferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[18]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1658,7 +1820,7 @@ func (x *CreateTransferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTransferResponse.ProtoReflect.Descriptor instead.
 func (*CreateTransferResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{18}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CreateTransferResponse) GetTransfer() *Transfer {
@@ -1689,7 +1851,7 @@ type UpdateTransferRequest struct {
 
 func (x *UpdateTransferRequest) Reset() {
 	*x = UpdateTransferRequest{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[19]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1701,7 +1863,7 @@ func (x *UpdateTransferRequest) String() string {
 func (*UpdateTransferRequest) ProtoMessage() {}
 
 func (x *UpdateTransferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[19]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1714,7 +1876,7 @@ func (x *UpdateTransferRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTransferRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTransferRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{19}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *UpdateTransferRequest) GetId() string {
@@ -1810,7 +1972,7 @@ type UpdateTransferResponse struct {
 
 func (x *UpdateTransferResponse) Reset() {
 	*x = UpdateTransferResponse{}
-	mi := &file_ledger_v1_transaction_proto_msgTypes[20]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1822,7 +1984,7 @@ func (x *UpdateTransferResponse) String() string {
 func (*UpdateTransferResponse) ProtoMessage() {}
 
 func (x *UpdateTransferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_transaction_proto_msgTypes[20]
+	mi := &file_ledger_v1_transaction_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1835,7 +1997,7 @@ func (x *UpdateTransferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTransferResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTransferResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{20}
+	return file_ledger_v1_transaction_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdateTransferResponse) GetTransfer() *Transfer {
@@ -1919,6 +2081,22 @@ const file_ledger_v1_transaction_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\x03 \x01(\tR\tpageToken\"~\n" +
 	"\x18ListTransactionsResponse\x12:\n" +
+	"\ftransactions\x18\x01 \x03(\v2\x16.ledger.v1.TransactionR\ftransactions\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xcb\x02\n" +
+	"\x19SearchTransactionsRequest\x12,\n" +
+	"\x06period\x18\x01 \x01(\v2\x14.ledger.v1.DateRangeR\x06period\x12\x1d\n" +
+	"\n" +
+	"wallet_ids\x18\x02 \x03(\tR\twalletIds\x12!\n" +
+	"\fcategory_ids\x18\x03 \x03(\tR\vcategoryIds\x12\x1b\n" +
+	"\tlabel_ids\x18\x04 \x03(\tR\blabelIds\x120\n" +
+	"\x05kinds\x18\x05 \x03(\x0e2\x1a.ledger.v1.TransactionKindR\x05kinds\x12\x1d\n" +
+	"\n" +
+	"note_query\x18\x06 \x01(\tR\tnoteQuery\x12\x14\n" +
+	"\x05today\x18\a \x01(\tR\x05today\x12\x1b\n" +
+	"\tpage_size\x18\b \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\t \x01(\tR\tpageToken\"\x80\x01\n" +
+	"\x1aSearchTransactionsResponse\x12:\n" +
 	"\ftransactions\x18\x01 \x03(\v2\x16.ledger.v1.TransactionR\ftransactions\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"s\n" +
 	"\x1fListUpcomingTransactionsRequest\x12\x1b\n" +
@@ -2028,9 +2206,10 @@ const file_ledger_v1_transaction_proto_rawDesc = "" +
 	"\x0fOccurrenceScope\x12 \n" +
 	"\x1cOCCURRENCE_SCOPE_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aOCCURRENCE_SCOPE_ONLY_THIS\x10\x01\x12$\n" +
-	" OCCURRENCE_SCOPE_THIS_AND_FUTURE\x10\x022\x94\x06\n" +
+	" OCCURRENCE_SCOPE_THIS_AND_FUTURE\x10\x022\xf7\x06\n" +
 	"\x12TransactionService\x12[\n" +
-	"\x10ListTransactions\x12\".ledger.v1.ListTransactionsRequest\x1a#.ledger.v1.ListTransactionsResponse\x12s\n" +
+	"\x10ListTransactions\x12\".ledger.v1.ListTransactionsRequest\x1a#.ledger.v1.ListTransactionsResponse\x12a\n" +
+	"\x12SearchTransactions\x12$.ledger.v1.SearchTransactionsRequest\x1a%.ledger.v1.SearchTransactionsResponse\x12s\n" +
 	"\x18ListUpcomingTransactions\x12*.ledger.v1.ListUpcomingTransactionsRequest\x1a+.ledger.v1.ListUpcomingTransactionsResponse\x12[\n" +
 	"\x10GetPeriodSummary\x12\".ledger.v1.GetPeriodSummaryRequest\x1a#.ledger.v1.GetPeriodSummaryResponse\x12^\n" +
 	"\x11CreateTransaction\x12#.ledger.v1.CreateTransactionRequest\x1a$.ledger.v1.CreateTransactionResponse\x12^\n" +
@@ -2054,7 +2233,7 @@ func file_ledger_v1_transaction_proto_rawDescGZIP() []byte {
 }
 
 var file_ledger_v1_transaction_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_ledger_v1_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_ledger_v1_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_ledger_v1_transaction_proto_goTypes = []any{
 	(TransactionKind)(0),                     // 0: ledger.v1.TransactionKind
 	(RecurringFrequency)(0),                  // 1: ledger.v1.RecurringFrequency
@@ -2066,68 +2245,75 @@ var file_ledger_v1_transaction_proto_goTypes = []any{
 	(*TransactionFilter)(nil),                // 7: ledger.v1.TransactionFilter
 	(*ListTransactionsRequest)(nil),          // 8: ledger.v1.ListTransactionsRequest
 	(*ListTransactionsResponse)(nil),         // 9: ledger.v1.ListTransactionsResponse
-	(*ListUpcomingTransactionsRequest)(nil),  // 10: ledger.v1.ListUpcomingTransactionsRequest
-	(*ListUpcomingTransactionsResponse)(nil), // 11: ledger.v1.ListUpcomingTransactionsResponse
-	(*GetPeriodSummaryRequest)(nil),          // 12: ledger.v1.GetPeriodSummaryRequest
-	(*GetPeriodSummaryResponse)(nil),         // 13: ledger.v1.GetPeriodSummaryResponse
-	(*CreateTransactionRequest)(nil),         // 14: ledger.v1.CreateTransactionRequest
-	(*CreateTransactionResponse)(nil),        // 15: ledger.v1.CreateTransactionResponse
-	(*UpdateTransactionRequest)(nil),         // 16: ledger.v1.UpdateTransactionRequest
-	(*UpdateTransactionResponse)(nil),        // 17: ledger.v1.UpdateTransactionResponse
-	(*DeleteTransactionsRequest)(nil),        // 18: ledger.v1.DeleteTransactionsRequest
-	(*DeleteTransactionsResponse)(nil),       // 19: ledger.v1.DeleteTransactionsResponse
-	(*CreateTransferRequest)(nil),            // 20: ledger.v1.CreateTransferRequest
-	(*CreateTransferResponse)(nil),           // 21: ledger.v1.CreateTransferResponse
-	(*UpdateTransferRequest)(nil),            // 22: ledger.v1.UpdateTransferRequest
-	(*UpdateTransferResponse)(nil),           // 23: ledger.v1.UpdateTransferResponse
-	(*timestamppb.Timestamp)(nil),            // 24: google.protobuf.Timestamp
-	(*DateRange)(nil),                        // 25: ledger.v1.DateRange
+	(*SearchTransactionsRequest)(nil),        // 10: ledger.v1.SearchTransactionsRequest
+	(*SearchTransactionsResponse)(nil),       // 11: ledger.v1.SearchTransactionsResponse
+	(*ListUpcomingTransactionsRequest)(nil),  // 12: ledger.v1.ListUpcomingTransactionsRequest
+	(*ListUpcomingTransactionsResponse)(nil), // 13: ledger.v1.ListUpcomingTransactionsResponse
+	(*GetPeriodSummaryRequest)(nil),          // 14: ledger.v1.GetPeriodSummaryRequest
+	(*GetPeriodSummaryResponse)(nil),         // 15: ledger.v1.GetPeriodSummaryResponse
+	(*CreateTransactionRequest)(nil),         // 16: ledger.v1.CreateTransactionRequest
+	(*CreateTransactionResponse)(nil),        // 17: ledger.v1.CreateTransactionResponse
+	(*UpdateTransactionRequest)(nil),         // 18: ledger.v1.UpdateTransactionRequest
+	(*UpdateTransactionResponse)(nil),        // 19: ledger.v1.UpdateTransactionResponse
+	(*DeleteTransactionsRequest)(nil),        // 20: ledger.v1.DeleteTransactionsRequest
+	(*DeleteTransactionsResponse)(nil),       // 21: ledger.v1.DeleteTransactionsResponse
+	(*CreateTransferRequest)(nil),            // 22: ledger.v1.CreateTransferRequest
+	(*CreateTransferResponse)(nil),           // 23: ledger.v1.CreateTransferResponse
+	(*UpdateTransferRequest)(nil),            // 24: ledger.v1.UpdateTransferRequest
+	(*UpdateTransferResponse)(nil),           // 25: ledger.v1.UpdateTransferResponse
+	(*timestamppb.Timestamp)(nil),            // 26: google.protobuf.Timestamp
+	(*DateRange)(nil),                        // 27: ledger.v1.DateRange
 }
 var file_ledger_v1_transaction_proto_depIdxs = []int32{
 	1,  // 0: ledger.v1.Recurrence.frequency:type_name -> ledger.v1.RecurringFrequency
 	0,  // 1: ledger.v1.Transaction.kind:type_name -> ledger.v1.TransactionKind
 	4,  // 2: ledger.v1.Transaction.counterpart:type_name -> ledger.v1.TransferCounterpart
-	24, // 3: ledger.v1.Transaction.created_at:type_name -> google.protobuf.Timestamp
-	24, // 4: ledger.v1.Transaction.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 3: ledger.v1.Transaction.created_at:type_name -> google.protobuf.Timestamp
+	26, // 4: ledger.v1.Transaction.updated_at:type_name -> google.protobuf.Timestamp
 	3,  // 5: ledger.v1.Transaction.recurrence:type_name -> ledger.v1.Recurrence
-	25, // 6: ledger.v1.TransactionFilter.period:type_name -> ledger.v1.DateRange
+	27, // 6: ledger.v1.TransactionFilter.period:type_name -> ledger.v1.DateRange
 	7,  // 7: ledger.v1.ListTransactionsRequest.filter:type_name -> ledger.v1.TransactionFilter
 	5,  // 8: ledger.v1.ListTransactionsResponse.transactions:type_name -> ledger.v1.Transaction
-	5,  // 9: ledger.v1.ListUpcomingTransactionsResponse.transactions:type_name -> ledger.v1.Transaction
-	7,  // 10: ledger.v1.GetPeriodSummaryRequest.filter:type_name -> ledger.v1.TransactionFilter
-	0,  // 11: ledger.v1.CreateTransactionRequest.kind:type_name -> ledger.v1.TransactionKind
-	3,  // 12: ledger.v1.CreateTransactionRequest.repeat:type_name -> ledger.v1.Recurrence
-	5,  // 13: ledger.v1.CreateTransactionResponse.transaction:type_name -> ledger.v1.Transaction
-	2,  // 14: ledger.v1.UpdateTransactionRequest.scope:type_name -> ledger.v1.OccurrenceScope
-	3,  // 15: ledger.v1.UpdateTransactionRequest.repeat:type_name -> ledger.v1.Recurrence
-	5,  // 16: ledger.v1.UpdateTransactionResponse.transaction:type_name -> ledger.v1.Transaction
-	2,  // 17: ledger.v1.DeleteTransactionsRequest.scope:type_name -> ledger.v1.OccurrenceScope
-	3,  // 18: ledger.v1.CreateTransferRequest.repeat:type_name -> ledger.v1.Recurrence
-	6,  // 19: ledger.v1.CreateTransferResponse.transfer:type_name -> ledger.v1.Transfer
-	2,  // 20: ledger.v1.UpdateTransferRequest.scope:type_name -> ledger.v1.OccurrenceScope
-	3,  // 21: ledger.v1.UpdateTransferRequest.repeat:type_name -> ledger.v1.Recurrence
-	6,  // 22: ledger.v1.UpdateTransferResponse.transfer:type_name -> ledger.v1.Transfer
-	8,  // 23: ledger.v1.TransactionService.ListTransactions:input_type -> ledger.v1.ListTransactionsRequest
-	10, // 24: ledger.v1.TransactionService.ListUpcomingTransactions:input_type -> ledger.v1.ListUpcomingTransactionsRequest
-	12, // 25: ledger.v1.TransactionService.GetPeriodSummary:input_type -> ledger.v1.GetPeriodSummaryRequest
-	14, // 26: ledger.v1.TransactionService.CreateTransaction:input_type -> ledger.v1.CreateTransactionRequest
-	16, // 27: ledger.v1.TransactionService.UpdateTransaction:input_type -> ledger.v1.UpdateTransactionRequest
-	18, // 28: ledger.v1.TransactionService.DeleteTransactions:input_type -> ledger.v1.DeleteTransactionsRequest
-	20, // 29: ledger.v1.TransactionService.CreateTransfer:input_type -> ledger.v1.CreateTransferRequest
-	22, // 30: ledger.v1.TransactionService.UpdateTransfer:input_type -> ledger.v1.UpdateTransferRequest
-	9,  // 31: ledger.v1.TransactionService.ListTransactions:output_type -> ledger.v1.ListTransactionsResponse
-	11, // 32: ledger.v1.TransactionService.ListUpcomingTransactions:output_type -> ledger.v1.ListUpcomingTransactionsResponse
-	13, // 33: ledger.v1.TransactionService.GetPeriodSummary:output_type -> ledger.v1.GetPeriodSummaryResponse
-	15, // 34: ledger.v1.TransactionService.CreateTransaction:output_type -> ledger.v1.CreateTransactionResponse
-	17, // 35: ledger.v1.TransactionService.UpdateTransaction:output_type -> ledger.v1.UpdateTransactionResponse
-	19, // 36: ledger.v1.TransactionService.DeleteTransactions:output_type -> ledger.v1.DeleteTransactionsResponse
-	21, // 37: ledger.v1.TransactionService.CreateTransfer:output_type -> ledger.v1.CreateTransferResponse
-	23, // 38: ledger.v1.TransactionService.UpdateTransfer:output_type -> ledger.v1.UpdateTransferResponse
-	31, // [31:39] is the sub-list for method output_type
-	23, // [23:31] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	27, // 9: ledger.v1.SearchTransactionsRequest.period:type_name -> ledger.v1.DateRange
+	0,  // 10: ledger.v1.SearchTransactionsRequest.kinds:type_name -> ledger.v1.TransactionKind
+	5,  // 11: ledger.v1.SearchTransactionsResponse.transactions:type_name -> ledger.v1.Transaction
+	5,  // 12: ledger.v1.ListUpcomingTransactionsResponse.transactions:type_name -> ledger.v1.Transaction
+	7,  // 13: ledger.v1.GetPeriodSummaryRequest.filter:type_name -> ledger.v1.TransactionFilter
+	0,  // 14: ledger.v1.CreateTransactionRequest.kind:type_name -> ledger.v1.TransactionKind
+	3,  // 15: ledger.v1.CreateTransactionRequest.repeat:type_name -> ledger.v1.Recurrence
+	5,  // 16: ledger.v1.CreateTransactionResponse.transaction:type_name -> ledger.v1.Transaction
+	2,  // 17: ledger.v1.UpdateTransactionRequest.scope:type_name -> ledger.v1.OccurrenceScope
+	3,  // 18: ledger.v1.UpdateTransactionRequest.repeat:type_name -> ledger.v1.Recurrence
+	5,  // 19: ledger.v1.UpdateTransactionResponse.transaction:type_name -> ledger.v1.Transaction
+	2,  // 20: ledger.v1.DeleteTransactionsRequest.scope:type_name -> ledger.v1.OccurrenceScope
+	3,  // 21: ledger.v1.CreateTransferRequest.repeat:type_name -> ledger.v1.Recurrence
+	6,  // 22: ledger.v1.CreateTransferResponse.transfer:type_name -> ledger.v1.Transfer
+	2,  // 23: ledger.v1.UpdateTransferRequest.scope:type_name -> ledger.v1.OccurrenceScope
+	3,  // 24: ledger.v1.UpdateTransferRequest.repeat:type_name -> ledger.v1.Recurrence
+	6,  // 25: ledger.v1.UpdateTransferResponse.transfer:type_name -> ledger.v1.Transfer
+	8,  // 26: ledger.v1.TransactionService.ListTransactions:input_type -> ledger.v1.ListTransactionsRequest
+	10, // 27: ledger.v1.TransactionService.SearchTransactions:input_type -> ledger.v1.SearchTransactionsRequest
+	12, // 28: ledger.v1.TransactionService.ListUpcomingTransactions:input_type -> ledger.v1.ListUpcomingTransactionsRequest
+	14, // 29: ledger.v1.TransactionService.GetPeriodSummary:input_type -> ledger.v1.GetPeriodSummaryRequest
+	16, // 30: ledger.v1.TransactionService.CreateTransaction:input_type -> ledger.v1.CreateTransactionRequest
+	18, // 31: ledger.v1.TransactionService.UpdateTransaction:input_type -> ledger.v1.UpdateTransactionRequest
+	20, // 32: ledger.v1.TransactionService.DeleteTransactions:input_type -> ledger.v1.DeleteTransactionsRequest
+	22, // 33: ledger.v1.TransactionService.CreateTransfer:input_type -> ledger.v1.CreateTransferRequest
+	24, // 34: ledger.v1.TransactionService.UpdateTransfer:input_type -> ledger.v1.UpdateTransferRequest
+	9,  // 35: ledger.v1.TransactionService.ListTransactions:output_type -> ledger.v1.ListTransactionsResponse
+	11, // 36: ledger.v1.TransactionService.SearchTransactions:output_type -> ledger.v1.SearchTransactionsResponse
+	13, // 37: ledger.v1.TransactionService.ListUpcomingTransactions:output_type -> ledger.v1.ListUpcomingTransactionsResponse
+	15, // 38: ledger.v1.TransactionService.GetPeriodSummary:output_type -> ledger.v1.GetPeriodSummaryResponse
+	17, // 39: ledger.v1.TransactionService.CreateTransaction:output_type -> ledger.v1.CreateTransactionResponse
+	19, // 40: ledger.v1.TransactionService.UpdateTransaction:output_type -> ledger.v1.UpdateTransactionResponse
+	21, // 41: ledger.v1.TransactionService.DeleteTransactions:output_type -> ledger.v1.DeleteTransactionsResponse
+	23, // 42: ledger.v1.TransactionService.CreateTransfer:output_type -> ledger.v1.CreateTransferResponse
+	25, // 43: ledger.v1.TransactionService.UpdateTransfer:output_type -> ledger.v1.UpdateTransferResponse
+	35, // [35:44] is the sub-list for method output_type
+	26, // [26:35] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_ledger_v1_transaction_proto_init() }
@@ -2143,7 +2329,7 @@ func file_ledger_v1_transaction_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ledger_v1_transaction_proto_rawDesc), len(file_ledger_v1_transaction_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   21,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

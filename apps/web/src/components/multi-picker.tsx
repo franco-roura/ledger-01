@@ -17,6 +17,7 @@ export type MultiOption = { key: string; label: string; icon?: React.ReactNode; 
 
 /** Filter picker: none selected means "all". */
 export function MultiPicker({
+  id,
   options,
   value,
   onChange,
@@ -24,6 +25,7 @@ export function MultiPicker({
   noun,
   searchPlaceholder = "Search…",
 }: {
+  id?: string;
   options: MultiOption[];
   value: string[];
   onChange: (keys: string[]) => void;
@@ -47,6 +49,8 @@ export function MultiPicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
+          type="button"
           variant="secondary"
           size="sm"
           role="combobox"
@@ -85,7 +89,7 @@ export function MultiPicker({
         </Command>
         {value.length > 0 && (
           <div className="border-t border-seam p-2">
-            <Button variant="ghost" size="xs" onClick={() => onChange([])}>
+            <Button type="button" variant="ghost" size="xs" onClick={() => onChange([])}>
               Show {allLabel.toLowerCase()}
             </Button>
           </div>
