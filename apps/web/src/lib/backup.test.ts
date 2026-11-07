@@ -13,6 +13,34 @@ const doc = {
 };
 
 describe("readBackupSummary", () => {
+  test("rejects truncated gzip and JSON values without a backup header", async () => {
+    for (const content of [
+      new Uint8Array([0x1f, 0x8b, 0, 0]),
+      ...["null", "[]", "42", "{}"].map((value) => new TextEncoder().encode(value)),
+    ]) {
+      await expect(readBackupSummary(content)).rejects.toThrow("isn't a Ledger/01 backup");
+    }
+  });
+
+  test("ignores malformed optional metadata and counts only arrays", async () => {
+    const summary = await readBackupSummary(
+      new TextEncoder().encode(
+        JSON.stringify({
+          format: "ledger-01-backup",
+          exported_at: "invalid date",
+          household: { name: 42 },
+          wallets: {},
+          labels: null,
+          budgets: [{}, {}],
+        }),
+      ),
+    );
+    expect(summary.exportedAt).toBeUndefined();
+    expect(summary.household).toBe("");
+    expect(summary.counts.wallets).toBe(0);
+    expect(summary.counts.labels).toBe(0);
+    expect(summary.counts.budgets).toBe(2);
+  });
   test("reads a gzipped backup", async () => {
     const s = await readBackupSummary(new Uint8Array(gzipSync(JSON.stringify(doc))));
     expect(s.household).toBe("Test household");

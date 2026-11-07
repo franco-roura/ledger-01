@@ -139,6 +139,46 @@ tasks:
     cmds:
       - bun test packages apps/web/src {{.CLI_ARGS}}
 
+  test:unit:
+    desc: Unit tests in Go and TypeScript (no database or Docker required)
+    cmds:
+      - task: test:unit:go
+      - task: test:js
+
+  test:unit:go:
+    dir: backend
+    cmds:
+      - go test -short ./... {{.CLI_ARGS}}
+
+  test:integration:
+    desc: All Go tests, including real PostgreSQL and HTTP integration (Docker required)
+    env:
+      CI: "true"
+    cmds:
+      - task: test:go
+
+  test:coverage:
+    desc: Generate Go HTML/profile and TypeScript LCOV coverage reports
+    cmds:
+      - task: test:coverage:go
+      - task: test:coverage:js
+
+  test:coverage:go:
+    dir: backend
+    env:
+      CI: "true"
+    cmds:
+      - mkdir -p ../coverage/go
+      # Instrument application packages even when exercised through HTTP. Generated code and
+      # test infrastructure are excluded from this measurement.
+      - go test -coverpkg=./internal/auth,./internal/config,./internal/db,./internal/importer/...,./internal/ledger,./internal/mcp,./internal/money,./internal/oauth,./internal/rpc,./internal/server -coverprofile=../coverage/go/coverage.out ./...
+      - go tool cover -func=../coverage/go/coverage.out
+      - go tool cover -html=../coverage/go/coverage.out -o ../coverage/go/index.html
+
+  test:coverage:js:
+    cmds:
+      - bun test packages apps/web/src --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage/js
+
   e2e:
     desc: Playwright end-to-end tests (starts the API and web app)
     dir: apps/web

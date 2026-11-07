@@ -11,6 +11,8 @@ const apiEnv = {
     process.env.E2E_EMAIL ?? "e2e@example.com",
     "e2e-backup-desktop@example.com",
     "e2e-backup-mobile@example.com",
+    "e2e-management-desktop@example.com",
+    "e2e-management-mobile@example.com",
     // households.spec.ts: an owner and a partner per project.
     ...["desktop", "mobile"].flatMap((p) => [
       `e2e-hh-owner-${p}@example.com`,
@@ -23,7 +25,7 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? "github" : "list",
+  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   // The Next dev server compiles each route on its first visit, which can take longer than the
   // defaults (5 s per assertion, 30 s per test) on a cold start. CI always starts cold.
   timeout: 120_000,

@@ -2,6 +2,36 @@ import { describe, expect, test } from "bun:test";
 import { amountBound, parseReportState, reportQuery } from "./report-state";
 
 describe("report state", () => {
+  test("shared report links round trip all explicit filters and encode note text", () => {
+    const params = new URLSearchParams("from=2026-10-01&to=2026-10-31&currency=UYU&bucket=week");
+    const state = {
+      ...parseReportState(params, "USD"),
+      walletIds: ["w1", "w2"],
+      categoryIds: ["c1"],
+      note: "coffee & lunch + tips",
+      min: "0",
+      max: "250.50",
+    };
+    const query = reportQuery(state, params, false);
+    expect(parseReportState(new URLSearchParams(query.toString()), "USD")).toEqual(state);
+    expect(params.has("wallets")).toBe(false);
+  });
+
+  test("cleared filters are removed from shared links", () => {
+    const params = new URLSearchParams(
+      "from=2026-10-01&to=2026-10-31&wallets=w1&categories=c1&note=test&min=1&max=2",
+    );
+    const state = {
+      ...parseReportState(params, "USD"),
+      walletIds: [],
+      categoryIds: [],
+      note: "  ",
+      min: "",
+      max: "",
+    };
+    expect(reportQuery(state, params, false).toString()).toBe("from=2026-10-01&to=2026-10-31");
+    expect(amountBound("0", 2)).toBe(0n);
+  });
   test("reads filters from the URL, with the default currency", () => {
     const s = parseReportState(
       new URLSearchParams(
