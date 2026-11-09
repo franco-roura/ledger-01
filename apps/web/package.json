@@ -16,7 +16,7 @@
     "@connectrpc/connect-node": "2.3.0",
     "@connectrpc/connect-query": "2.3.1",
     "@connectrpc/connect-web": "2.3.0",
-    "@hookform/resolvers": "6.0.2",
+    "@hookform/resolvers": "7.0.3",
     "@ledger-01/api": "workspace:*",
     "@ledger-01/ui": "workspace:*",
     "@tanstack/react-query": "5.105.0",
