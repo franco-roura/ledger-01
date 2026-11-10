@@ -404,6 +404,25 @@ func (q *Queries) ListImportCategoryRules(ctx context.Context, householdID uuid.
 	return items, nil
 }
 
+const lockImportBatch = `-- name: LockImportBatch :one
+SELECT id FROM import_batches
+WHERE id = $1 AND household_id = $2 AND expires_at > now()
+FOR UPDATE
+`
+
+type LockImportBatchParams struct {
+	ID          uuid.UUID
+	HouseholdID uuid.UUID
+}
+
+// Serialize commits of a batch until the transaction consumes it or rolls back.
+func (q *Queries) LockImportBatch(ctx context.Context, arg LockImportBatchParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, lockImportBatch, arg.ID, arg.HouseholdID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const reassignImportRuleCategories = `-- name: ReassignImportRuleCategories :exec
 UPDATE import_category_rules
 SET category_id = $1
