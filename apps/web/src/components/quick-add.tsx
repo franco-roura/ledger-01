@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@ledger-01/ui/components/button";
+import { Button } from "@franco_roura/module-01";
 import { Plus } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

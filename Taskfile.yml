@@ -196,9 +196,3 @@ tasks:
     dir: apps/web
     cmds:
       - bun run build
-
-  ds:bundle:
-    desc: Build packages/ui as a classic script for the design-system artifact
-    dir: packages/ui
-    cmds:
-      - bun run build:artifact

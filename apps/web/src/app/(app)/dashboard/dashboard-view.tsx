@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@connectrpc/connect-query";
+import { SectionHeader } from "@franco_roura/module-01";
+import { Amount } from "@franco_roura/module-01/finance";
 import { DashboardService } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { SectionHeader } from "@ledger-01/ui/components/hud";
 import { Wallet as WalletIcon } from "lucide-react";
 import Link from "next/link";
 import { QuickAdd } from "@/components/quick-add";

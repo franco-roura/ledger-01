@@ -1,21 +1,21 @@
 "use client";
 
 import { useMutation, useQuery } from "@connectrpc/connect-query";
-import { CategoryKind, ImportService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { Field } from "@ledger-01/ui/components/field";
-import { Input } from "@ledger-01/ui/components/input";
-import { Panel } from "@ledger-01/ui/components/panel";
 import {
+  Button,
+  Field,
+  fault,
+  Input,
+  Panel,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@ledger-01/ui/components/select";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { fault } from "@ledger-01/ui/lib/fault";
+  Skeleton,
+} from "@franco_roura/module-01";
+import { CategoryIcon } from "@franco_roura/module-01/finance";
+import { CategoryKind, ImportService } from "@ledger-01/api";
 import { Plus, Trash2 } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";

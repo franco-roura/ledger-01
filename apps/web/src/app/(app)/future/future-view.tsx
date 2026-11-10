@@ -2,19 +2,22 @@
 
 import { useQuery } from "@connectrpc/connect-query";
 import {
+  Button,
+  Panel,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  SectionHeader,
+  Skeleton,
+} from "@franco_roura/module-01";
+import { Amount, CategoryIcon } from "@franco_roura/module-01/finance";
+import {
   type Member,
   type Transaction,
   TransactionKind,
   TransactionService,
   WalletService,
 } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { SectionHeader } from "@ledger-01/ui/components/hud";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Popover, PopoverContent, PopoverTrigger } from "@ledger-01/ui/components/popover";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
 import { Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

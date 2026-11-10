@@ -72,7 +72,6 @@ The end-to-end tests sign in the same way.
 proto/          API contract (ledger.v1)
 backend/        Go module: cmd/{api,lambda,migrate,jobs}, internal/*, gen/
 packages/api/   Generated TypeScript client
-packages/ui/    Design-system component kit (shadcn + Module/01 tokens)
 apps/web/       Next.js app
 docs/           These pages, the brand images and the screenshots
 sst.config.ts   AWS deployment (SST)

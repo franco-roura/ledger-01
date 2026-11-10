@@ -1,12 +1,15 @@
 "use client";
 
+import {
+  Button,
+  Checkbox,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@franco_roura/module-01";
+import { CategoryIcon, parseAmount } from "@franco_roura/module-01/finance";
 import { type Category, CategoryKind, type Member } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { Label } from "@ledger-01/ui/components/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@ledger-01/ui/components/popover";
-import { parseAmount } from "@ledger-01/ui/lib/money";
 import { SlidersHorizontal } from "lucide-react";
 import { AmountRange } from "@/components/amount-range";
 import { MemberAvatar } from "@/components/member-avatar";

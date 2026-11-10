@@ -2,7 +2,6 @@
 
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
-import { HouseholdService, type Member } from "@ledger-01/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,14 +11,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@ledger-01/ui/components/alert-dialog";
-import { Badge } from "@ledger-01/ui/components/badge";
-import { Button } from "@ledger-01/ui/components/button";
-import { Field } from "@ledger-01/ui/components/field";
-import { Input } from "@ledger-01/ui/components/input";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { fault } from "@ledger-01/ui/lib/fault";
+  Badge,
+  Button,
+  Field,
+  fault,
+  Input,
+  Panel,
+  Skeleton,
+} from "@franco_roura/module-01";
+import { HouseholdService, type Member } from "@ledger-01/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogOut, UserPlus, UserX, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";

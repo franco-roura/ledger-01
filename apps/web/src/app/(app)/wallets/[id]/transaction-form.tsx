@@ -3,6 +3,34 @@
 import { Code, ConnectError } from "@connectrpc/connect";
 import { useMutation } from "@connectrpc/connect-query";
 import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Field,
+  FieldError,
+  fault,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Label as UILabel,
+} from "@franco_roura/module-01";
+import {
+  editFx,
+  FxConverter,
+  type FxState,
+  formatAmountInput,
+  fxResult,
+  initialFxState,
+  MoneyInput,
+  parseAmount,
+} from "@franco_roura/module-01/finance";
+import {
   type Category,
   CategoryKind,
   type Label,
@@ -13,25 +41,6 @@ import {
   TransactionService,
   type Wallet,
 } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { DatePicker } from "@ledger-01/ui/components/date-picker";
-import { Field, FieldError } from "@ledger-01/ui/components/field";
-import { FxConverter } from "@ledger-01/ui/components/fx-converter";
-import { Input } from "@ledger-01/ui/components/input";
-import { Label as UILabel } from "@ledger-01/ui/components/label";
-import { MoneyInput } from "@ledger-01/ui/components/money-input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ledger-01/ui/components/select";
-import { Tabs, TabsList, TabsTrigger } from "@ledger-01/ui/components/tabs";
-import { fault } from "@ledger-01/ui/lib/fault";
-import { editFx, type FxState, fxResult, initialFxState } from "@ledger-01/ui/lib/fx";
-import { formatAmountInput, parseAmount } from "@ledger-01/ui/lib/money";
 import { Trash2 } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";

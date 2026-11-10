@@ -1,7 +1,6 @@
 import { Code, ConnectError } from "@connectrpc/connect";
+import { HudLabel, Panel } from "@franco_roura/module-01";
 import { OAuthService } from "@ledger-01/api";
-import { HudLabel } from "@ledger-01/ui/components/hud";
-import { Panel } from "@ledger-01/ui/components/panel";
 import type { Metadata } from "next";
 import { ApiProvider } from "@/lib/api/providers";
 import { orLogin, serverClient } from "@/lib/api/server";

@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation } from "@connectrpc/connect-query";
+import { Button } from "@franco_roura/module-01";
 import { OAuthService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
 import { Check, X } from "lucide-react";
 import { useState } from "react";
 

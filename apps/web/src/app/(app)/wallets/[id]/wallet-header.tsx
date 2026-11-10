@@ -1,10 +1,7 @@
 "use client";
 
+import { Button, cn, HudLabel, Skeleton } from "@franco_roura/module-01";
 import type { Wallet } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { HudLabel } from "@ledger-01/ui/components/hud";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { cn } from "@ledger-01/ui/lib/utils";
 import { Settings, Upload } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

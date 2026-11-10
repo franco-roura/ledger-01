@@ -1,16 +1,16 @@
 "use client";
 
-import { type Transaction, TransactionKind, type Wallet } from "@ledger-01/api";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@ledger-01/ui/components/sheet";
+  useMediaQuery,
+} from "@franco_roura/module-01";
+import { type Transaction, TransactionKind, type Wallet } from "@ledger-01/api";
 import { TransactionForm } from "@/app/(app)/wallets/[id]/transaction-form";
 import { useCategories, useCurrencies, useLabels, useWallets } from "@/lib/api/hooks";
-import { useMediaQuery } from "@/lib/use-media-query";
 
 /**
  * The new/edit transaction form in a sheet: on the right on desktop, a bottom sheet capped below
