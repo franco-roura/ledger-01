@@ -12,8 +12,6 @@
       "!backend",
       "!vault",
       "!.changeset",
-      "!**/tokens.generated.css",
-      "!packages/ui/artifact",
       "!**/*.tsbuildinfo",
       "!**/next-env.d.ts"
     ]
@@ -36,16 +34,5 @@
       "recommended": true
     }
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
-  "overrides": [
-    {
-      "includes": ["packages/ui/src/components/chart.tsx"],
-      "linter": {
-        "rules": {
-          "security": { "noDangerouslySetInnerHtml": "off" },
-          "suspicious": { "noArrayIndexKey": "off" }
-        }
-      }
-    }
-  ]
+  "assist": { "actions": { "source": { "organizeImports": "on" } } }
 }

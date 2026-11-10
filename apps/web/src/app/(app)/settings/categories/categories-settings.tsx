@@ -1,27 +1,28 @@
 "use client";
 
 import { useMutation } from "@connectrpc/connect-query";
-import { type Category, CategoryKind, CategoryService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
 import {
+  Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@ledger-01/ui/components/dialog";
-import { Field } from "@ledger-01/ui/components/field";
-import { HudLabel } from "@ledger-01/ui/components/hud";
-import { Input } from "@ledger-01/ui/components/input";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Tabs, TabsList, TabsTrigger } from "@ledger-01/ui/components/tabs";
+  Field,
+  HudLabel,
+  Input,
+  Panel,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@franco_roura/module-01";
+import { CategoryIcon, ColorPicker, IconPicker } from "@franco_roura/module-01/finance";
+import { type Category, CategoryKind, CategoryService } from "@ledger-01/api";
 import { Archive, ArchiveRestore, Merge, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ColorPicker, IconPicker } from "@/components/appearance-pickers";
 import { CategoryPicker } from "@/components/category-picker";
 import { useCategories } from "@/lib/api/hooks";
 

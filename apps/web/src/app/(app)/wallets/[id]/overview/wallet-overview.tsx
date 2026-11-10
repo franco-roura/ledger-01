@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery } from "@connectrpc/connect-query";
+import { Panel } from "@franco_roura/module-01";
 import { DashboardService, WalletService } from "@ledger-01/api";
-import { Panel } from "@ledger-01/ui/components/panel";
 import Link from "next/link";
 import { DashboardBody } from "@/app/(app)/dashboard/dashboard-body";
 import { ReportFilters, useReportState } from "@/app/(app)/dashboard/report-filters";

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@ledger-01/ui/lib/utils";
+import { cn } from "@franco_roura/module-01";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

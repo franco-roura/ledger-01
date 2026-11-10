@@ -2,12 +2,6 @@
 
 import { useInfiniteQuery, useMutation, useQuery } from "@connectrpc/connect-query";
 import {
-  OccurrenceScope,
-  type Transaction,
-  TransactionService,
-  WalletService,
-} from "@ledger-01/api";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -16,11 +10,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@ledger-01/ui/components/alert-dialog";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { Button } from "@ledger-01/ui/components/button";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
+  Button,
+  Panel,
+  Skeleton,
+} from "@franco_roura/module-01";
+import { Amount } from "@franco_roura/module-01/finance";
+import {
+  OccurrenceScope,
+  type Transaction,
+  TransactionService,
+  WalletService,
+} from "@ledger-01/api";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

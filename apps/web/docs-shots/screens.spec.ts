@@ -4,6 +4,7 @@
 // session works on the web server too, whether `task dev` started it or this run did.
 import { readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import {
@@ -22,9 +23,17 @@ const statement = fileURLToPath(
   new URL("../../../backend/internal/importer/testdata/northbank.csv", import.meta.url),
 );
 const tokens = JSON.parse(
-  readFileSync(new URL("../../../packages/ui/tokens/tokens.json", import.meta.url), "utf8"),
+  readFileSync(
+    createRequire(import.meta.url).resolve("@franco_roura/module-01/tokens.json"),
+    "utf8",
+  ),
 ) as { color: { tokens: { name: string; value: string }[] } };
-const color = (name: string) => tokens.color.tokens.find((t) => t.name === name)?.value ?? "";
+// Semantic colors may alias a scale step ("{graphite-50}"); follow the alias to its value.
+const color = (name: string): string => {
+  const value = tokens.color.tokens.find((t) => t.name === name)?.value ?? "";
+  const alias = /^\{(.+)\}$/.exec(value);
+  return alias?.[1] ? color(alias[1]) : value;
+};
 
 const DOCS_EMAIL = "docs@example.com";
 const DOCS_API = "http://127.0.0.1:8081";

@@ -1,13 +1,10 @@
 "use client";
 
 import { useQuery } from "@connectrpc/connect-query";
+import { HudLabel, Panel, Skeleton } from "@franco_roura/module-01";
+import { FlowChart } from "@franco_roura/module-01/charts";
+import { Amount, CategoryIcon, ColorDot } from "@franco_roura/module-01/finance";
 import { CategoryKind, DashboardService, TransactionKind } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { CategoryIcon, ColorDot } from "@ledger-01/ui/components/category-icon";
-import { FlowChart } from "@ledger-01/ui/components/charts";
-import { HudLabel } from "@ledger-01/ui/components/hud";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
 import Link from "next/link";
 import {
   useBaseCurrency,

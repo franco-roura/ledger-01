@@ -18,7 +18,6 @@ app, shared UI kit, protobuf contract. See README.md for setup.
   - `internal/db/migrations` goose SQL, `internal/db/queries` sqlc SQL, `internal/db/dbq` generated (sqlc)
   - `gen/` generated protobuf + Connect code
 - `packages/api` — generated TS client (`src/gen`) + transports
-- `packages/ui` — component kit: shadcn components themed with Module/01 tokens
 - `apps/web` — Next.js App Router app (SSR), Playwright tests in `e2e/`
 - `sst.config.ts` — AWS deployment (SST 4; Go functions ship prebuilt from `task build:lambda`),
   deployed by hand from `.github/workflows/deploy.yml`; `infra/` holds that workflow's AWS role
@@ -45,15 +44,15 @@ app, shared UI kit, protobuf contract. See README.md for setup.
   (`internal/config`), unary RPCs only (API Gateway buffers responses), no background goroutines in
   the API process (scheduled work goes in `cmd/jobs`), migrations only via `cmd/migrate`. Only the
   `cmd/lambda`, `cmd/migrate` and `cmd/jobs` entrypoints may import AWS packages.
-- **Styling only through `packages/ui` tokens** (Tailwind theme / CSS variables generated from
-  `packages/ui/tokens/tokens.json`). No raw hex values in app code. Icons: Lucide, `strokeWidth={1.25}`.
+- **Styling only through Module/01 tokens** (the Tailwind theme / CSS variables from
+  `@franco_roura/module-01/theme.css`). No raw hex values in app code. Icons: Lucide, `strokeWidth={1.25}`.
   Light theme only. Text on `signal` orange is always `ink`, never white.
 - **Forms flow by themselves** when built from kit parts: `Dialog`/`Sheet` focus the first field on
   open (and open it if it is an empty `Combobox`); `Select`, `Combobox` and `DatePicker` move focus to the next field after a pick (`MultiCombobox` stays open while toggling); Tab follows
   DOM order. So lay fields out in fill order, use kit controls for choices (never a hand-rolled
   Popover picker), don't add `autoFocus` inside dialogs, and validate with `fault(id)` + the
   Field's `error`. Keep phone input text at 16px or more, or mobile browsers zoom in on focus. Helpers:
-  `packages/ui/src/lib/form-flow.ts`, `lib/fault.ts`.
+  `flowFields`, `focusNextField` and `fault` from `@franco_roura/module-01`.
 - UI copy is English, sentence case, plain words. HUD codes (`W-01`, `S-02`) are decoration, not headings.
 - **Today comes from the client.** Rows dated after the caller's `today` are upcoming (recurring
   occurrences are pre-created as real rows): they never count in balances, reports, budgets or rates,
@@ -68,8 +67,9 @@ app, shared UI kit, protobuf contract. See README.md for setup.
 
 ## Design system
 
-The UI follows the **Module/01** design system. Its source tokens are vendored in
-`packages/ui/tokens/tokens.json` (run `bun run --cwd packages/ui tokens` after editing). When you add a
-token or component to `packages/ui`, document it in the design-system artifact in the same change
-(maintainers only): `task ds:bundle` rebuilds `packages/ui/artifact/project/` (bundle, styles, types,
-tokens); component guidelines and previews live next to it under `components/<Name>/`.
+The UI is the **Module/01** kit, installed from npm as `@franco_roura/module-01` (its own repo,
+github.com/franco-roura/module-01). Import from the entry points: `@franco_roura/module-01` (kit,
+`cn`, form flow), `/finance` (amounts, money input, FX converter, budget meter, category icons and
+the money/fx helpers), `/charts` (needs `recharts`). The package ships `tokens/tokens.json` (with a
+usage note per token) and a guideline per component in `guidelines/`. Kit or token changes go
+upstream; pick them up here by bumping the pinned version.

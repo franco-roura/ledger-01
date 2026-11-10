@@ -1,7 +1,7 @@
 "use client";
 
+import { Combobox } from "@franco_roura/module-01";
 import type { Currency } from "@ledger-01/api";
-import { Combobox } from "@ledger-01/ui/components/combobox";
 import { useCurrencies } from "@/lib/api/hooks";
 
 const COMMON = ["USD", "EUR", "UYU", "ARS", "BRL", "GBP", "MXN", "CAD"];

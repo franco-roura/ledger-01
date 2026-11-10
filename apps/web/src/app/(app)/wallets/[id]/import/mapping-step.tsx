@@ -2,6 +2,21 @@
 
 import { useQuery } from "@connectrpc/connect-query";
 import {
+  Button,
+  Checkbox,
+  Field,
+  fault,
+  Label,
+  Panel,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Skeleton,
+} from "@franco_roura/module-01";
+import { Amount } from "@franco_roura/module-01/finance";
+import {
   DecimalSeparator,
   type ImportBank,
   type ImportMapping,
@@ -10,21 +25,6 @@ import {
   TransactionKind,
   type UploadImportFileResponse,
 } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { Button } from "@ledger-01/ui/components/button";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { Field } from "@ledger-01/ui/components/field";
-import { Label } from "@ledger-01/ui/components/label";
-import { Panel } from "@ledger-01/ui/components/panel";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ledger-01/ui/components/select";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { fault } from "@ledger-01/ui/lib/fault";
 import { useId, useState } from "react";
 import { useCurrencies } from "@/lib/api/hooks";
 import {

@@ -1,12 +1,9 @@
 "use client";
 
+import { HudLabel, Panel, Skeleton } from "@franco_roura/module-01";
+import { BalanceChart, DonutChart, FlowChart } from "@franco_roura/module-01/charts";
+import { Amount, CategoryIcon } from "@franco_roura/module-01/finance";
 import type { CategoryTotal, GetDashboardResponse } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { BalanceChart, DonutChart, FlowChart } from "@ledger-01/ui/components/charts";
-import { HudLabel } from "@ledger-01/ui/components/hud";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
 import Link from "next/link";
 import { useCategories, useCurrencies } from "@/lib/api/hooks";
 import { type BucketName, bucketLabels } from "@/lib/buckets";

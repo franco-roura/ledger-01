@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery } from "@connectrpc/connect-query";
-import { type BudgetProgress, BudgetService, BudgetState } from "@ledger-01/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,18 +10,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@ledger-01/ui/components/alert-dialog";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { BudgetMeter } from "@ledger-01/ui/components/budget-meter";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { DonutChart } from "@ledger-01/ui/components/charts";
-import { HudLabel } from "@ledger-01/ui/components/hud";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { categoryColors } from "@ledger-01/ui/lib/category-icons";
-import { formatMoney } from "@ledger-01/ui/lib/money";
-import { cn } from "@ledger-01/ui/lib/utils";
+  Button,
+  cn,
+  HudLabel,
+  Panel,
+  Skeleton,
+} from "@franco_roura/module-01";
+import { DonutChart } from "@franco_roura/module-01/charts";
+import {
+  Amount,
+  BudgetMeter,
+  CategoryIcon,
+  categoryColors,
+  formatMoney,
+} from "@franco_roura/module-01/finance";
+import { type BudgetProgress, BudgetService, BudgetState } from "@ledger-01/api";
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

@@ -3,6 +3,27 @@
 import { Code, ConnectError } from "@connectrpc/connect";
 import { useMutation, useQuery } from "@connectrpc/connect-query";
 import {
+  Badge,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Field,
+  FieldError,
+  fault,
+  Input,
+  Label,
+  Panel,
+  Skeleton,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@franco_roura/module-01";
+import { Amount, formatMoney } from "@franco_roura/module-01/finance";
+import {
   CategoryKind,
   type ImportMapping,
   type ImportRow,
@@ -10,26 +31,6 @@ import {
   TransactionKind,
   type Wallet,
 } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { Badge } from "@ledger-01/ui/components/badge";
-import { Button } from "@ledger-01/ui/components/button";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@ledger-01/ui/components/dialog";
-import { Field, FieldError } from "@ledger-01/ui/components/field";
-import { Input } from "@ledger-01/ui/components/input";
-import { Label } from "@ledger-01/ui/components/label";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@ledger-01/ui/components/toggle-group";
-import { fault } from "@ledger-01/ui/lib/fault";
-import { formatMoney } from "@ledger-01/ui/lib/money";
 import { WandSparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";

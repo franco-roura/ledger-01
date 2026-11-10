@@ -1,7 +1,12 @@
-import { buttonVariants } from "@ledger-01/ui/components/button";
-import { Grill, HudLabel, StatusLed, TickRuler } from "@ledger-01/ui/components/hud";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { cn } from "@ledger-01/ui/lib/utils";
+import {
+  buttonVariants,
+  cn,
+  Grill,
+  HudLabel,
+  Panel,
+  StatusLed,
+  TickRuler,
+} from "@franco_roura/module-01";
 import type { Metadata } from "next";
 import { InstallSuggestion } from "./install-suggestion";
 

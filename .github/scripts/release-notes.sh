@@ -31,7 +31,7 @@ section() {
 
 names=()
 bodies=()
-for entry in "apps/web:App" "backend:API" "packages/ui:UI kit" "packages/api:API client"; do
+for entry in "apps/web:App" "backend:API" "packages/api:API client"; do
   f="${entry%%:*}/CHANGELOG.md"
   [ -f "$f" ] || continue
   body=$(section "$f")

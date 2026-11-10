@@ -53,7 +53,8 @@ You don't edit versions or changelogs by hand. The Release workflow collects pen
   - it's stateless and reads its config only from environment variables;
   - every RPC is unary, and there are no background goroutines;
   - scheduled work lives in `cmd/jobs`.
-- **The UI is styled only through `packages/ui` tokens**, and forms are built from the kit's parts.
+- **The UI is styled only through Module/01 tokens** (`@franco_roura/module-01`), and forms are built
+  from the kit's parts.
   Copy is English, in sentence case.
 - **Tests, fixtures and docs use made-up data:** banks, people, merchants and amounts. Never copy real
   statement lines.

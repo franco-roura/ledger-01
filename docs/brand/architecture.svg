@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1040" width="1600" height="1040">
   <title>Ledger/01 deployment map with monthly costs</title>
-  <!-- Ledger/01 deployment map (sst.config.ts). Colors are packages/ui tokens; logos are Simple Icons (CC0)
+  <!-- Ledger/01 deployment map (sst.config.ts). Colors are Module/01 tokens; logos are Simple Icons (CC0)
        and Lucide (ISC). Render with `task docs:render`. -->
   <defs>
     <style>
