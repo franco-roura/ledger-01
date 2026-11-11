@@ -121,6 +121,12 @@ func dbErr(err error, what string) error {
 		case "23514": // check_violation
 			return invalid(what, "violates constraint %s", pg.ConstraintName)
 		case "23503": // foreign_key_violation
+			switch pg.ConstraintName {
+			case "budget_wallets_wallet_id_fkey":
+				return conflict("wallet is selected by a budget; update the budget before deleting it")
+			case "budget_categories_category_id_fkey":
+				return conflict("category is selected by a budget; choose a replacement or update the budget before deleting it")
+			}
 			return invalid(what, "references something that doesn't exist")
 		}
 	}
