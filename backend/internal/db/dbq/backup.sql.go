@@ -65,18 +65,20 @@ func (q *Queries) BackupBudgetWallets(ctx context.Context, householdID uuid.UUID
 }
 
 const backupBudgets = `-- name: BackupBudgets :many
-SELECT id, name, amount_minor, currency, repeat, start_date, end_date FROM budgets
+SELECT id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories FROM budgets
 WHERE household_id = $1 ORDER BY created_at, id
 `
 
 type BackupBudgetsRow struct {
-	ID          uuid.UUID
-	Name        string
-	AmountMinor int64
-	Currency    string
-	Repeat      BudgetRepeat
-	StartDate   time.Time
-	EndDate     *time.Time
+	ID            uuid.UUID
+	Name          string
+	AmountMinor   int64
+	Currency      string
+	Repeat        BudgetRepeat
+	StartDate     time.Time
+	EndDate       *time.Time
+	AllWallets    bool
+	AllCategories bool
 }
 
 func (q *Queries) BackupBudgets(ctx context.Context, householdID uuid.UUID) ([]BackupBudgetsRow, error) {
@@ -96,6 +98,8 @@ func (q *Queries) BackupBudgets(ctx context.Context, householdID uuid.UUID) ([]B
 			&i.Repeat,
 			&i.StartDate,
 			&i.EndDate,
+			&i.AllWallets,
+			&i.AllCategories,
 		); err != nil {
 			return nil, err
 		}
@@ -748,19 +752,21 @@ func (q *Queries) ExportTransactionRows(ctx context.Context, arg ExportTransacti
 }
 
 const restoreBudget = `-- name: RestoreBudget :exec
-INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
 type RestoreBudgetParams struct {
-	ID          uuid.UUID
-	HouseholdID uuid.UUID
-	Name        string
-	AmountMinor int64
-	Currency    string
-	Repeat      BudgetRepeat
-	StartDate   time.Time
-	EndDate     *time.Time
+	ID            uuid.UUID
+	HouseholdID   uuid.UUID
+	Name          string
+	AmountMinor   int64
+	Currency      string
+	Repeat        BudgetRepeat
+	StartDate     time.Time
+	EndDate       *time.Time
+	AllWallets    bool
+	AllCategories bool
 }
 
 func (q *Queries) RestoreBudget(ctx context.Context, arg RestoreBudgetParams) error {
@@ -773,6 +779,8 @@ func (q *Queries) RestoreBudget(ctx context.Context, arg RestoreBudgetParams) er
 		arg.Repeat,
 		arg.StartDate,
 		arg.EndDate,
+		arg.AllWallets,
+		arg.AllCategories,
 	)
 	return err
 }

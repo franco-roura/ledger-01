@@ -142,15 +142,17 @@ type BackupTransaction struct {
 }
 
 type BackupBudget struct {
-	ID          uuid.UUID   `json:"id"`
-	Name        string      `json:"name"`
-	AmountMinor int64       `json:"amount_minor"`
-	Currency    string      `json:"currency"`
-	Repeat      string      `json:"repeat"`
-	StartDate   string      `json:"start_date"`
-	EndDate     string      `json:"end_date,omitempty"`
-	WalletIDs   []uuid.UUID `json:"wallet_ids,omitempty"`
-	CategoryIDs []uuid.UUID `json:"category_ids,omitempty"`
+	ID            uuid.UUID   `json:"id"`
+	Name          string      `json:"name"`
+	AmountMinor   int64       `json:"amount_minor"`
+	Currency      string      `json:"currency"`
+	Repeat        string      `json:"repeat"`
+	StartDate     string      `json:"start_date"`
+	EndDate       string      `json:"end_date,omitempty"`
+	WalletIDs     []uuid.UUID `json:"wallet_ids,omitempty"`
+	CategoryIDs   []uuid.UUID `json:"category_ids,omitempty"`
+	AllWallets    *bool       `json:"all_wallets,omitempty"`
+	AllCategories *bool       `json:"all_categories,omitempty"`
 }
 
 type BackupImportProfile struct {
@@ -332,7 +334,8 @@ func (s *Service) ExportBackup(ctx context.Context, a Actor) (*Backup, error) {
 	for _, bu := range budgets {
 		b.Budgets = append(b.Budgets, BackupBudget{ID: bu.ID, Name: bu.Name, AmountMinor: bu.AmountMinor,
 			Currency: strings.TrimSpace(bu.Currency), Repeat: string(bu.Repeat), StartDate: money.FormatDate(bu.StartDate),
-			EndDate: optDate(bu.EndDate), WalletIDs: budgetWallets[bu.ID], CategoryIDs: budgetCats[bu.ID]})
+			EndDate: optDate(bu.EndDate), WalletIDs: budgetWallets[bu.ID], CategoryIDs: budgetCats[bu.ID],
+			AllWallets: &bu.AllWallets, AllCategories: &bu.AllCategories})
 	}
 
 	profiles, err := q.BackupImportProfiles(ctx, h)
@@ -765,7 +768,8 @@ func restoreBackup(ctx context.Context, q *dbq.Queries, a Actor, b *Backup, curr
 			return err
 		}
 		if err := q.RestoreBudget(ctx, dbq.RestoreBudgetParams{ID: id, HouseholdID: h, Name: bu.Name, AmountMinor: bu.AmountMinor,
-			Currency: cur, Repeat: dbq.BudgetRepeat(bu.Repeat), StartDate: start, EndDate: end}); err != nil {
+			Currency: cur, Repeat: dbq.BudgetRepeat(bu.Repeat), StartDate: start, EndDate: end,
+			AllWallets: budgetAll(bu.AllWallets, bu.WalletIDs), AllCategories: budgetAll(bu.AllCategories, bu.CategoryIDs)}); err != nil {
 			return err
 		}
 		ws, err := wallets.all(bu.WalletIDs)

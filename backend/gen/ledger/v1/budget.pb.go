@@ -148,11 +148,12 @@ type Budget struct {
 	Repeat      BudgetRepeat           `protobuf:"varint,5,opt,name=repeat,proto3,enum=ledger.v1.BudgetRepeat" json:"repeat,omitempty"`
 	StartDate   string                 `protobuf:"bytes,6,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
 	// Only for BUDGET_REPEAT_ONCE.
-	EndDate string `protobuf:"bytes,7,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
-	// Empty means every wallet that isn't archived.
-	WalletIds []string `protobuf:"bytes,8,rep,name=wallet_ids,json=walletIds,proto3" json:"wallet_ids,omitempty"`
-	// Empty means every expense category.
-	CategoryIds   []string `protobuf:"bytes,9,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
+	EndDate     string   `protobuf:"bytes,7,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	WalletIds   []string `protobuf:"bytes,8,rep,name=wallet_ids,json=walletIds,proto3" json:"wallet_ids,omitempty"`
+	CategoryIds []string `protobuf:"bytes,9,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
+	// When false, an empty selection counts no expenses.
+	AllWallets    bool `protobuf:"varint,10,opt,name=all_wallets,json=allWallets,proto3" json:"all_wallets,omitempty"`
+	AllCategories bool `protobuf:"varint,11,opt,name=all_categories,json=allCategories,proto3" json:"all_categories,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -248,6 +249,20 @@ func (x *Budget) GetCategoryIds() []string {
 		return x.CategoryIds
 	}
 	return nil
+}
+
+func (x *Budget) GetAllWallets() bool {
+	if x != nil {
+		return x.AllWallets
+	}
+	return false
+}
+
+func (x *Budget) GetAllCategories() bool {
+	if x != nil {
+		return x.AllCategories
+	}
+	return false
 }
 
 // Spending in one period of a budget, in the budget's currency.
@@ -714,15 +729,19 @@ func (x *GetBudgetResponse) GetUnconvertedCurrencies() []string {
 }
 
 type BudgetInput struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	AmountMinor   int64                  `protobuf:"varint,2,opt,name=amount_minor,json=amountMinor,proto3" json:"amount_minor,omitempty"`
-	Currency      string                 `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
-	Repeat        BudgetRepeat           `protobuf:"varint,4,opt,name=repeat,proto3,enum=ledger.v1.BudgetRepeat" json:"repeat,omitempty"`
-	StartDate     string                 `protobuf:"bytes,5,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
-	EndDate       string                 `protobuf:"bytes,6,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
-	WalletIds     []string               `protobuf:"bytes,7,rep,name=wallet_ids,json=walletIds,proto3" json:"wallet_ids,omitempty"`
-	CategoryIds   []string               `protobuf:"bytes,8,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	AmountMinor int64                  `protobuf:"varint,2,opt,name=amount_minor,json=amountMinor,proto3" json:"amount_minor,omitempty"`
+	Currency    string                 `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
+	Repeat      BudgetRepeat           `protobuf:"varint,4,opt,name=repeat,proto3,enum=ledger.v1.BudgetRepeat" json:"repeat,omitempty"`
+	StartDate   string                 `protobuf:"bytes,5,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate     string                 `protobuf:"bytes,6,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	WalletIds   []string               `protobuf:"bytes,7,rep,name=wallet_ids,json=walletIds,proto3" json:"wallet_ids,omitempty"`
+	CategoryIds []string               `protobuf:"bytes,8,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
+	// Older clients can omit these flags. An empty selection uses the legacy "all" default,
+	// except when editing an existing empty scope, which is preserved.
+	AllWallets    *bool `protobuf:"varint,9,opt,name=all_wallets,json=allWallets,proto3,oneof" json:"all_wallets,omitempty"`
+	AllCategories *bool `protobuf:"varint,10,opt,name=all_categories,json=allCategories,proto3,oneof" json:"all_categories,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -811,6 +830,20 @@ func (x *BudgetInput) GetCategoryIds() []string {
 		return x.CategoryIds
 	}
 	return nil
+}
+
+func (x *BudgetInput) GetAllWallets() bool {
+	if x != nil && x.AllWallets != nil {
+		return *x.AllWallets
+	}
+	return false
+}
+
+func (x *BudgetInput) GetAllCategories() bool {
+	if x != nil && x.AllCategories != nil {
+		return *x.AllCategories
+	}
+	return false
 }
 
 type CreateBudgetRequest struct {
@@ -1081,7 +1114,7 @@ var File_ledger_v1_budget_proto protoreflect.FileDescriptor
 
 const file_ledger_v1_budget_proto_rawDesc = "" +
 	"\n" +
-	"\x16ledger/v1/budget.proto\x12\tledger.v1\x1a\x16ledger/v1/common.proto\x1a\x19ledger/v1/dashboard.proto\x1a\x1bledger/v1/transaction.proto\"\x98\x02\n" +
+	"\x16ledger/v1/budget.proto\x12\tledger.v1\x1a\x16ledger/v1/common.proto\x1a\x19ledger/v1/dashboard.proto\x1a\x1bledger/v1/transaction.proto\"\xe0\x02\n" +
 	"\x06Budget\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
@@ -1093,7 +1126,11 @@ const file_ledger_v1_budget_proto_rawDesc = "" +
 	"\bend_date\x18\a \x01(\tR\aendDate\x12\x1d\n" +
 	"\n" +
 	"wallet_ids\x18\b \x03(\tR\twalletIds\x12!\n" +
-	"\fcategory_ids\x18\t \x03(\tR\vcategoryIds\"\xa6\x02\n" +
+	"\fcategory_ids\x18\t \x03(\tR\vcategoryIds\x12\x1f\n" +
+	"\vall_wallets\x18\n" +
+	" \x01(\bR\n" +
+	"allWallets\x12%\n" +
+	"\x0eall_categories\x18\v \x01(\bR\rallCategories\"\xa6\x02\n" +
 	"\x0eBudgetProgress\x12,\n" +
 	"\x06period\x18\x01 \x01(\v2\x14.ledger.v1.DateRangeR\x06period\x12,\n" +
 	"\x05state\x18\x02 \x01(\x0e2\x16.ledger.v1.BudgetStateR\x05state\x12\x1f\n" +
@@ -1130,7 +1167,7 @@ const file_ledger_v1_budget_proto_rawDesc = "" +
 	"categories\x120\n" +
 	"\awallets\x18\x05 \x03(\v2\x16.ledger.v1.WalletTotalR\awallets\x12:\n" +
 	"\ftransactions\x18\x06 \x03(\v2\x16.ledger.v1.TransactionR\ftransactions\x125\n" +
-	"\x16unconverted_currencies\x18\a \x03(\tR\x15unconvertedCurrencies\"\x8d\x02\n" +
+	"\x16unconverted_currencies\x18\a \x03(\tR\x15unconvertedCurrencies\"\x82\x03\n" +
 	"\vBudgetInput\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12!\n" +
 	"\famount_minor\x18\x02 \x01(\x03R\vamountMinor\x12\x1a\n" +
@@ -1141,7 +1178,13 @@ const file_ledger_v1_budget_proto_rawDesc = "" +
 	"\bend_date\x18\x06 \x01(\tR\aendDate\x12\x1d\n" +
 	"\n" +
 	"wallet_ids\x18\a \x03(\tR\twalletIds\x12!\n" +
-	"\fcategory_ids\x18\b \x03(\tR\vcategoryIds\"E\n" +
+	"\fcategory_ids\x18\b \x03(\tR\vcategoryIds\x12$\n" +
+	"\vall_wallets\x18\t \x01(\bH\x00R\n" +
+	"allWallets\x88\x01\x01\x12*\n" +
+	"\x0eall_categories\x18\n" +
+	" \x01(\bH\x01R\rallCategories\x88\x01\x01B\x0e\n" +
+	"\f_all_walletsB\x11\n" +
+	"\x0f_all_categories\"E\n" +
 	"\x13CreateBudgetRequest\x12.\n" +
 	"\x06budget\x18\x01 \x01(\v2\x16.ledger.v1.BudgetInputR\x06budget\"A\n" +
 	"\x14CreateBudgetResponse\x12)\n" +
@@ -1255,6 +1298,7 @@ func file_ledger_v1_budget_proto_init() {
 	file_ledger_v1_common_proto_init()
 	file_ledger_v1_dashboard_proto_init()
 	file_ledger_v1_transaction_proto_init()
+	file_ledger_v1_budget_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

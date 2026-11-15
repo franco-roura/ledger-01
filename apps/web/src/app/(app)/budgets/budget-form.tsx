@@ -30,7 +30,7 @@ import {
   UserService,
   type Wallet,
 } from "@ledger-01/api";
-import { useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { toast } from "sonner";
 import { CurrencySelect } from "@/components/currency-select";
 import { repeatOptions } from "@/lib/budgets";
@@ -75,8 +75,14 @@ export function BudgetForm({
   const [repeat, setRepeat] = useState<BudgetRepeat>(editing?.repeat ?? BudgetRepeat.MONTHLY);
   const [start, setStart] = useState(editing?.startDate ?? currentMonth().from);
   const [end, setEnd] = useState(editing?.endDate || currentMonth().to);
-  const [walletIds, setWalletIds] = useState<string[]>(editing?.walletIds ?? []);
-  const [categoryIds, setCategoryIds] = useState<string[]>(editing?.categoryIds ?? []);
+  const [walletScope, setWalletScope] = useState(
+    !editing || editing.allWallets ? [ALL] : editing.walletIds,
+  );
+  const [categoryScope, setCategoryScope] = useState(
+    !editing || editing.allCategories ? [ALL] : editing.categoryIds,
+  );
+  const missingWallets = walletScope.length === 0;
+  const missingCategories = categoryScope.length === 0;
   const create = useMutation(BudgetService.method.createBudget);
   const update = useMutation(BudgetService.method.updateBudget);
 
@@ -101,6 +107,8 @@ export function BudgetForm({
     if (!start) return reject("start", "Pick a start date");
     if (once && !end) return reject("end", "Pick an end date");
     if (once && end < start) return reject("end", "End the budget on or after its start");
+    if (missingWallets) return reject("wallets", "Choose a wallet or All wallets");
+    if (missingCategories) return reject("cats", "Choose a category or All expense categories");
     const input = {
       name: name.trim(),
       amountMinor: parsedAmount,
@@ -108,8 +116,10 @@ export function BudgetForm({
       repeat,
       startDate: start,
       endDate: once ? end : "",
-      walletIds,
-      categoryIds,
+      allWallets: walletScope.includes(ALL),
+      allCategories: categoryScope.includes(ALL),
+      walletIds: walletScope.filter((id) => id !== ALL),
+      categoryIds: categoryScope.filter((id) => id !== ALL),
     };
     try {
       const res = editing
@@ -127,9 +137,9 @@ export function BudgetForm({
   }
 
   const expenseCategories = categories.filter(
-    (c) => c.kind === CategoryKind.EXPENSE && (!c.archived || categoryIds.includes(c.id)),
+    (c) => c.kind === CategoryKind.EXPENSE && (!c.archived || categoryScope.includes(c.id)),
   );
-  const activeWallets = wallets.filter((w) => !w.archived || walletIds.includes(w.id));
+  const activeWallets = wallets.filter((w) => !w.archived || walletScope.includes(w.id));
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
@@ -231,56 +241,64 @@ export function BudgetForm({
       <Field
         label="Wallets"
         htmlFor={fieldId("wallets")}
-        error={errors.wallets}
-        help="Expenses from these wallets count. Leave it on all to count every wallet."
+        error={
+          errors.wallets ??
+          (missingWallets
+            ? "This budget counts no spending until you choose a wallet or All wallets."
+            : undefined)
+        }
       >
-        <MultiCombobox
+        <ScopePicker
           id={fieldId("wallets")}
-          value={walletIds}
+          value={walletScope}
           onChange={(v) => {
-            setWalletIds(v);
+            setWalletScope(v);
             clear("wallets");
           }}
-          options={activeWallets}
-          getKey={(w) => w.id}
-          getSearchText={(w) => `${w.name} ${w.currency}`}
-          renderOption={(w) => (
-            <>
-              <span className="truncate">{w.name}</span>
-              <span className="hud-sm text-ink-soft">{w.currency}</span>
-            </>
-          )}
+          options={activeWallets.map((w) => ({
+            id: w.id,
+            search: `${w.name} ${w.currency}`,
+            label: (
+              <>
+                <span className="truncate">{w.name}</span>
+                <span className="hud-sm text-ink-soft">{w.currency}</span>
+              </>
+            ),
+          }))}
           allLabel="All wallets"
           noun="wallets"
-          searchPlaceholder="Search wallets…"
         />
       </Field>
 
       <Field
         label="Categories"
         htmlFor={fieldId("cats")}
-        error={errors.cats}
-        help="Only expenses count. Leave it on all to count every expense category."
+        error={
+          errors.cats ??
+          (missingCategories
+            ? "This budget counts no spending until you choose a category or All expense categories."
+            : undefined)
+        }
       >
-        <MultiCombobox
+        <ScopePicker
           id={fieldId("cats")}
-          value={categoryIds}
+          value={categoryScope}
           onChange={(v) => {
-            setCategoryIds(v);
+            setCategoryScope(v);
             clear("cats");
           }}
-          options={expenseCategories}
-          getKey={(c) => c.id}
-          getSearchText={(c) => c.name}
-          renderOption={(c) => (
-            <>
-              <CategoryIcon icon={c.icon} color={c.color} size="sm" />
-              <span className="truncate">{c.name}</span>
-            </>
-          )}
+          options={expenseCategories.map((c) => ({
+            id: c.id,
+            search: c.name,
+            label: (
+              <>
+                <CategoryIcon icon={c.icon} color={c.color} size="sm" />
+                <span className="truncate">{c.name}</span>
+              </>
+            ),
+          }))}
           allLabel="All expense categories"
           noun="categories"
-          searchPlaceholder="Search categories…"
         />
       </Field>
 
@@ -290,5 +308,43 @@ export function BudgetForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+const ALL = "all";
+
+function ScopePicker({
+  id,
+  value,
+  onChange,
+  options,
+  allLabel,
+  noun,
+}: {
+  id: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+  options: { id: string; search: string; label: ReactNode }[];
+  allLabel: string;
+  noun: string;
+}) {
+  return (
+    <MultiCombobox
+      id={id}
+      value={value}
+      onChange={(next) => {
+        if (value.includes(ALL)) onChange(next.filter((key) => key !== ALL));
+        else if (next.includes(ALL)) onChange([ALL]);
+        else onChange(next);
+      }}
+      options={[{ id: ALL, search: allLabel, label: allLabel }, ...options]}
+      getKey={(option) => option.id}
+      getSearchText={(option) => option.search}
+      renderOption={(option) => option.label}
+      allLabel={`No ${noun}`}
+      noun={noun}
+      searchPlaceholder={`Search ${noun}…`}
+      invalid={value.length === 0}
+    />
   );
 }

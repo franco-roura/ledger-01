@@ -25,26 +25,30 @@ const (
 const maxBudgetHistory = 60
 
 type Budget struct {
-	ID          uuid.UUID
-	Name        string
-	Amount      int64
-	Currency    string
-	Repeat      BudgetRepeat
-	Start       time.Time
-	End         *time.Time // only for RepeatOnce
-	WalletIDs   []uuid.UUID
-	CategoryIDs []uuid.UUID
+	ID            uuid.UUID
+	Name          string
+	Amount        int64
+	Currency      string
+	Repeat        BudgetRepeat
+	Start         time.Time
+	End           *time.Time // only for RepeatOnce
+	WalletIDs     []uuid.UUID
+	CategoryIDs   []uuid.UUID
+	AllWallets    bool
+	AllCategories bool
 }
 
 type BudgetInput struct {
-	Name        string
-	Amount      int64
-	Currency    string
-	Repeat      BudgetRepeat
-	Start       time.Time
-	End         *time.Time
-	WalletIDs   []uuid.UUID
-	CategoryIDs []uuid.UUID
+	Name          string
+	Amount        int64
+	Currency      string
+	Repeat        BudgetRepeat
+	Start         time.Time
+	End           *time.Time
+	WalletIDs     []uuid.UUID
+	CategoryIDs   []uuid.UUID
+	AllWallets    *bool
+	AllCategories *bool
 }
 
 type BudgetState int
@@ -178,11 +182,12 @@ func (b Budget) progress(i int, spent int64, today time.Time) BudgetProgress {
 // --- reads -------------------------------------------------------------------------------------
 
 func budgetFrom(id uuid.UUID, name string, amount int64, currency string, repeat BudgetRepeat, start time.Time,
-	end *time.Time, walletIDs, categoryIDs []uuid.UUID,
+	end *time.Time, walletIDs, categoryIDs []uuid.UUID, allWallets, allCategories bool,
 ) Budget {
 	return Budget{
 		ID: id, Name: name, Amount: amount, Currency: strings.TrimSpace(currency), Repeat: repeat,
 		Start: start, End: end, WalletIDs: walletIDs, CategoryIDs: categoryIDs,
+		AllWallets: allWallets, AllCategories: allCategories,
 	}
 }
 
@@ -191,7 +196,7 @@ func (s *Service) getBudget(ctx context.Context, a Actor, id uuid.UUID) (Budget,
 	if err != nil {
 		return Budget{}, dbErr(err, "budget")
 	}
-	return budgetFrom(r.ID, r.Name, r.AmountMinor, r.Currency, r.Repeat, r.StartDate, r.EndDate, r.WalletIds, r.CategoryIds), nil
+	return budgetFrom(r.ID, r.Name, r.AmountMinor, r.Currency, r.Repeat, r.StartDate, r.EndDate, r.WalletIds, r.CategoryIds, r.AllWallets, r.AllCategories), nil
 }
 
 // budgetExpenses returns the expenses a budget counts in [from, to], leaving out upcoming ones
@@ -199,6 +204,7 @@ func (s *Service) getBudget(ctx context.Context, a Actor, id uuid.UUID) (Budget,
 func (s *Service) budgetExpenses(ctx context.Context, a Actor, b Budget, from, to, today time.Time) ([]dbq.BudgetExpensesRow, error) {
 	return s.q.BudgetExpenses(ctx, dbq.BudgetExpensesParams{
 		HouseholdID: a.HouseholdID, FromDate: from, ToDate: to, Today: today, WalletIds: b.WalletIDs, CategoryIds: b.CategoryIDs,
+		AllWallets: b.AllWallets, AllCategories: b.AllCategories,
 	})
 }
 
@@ -246,7 +252,7 @@ func (s *Service) ListBudgets(ctx context.Context, a Actor, today time.Time) ([]
 	}
 	out := make([]BudgetSummary, len(rows))
 	for n, r := range rows {
-		b := budgetFrom(r.ID, r.Name, r.AmountMinor, r.Currency, r.Repeat, r.StartDate, r.EndDate, r.WalletIds, r.CategoryIds)
+		b := budgetFrom(r.ID, r.Name, r.AmountMinor, r.Currency, r.Repeat, r.StartDate, r.EndDate, r.WalletIds, r.CategoryIds, r.AllWallets, r.AllCategories)
 		i := b.periodIndex(today)
 		from, to := b.period(i)
 		exp, err := s.budgetExpenses(ctx, a, b, from, to, today)
@@ -382,6 +388,12 @@ func (s *Service) checkBudget(ctx context.Context, q *dbq.Queries, a Actor, in *
 		in.End = nil
 	}
 
+	if budgetAll(in.AllWallets, in.WalletIDs) && len(in.WalletIDs) > 0 {
+		return invalid("wallet_ids", "choose all wallets or specific wallets")
+	}
+	if budgetAll(in.AllCategories, in.CategoryIDs) && len(in.CategoryIDs) > 0 {
+		return invalid("category_ids", "choose all categories or specific categories")
+	}
 	in.WalletIDs = uniqueIDs(in.WalletIDs)
 	if len(in.WalletIDs) > 100 {
 		return invalid("wallet_ids", "at most 100 wallets")
@@ -424,6 +436,14 @@ func setBudgetLinks(ctx context.Context, q *dbq.Queries, id uuid.UUID, in Budget
 	return q.AddBudgetCategories(ctx, dbq.AddBudgetCategoriesParams{BudgetID: id, CategoryIds: in.CategoryIDs})
 }
 
+// budgetAll uses the legacy default for old clients and backups that omit the flag.
+func budgetAll(flag *bool, ids []uuid.UUID) bool {
+	if flag != nil {
+		return *flag
+	}
+	return len(ids) == 0
+}
+
 func (s *Service) CreateBudget(ctx context.Context, a Actor, in BudgetInput) (Budget, error) {
 	id := newID()
 	err := s.inTx(ctx, func(q *dbq.Queries) error {
@@ -433,6 +453,7 @@ func (s *Service) CreateBudget(ctx context.Context, a Actor, in BudgetInput) (Bu
 		if _, err := q.CreateBudget(ctx, dbq.CreateBudgetParams{
 			ID: id, HouseholdID: a.HouseholdID, Name: in.Name, AmountMinor: in.Amount, Currency: in.Currency,
 			Repeat: in.Repeat, StartDate: in.Start, EndDate: in.End,
+			AllWallets: budgetAll(in.AllWallets, in.WalletIDs), AllCategories: budgetAll(in.AllCategories, in.CategoryIDs),
 		}); err != nil {
 			return dbErr(err, "budget")
 		}
@@ -449,9 +470,23 @@ func (s *Service) UpdateBudget(ctx context.Context, a Actor, id uuid.UUID, in Bu
 		if err := s.checkBudget(ctx, q, a, &in); err != nil {
 			return err
 		}
+		// An older client editing an exhausted scope must not turn it into "all".
+		if (in.AllWallets == nil && len(in.WalletIDs) == 0) || (in.AllCategories == nil && len(in.CategoryIDs) == 0) {
+			current, err := q.GetBudget(ctx, dbq.GetBudgetParams{ID: id, HouseholdID: a.HouseholdID})
+			if err != nil {
+				return dbErr(err, "budget")
+			}
+			if in.AllWallets == nil && len(current.WalletIds) == 0 {
+				in.AllWallets = &current.AllWallets
+			}
+			if in.AllCategories == nil && len(current.CategoryIds) == 0 {
+				in.AllCategories = &current.AllCategories
+			}
+		}
 		n, err := q.UpdateBudget(ctx, dbq.UpdateBudgetParams{
 			ID: id, HouseholdID: a.HouseholdID, Name: in.Name, AmountMinor: in.Amount, Currency: in.Currency,
 			Repeat: in.Repeat, StartDate: in.Start, EndDate: in.End,
+			AllWallets: budgetAll(in.AllWallets, in.WalletIDs), AllCategories: budgetAll(in.AllCategories, in.CategoryIDs),
 		})
 		if err != nil {
 			return dbErr(err, "budget")

@@ -172,3 +172,60 @@ test("wallets, an expense with a label, and a USD→UYU transfer", async ({ page
     "Over by 2.34 USD",
   );
 });
+
+test("deleting a budget's last category leaves an empty scope until All is chosen", async ({
+  page,
+}) => {
+  await signIn(page);
+  const tag = unique();
+  const rpc = async (method: string, data: Record<string, unknown>) => {
+    const res = await page.request.post(`/api/ledger.v1.${method}`, { data });
+    expect(res.ok(), `${method}: ${await res.text()}`).toBe(true);
+    return res.json();
+  };
+  const budgetName = `Scoped budget ${tag}`;
+  const { category } = await rpc("CategoryService/CreateCategory", {
+    name: `Unused ${tag}`,
+    kind: "CATEGORY_KIND_EXPENSE",
+    icon: "coffee",
+    color: "cat-orange",
+  });
+  const { budget } = await rpc("BudgetService/CreateBudget", {
+    budget: {
+      name: budgetName,
+      amountMinor: "10000",
+      currency: "USD",
+      repeat: "BUDGET_REPEAT_MONTHLY",
+      startDate: "2024-01-01",
+      allWallets: true,
+      allCategories: false,
+      categoryIds: [category.id],
+    },
+  });
+  await rpc("CategoryService/DeleteCategory", { id: category.id });
+
+  await page.goto("/budgets");
+  const card = page.getByRole("link", { name: new RegExp(budgetName) });
+  await expect(card).toContainText("This budget counts no spending.");
+  await card.click();
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  const editor = page.getByRole("dialog");
+  await expect(editor.getByLabel("Categories")).toContainText("No categories");
+  await expect(editor.getByLabel("Categories")).toHaveAttribute("aria-invalid", "true");
+  const newName = `Renamed ${tag}`;
+  await editor.getByLabel("Name").fill(newName);
+  await editor.getByRole("button", { name: "Save budget" }).click();
+  await expect(
+    editor.getByText("Choose a category or All expense categories", { exact: true }),
+  ).toBeVisible();
+  const read = () => rpc("BudgetService/GetBudget", { id: budget.id });
+  expect((await read()).budget.name).toBe(budgetName);
+  expect((await read()).budget.allCategories).not.toBe(true);
+
+  await editor.getByLabel("Categories").click();
+  await page.getByRole("option", { name: "All expense categories", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await editor.getByRole("button", { name: "Save budget" }).click();
+  await expect(page.getByRole("heading", { name: newName })).toBeVisible();
+  expect((await read()).budget.allCategories).toBe(true);
+});

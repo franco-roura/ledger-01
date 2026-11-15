@@ -86,6 +86,11 @@ function BudgetCard({ summary, index }: { summary: BudgetSummary; index: number 
   if (!b || !p) return null;
   const units = minorUnits(b.currency);
   const over = p.remainingMinor < 0n;
+  const missingWallets = !b.allWallets && b.walletIds.length === 0;
+  const missingCategories = !b.allCategories && b.categoryIds.length === 0;
+  const missing = [missingWallets && "wallets", missingCategories && "expense categories"]
+    .filter(Boolean)
+    .join(" and ");
   return (
     <Link
       href={`/budgets/${b.id}`}
@@ -115,6 +120,11 @@ function BudgetCard({ summary, index }: { summary: BudgetSummary; index: number 
               of {formatMoney(b.amountMinor, b.currency, units)}
             </span>
           </div>
+          {missing && (
+            <p className="text-body-sm text-expense-ink">
+              This budget counts no spending. Choose {missing} in its settings.
+            </p>
+          )}
           <BudgetMeter
             spent={p.spentMinor}
             budget={b.amountMinor}

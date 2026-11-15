@@ -555,15 +555,17 @@ func period(m moneyFmt, cur string, p ledger.BudgetProgress) PeriodOut {
 }
 
 type BudgetOut struct {
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
-	Amount     Money     `json:"amount"`
-	Repeat     string    `json:"repeat"`
-	Start      string    `json:"start"`
-	End        string    `json:"end,omitempty"`
-	Categories []string  `json:"categories" jsonschema:"empty means every expense category"`
-	Wallets    []string  `json:"wallets" jsonschema:"empty means every wallet"`
-	Period     PeriodOut `json:"period"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Amount        Money     `json:"amount"`
+	Repeat        string    `json:"repeat"`
+	Start         string    `json:"start"`
+	End           string    `json:"end,omitempty"`
+	Categories    []string  `json:"categories"`
+	AllCategories bool      `json:"all_categories"`
+	Wallets       []string  `json:"wallets"`
+	AllWallets    bool      `json:"all_wallets"`
+	Period        PeriodOut `json:"period"`
 }
 
 type BudgetsOut struct {
@@ -576,7 +578,7 @@ type BudgetsOut struct {
 
 func budgetOut(m moneyFmt, n names, b ledger.Budget, p ledger.BudgetProgress) BudgetOut {
 	out := BudgetOut{ID: b.ID.String(), Name: b.Name, Amount: m.of(b.Amount, b.Currency), Repeat: string(b.Repeat),
-		Start: date(b.Start), End: optDate(b.End), Categories: []string{}, Wallets: []string{}, Period: period(m, b.Currency, p)}
+		Start: date(b.Start), End: optDate(b.End), Categories: []string{}, Wallets: []string{}, AllCategories: b.AllCategories, AllWallets: b.AllWallets, Period: period(m, b.Currency, p)}
 	for _, id := range b.CategoryIDs {
 		out.Categories = append(out.Categories, n.categories[id])
 	}

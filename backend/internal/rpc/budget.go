@@ -29,6 +29,7 @@ func budgetToProto(b ledger.Budget) *v1.Budget {
 	out := &v1.Budget{
 		Id: b.ID.String(), Name: b.Name, AmountMinor: b.Amount, Currency: b.Currency, Repeat: repeatToProto[b.Repeat],
 		StartDate: money.FormatDate(b.Start), WalletIds: idStrings(b.WalletIDs), CategoryIds: idStrings(b.CategoryIDs),
+		AllWallets: b.AllWallets, AllCategories: b.AllCategories,
 	}
 	if b.End != nil {
 		out.EndDate = money.FormatDate(*b.End)
@@ -48,7 +49,7 @@ func budgetInputFromProto(in *v1.BudgetInput) (ledger.BudgetInput, error) {
 	if in == nil {
 		return ledger.BudgetInput{}, &ledger.InvalidError{Field: "budget", Msg: "is required"}
 	}
-	out := ledger.BudgetInput{Name: in.Name, Amount: in.AmountMinor, Currency: in.Currency}
+	out := ledger.BudgetInput{Name: in.Name, Amount: in.AmountMinor, Currency: in.Currency, AllWallets: in.AllWallets, AllCategories: in.AllCategories}
 	for k, v := range repeatToProto {
 		if v == in.Repeat {
 			out.Repeat = k
