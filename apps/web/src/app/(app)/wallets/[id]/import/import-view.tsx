@@ -1,18 +1,13 @@
 "use client";
 
 import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { Button, Field, fault, HudLabel, Input, Panel } from "@franco_roura/module-01";
 import {
   type ImportMapping,
   ImportService,
   type UploadImportFileResponse,
   WalletService,
 } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { Field } from "@ledger-01/ui/components/field";
-import { HudLabel } from "@ledger-01/ui/components/hud";
-import { Input } from "@ledger-01/ui/components/input";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { fault } from "@ledger-01/ui/lib/fault";
 import { CircleCheck, FileUp } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";

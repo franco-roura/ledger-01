@@ -1,8 +1,8 @@
 "use client";
 
+import { Combobox } from "@franco_roura/module-01";
+import { CategoryIcon } from "@franco_roura/module-01/finance";
 import type { Category } from "@ledger-01/api";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { Combobox } from "@ledger-01/ui/components/combobox";
 import Link from "next/link";
 
 /**

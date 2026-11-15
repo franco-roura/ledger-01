@@ -1,4 +1,4 @@
-import { parseAmount } from "@ledger-01/ui/lib/money";
+import { parseAmount } from "@franco_roura/module-01/finance";
 import { type BucketName, parseBucket } from "@/lib/buckets";
 import { type Period, parsePeriod } from "@/lib/period";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { Field } from "@ledger-01/ui/components/field";
-import { MoneyInput } from "@ledger-01/ui/components/money-input";
+import { Field } from "@franco_roura/module-01";
+import { MoneyInput } from "@franco_roura/module-01/finance";
 import { useId } from "react";
 
 /** Min and max amount fields for filters, in one currency. Empty means no bound. */

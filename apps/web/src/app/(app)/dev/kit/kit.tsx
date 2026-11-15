@@ -1,27 +1,35 @@
 "use client";
 
-import { Amount } from "@ledger-01/ui/components/amount";
-import { Badge } from "@ledger-01/ui/components/badge";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon, ColorDot } from "@ledger-01/ui/components/category-icon";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { Field } from "@ledger-01/ui/components/field";
-import { FxConverter } from "@ledger-01/ui/components/fx-converter";
 import {
+  Badge,
+  Button,
+  Checkbox,
   Crosshair,
+  Field,
+  GlassPanel,
   Grill,
   HudLabel,
+  Input,
+  Panel,
   SectionHeader,
+  Skeleton,
   StatusLed,
+  Tabs,
+  TabsList,
+  TabsTrigger,
   TickRuler,
-} from "@ledger-01/ui/components/hud";
-import { Input } from "@ledger-01/ui/components/input";
-import { MoneyInput } from "@ledger-01/ui/components/money-input";
-import { GlassPanel, Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@ledger-01/ui/components/tabs";
-import { categoryColors, categoryIcons } from "@ledger-01/ui/lib/category-icons";
-import { type FxState, initialFxState } from "@ledger-01/ui/lib/fx";
+} from "@franco_roura/module-01";
+import {
+  Amount,
+  CategoryIcon,
+  ColorDot,
+  categoryColors,
+  categoryIcons,
+  FxConverter,
+  type FxState,
+  initialFxState,
+  MoneyInput,
+} from "@franco_roura/module-01/finance";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

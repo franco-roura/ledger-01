@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery } from "@connectrpc/connect-query";
-import { CategoryKind, CategoryService, WalletService } from "@ledger-01/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,15 +11,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@ledger-01/ui/components/alert-dialog";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { Field } from "@ledger-01/ui/components/field";
-import { HudLabel, SectionHeader } from "@ledger-01/ui/components/hud";
-import { Input } from "@ledger-01/ui/components/input";
-import { Label } from "@ledger-01/ui/components/label";
-import { Panel } from "@ledger-01/ui/components/panel";
+  Button,
+  Checkbox,
+  Field,
+  HudLabel,
+  Input,
+  Label,
+  Panel,
+  SectionHeader,
+} from "@franco_roura/module-01";
+import { CategoryIcon } from "@franco_roura/module-01/finance";
+import { CategoryKind, CategoryService, WalletService } from "@ledger-01/api";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

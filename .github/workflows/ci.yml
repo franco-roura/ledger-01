@@ -27,7 +27,6 @@ jobs:
         run: bun x biome ci .
       - name: Typecheck
         run: |
-          bun run --cwd packages/ui typecheck
           bun run --cwd apps/web typecheck
       - name: gofmt and go vet
         run: task lint:go

@@ -1,10 +1,9 @@
-import { Toaster } from "@ledger-01/ui/components/sonner";
-import { TooltipProvider } from "@ledger-01/ui/components/tooltip";
+import { Toaster, TooltipProvider } from "@franco_roura/module-01";
 import type { Metadata, Viewport } from "next";
 import { Manrope, Michroma, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-// Font variables match the stacks generated from tokens.json: var(--font-michroma, Michroma), …
+// Font variables match the Module/01 font stacks: var(--font-michroma, Michroma), …
 const michroma = Michroma({ weight: "400", subsets: ["latin"], variable: "--font-michroma" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 const spaceMono = Space_Mono({

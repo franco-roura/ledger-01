@@ -1,4 +1,4 @@
-import { SectionHeader } from "@ledger-01/ui/components/hud";
+import { SectionHeader } from "@franco_roura/module-01";
 import { SettingsNav } from "./settings-nav";
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

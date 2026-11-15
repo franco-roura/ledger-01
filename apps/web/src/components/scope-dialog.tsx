@@ -1,6 +1,5 @@
 "use client";
 
-import { OccurrenceScope } from "@ledger-01/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +9,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@ledger-01/ui/components/alert-dialog";
+} from "@franco_roura/module-01";
+import { OccurrenceScope } from "@ledger-01/api";
 
 /**
  * Asks which occurrences of a recurring transaction a change applies to: only the chosen ones, or

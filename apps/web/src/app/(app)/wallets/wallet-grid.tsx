@@ -1,12 +1,7 @@
 "use client";
 
-import { Amount } from "@ledger-01/ui/components/amount";
-import { Button } from "@ledger-01/ui/components/button";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { SectionHeader } from "@ledger-01/ui/components/hud";
-import { Label } from "@ledger-01/ui/components/label";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
+import { Button, Checkbox, Label, Panel, SectionHeader, Skeleton } from "@franco_roura/module-01";
+import { Amount } from "@franco_roura/module-01/finance";
 import { CalendarClock, EyeOff, Plus, Wallet as WalletIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

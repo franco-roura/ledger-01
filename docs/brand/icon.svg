@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <title>Ledger/01 app icon</title>
-  <!-- Ledger/01 app icon: a Module/01 molded device on a studio tile. Colors are packages/ui tokens. -->
+  <!-- Ledger/01 app icon: a Module/01 molded device on a studio tile. Colors are Module/01 tokens. -->
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Michroma&amp;family=Space+Mono:wght@400;700&amp;display=block');

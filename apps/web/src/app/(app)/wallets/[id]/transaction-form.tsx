@@ -3,6 +3,34 @@
 import { Code, ConnectError } from "@connectrpc/connect";
 import { useMutation } from "@connectrpc/connect-query";
 import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Field,
+  FieldError,
+  fault,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Label as UILabel,
+} from "@franco_roura/module-01";
+import {
+  editFx,
+  FxConverter,
+  type FxState,
+  formatAmountInput,
+  fxResult,
+  initialFxState,
+  MoneyInput,
+  parseAmount,
+} from "@franco_roura/module-01/finance";
+import {
   type Category,
   CategoryKind,
   type Label,
@@ -13,25 +41,6 @@ import {
   TransactionService,
   type Wallet,
 } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { DatePicker } from "@ledger-01/ui/components/date-picker";
-import { Field, FieldError } from "@ledger-01/ui/components/field";
-import { FxConverter } from "@ledger-01/ui/components/fx-converter";
-import { Input } from "@ledger-01/ui/components/input";
-import { Label as UILabel } from "@ledger-01/ui/components/label";
-import { MoneyInput } from "@ledger-01/ui/components/money-input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ledger-01/ui/components/select";
-import { Tabs, TabsList, TabsTrigger } from "@ledger-01/ui/components/tabs";
-import { fault } from "@ledger-01/ui/lib/fault";
-import { editFx, type FxState, fxResult, initialFxState } from "@ledger-01/ui/lib/fx";
-import { formatAmountInput, parseAmount } from "@ledger-01/ui/lib/money";
 import { Trash2 } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
@@ -39,6 +48,7 @@ import { CategoryPicker } from "@/components/category-picker";
 import { LabelPicker } from "@/components/label-picker";
 import { ScopeDialog } from "@/components/scope-dialog";
 import { WalletSelect } from "@/components/wallet-select";
+import { rememberWallet } from "@/lib/last-wallet";
 import { today } from "@/lib/period";
 import {
   endOptions,
@@ -124,6 +134,9 @@ type Pending =
  * transfers use the three-field converter: sent, received and rate. Any of them can repeat; saving
  * or deleting an occurrence of a recurring one asks whether it applies to only that occurrence or
  * to the ones after it too.
+ *
+ * With onWalletChange (a new transaction started outside a wallet page), expenses and income show
+ * a Wallet field after the amount, and a transfer's From wallet follows it.
  */
 export function TransactionForm({
   wallet,
@@ -133,6 +146,7 @@ export function TransactionForm({
   minorUnits,
   editing,
   onDone,
+  onWalletChange,
 }: {
   wallet: Wallet;
   wallets: Wallet[];
@@ -141,6 +155,7 @@ export function TransactionForm({
   minorUnits: (code: string) => number;
   editing?: Transaction | null;
   onDone: () => void;
+  onWalletChange?: (id: string) => void;
 }) {
   const id = useId();
   const isEdit = Boolean(editing);
@@ -211,6 +226,7 @@ export function TransactionForm({
     setFromId(nextFrom);
     setToId(nextTo);
     setFx(initialFxState());
+    if (nextFrom !== fromId) onWalletChange?.(nextFrom);
   }
 
   function resetForNext() {
@@ -269,6 +285,8 @@ export function TransactionForm({
       return;
     }
     toast.success(isEdit ? "Saved" : "Added");
+    // The next transaction started outside a wallet page starts here.
+    if (!isEdit && mode !== "transfer") rememberWallet(wallet.id);
     if (!isEdit && keepOpen) resetForNext();
     else onDone();
   }
@@ -459,6 +477,16 @@ export function TransactionForm({
               aria-invalid={amount !== "" && parsedAmount === null}
             />
           </Field>
+          {onWalletChange && (
+            <Field label="Wallet" htmlFor={`${id}-wallet`} className="sm:col-span-2">
+              <WalletSelect
+                id={`${id}-wallet`}
+                wallets={wallets}
+                value={wallet.id}
+                onChange={(v) => changeWallets(v, v === toId ? "" : toId)}
+              />
+            </Field>
+          )}
         </div>
       )}
 

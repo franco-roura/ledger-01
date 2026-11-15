@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@ledger-01/ui/components/input";
+import { Input } from "@franco_roura/module-01";
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

@@ -24,7 +24,7 @@ Estimated for **`sa-east-1` (São Paulo)**, the default and one of AWS's pricier
 
 | Service                                 | What it does                          | Free tier                                     | Monthly cost                         |
 | --------------------------------------- | ------------------------------------- | --------------------------------------------- | ------------------------------------ |
-| CloudFront                              | Router and CDN in front of everything | 1 TB and 10M requests, **always free**        | $0                                   |
+| CloudFront                              | Router and CDN in front of everything | 1 TB and 10M requests, **always free**        | $0, plus ≈ $0.04 per deploy          |
 | Lambda (Go API, Next.js, jobs, migrate) | Runs all the code                     | 1M requests and 400,000 GB-s, **always free** | $0 (≈ $0.06 without the free tier)   |
 | API Gateway (HTTP API)                  | Front door to the Go API              | 1M requests, **first 12 months**              | $0, then ≈ $0.06 ($1.59 per million) |
 | S3                                      | Static assets for the web app         | 5 GB, first 12 months                         | < $0.01                              |
@@ -38,6 +38,11 @@ Estimated for **`sa-east-1` (São Paulo)**, the default and one of AWS's pricier
 At **ten times that usage** the total stays under $1 a month: API Gateway is the only line that grows
 past its free tier. Above Neon's free plan, its Launch plan bills by use (about $0.11 per CU-hour and
 $0.35 per GB-month).
+
+Each deploy also costs about **$0.04**. The router keeps its routes in a CloudFront KeyValueStore and
+rewrites them on every deploy, and KeyValueStore API calls aren't in the free tier. A month with no
+deploys costs nothing extra: a measured week of daily use, statement imports included, came to $0
+outside the deploy days.
 
 > [!NOTE]
 > These are estimates from AWS's and Neon's published prices, not a quote. Prices change, so check

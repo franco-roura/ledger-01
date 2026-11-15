@@ -3,6 +3,25 @@
 import { Code, ConnectError } from "@connectrpc/connect";
 import { useMutation, useQuery } from "@connectrpc/connect-query";
 import {
+  Button,
+  DatePicker,
+  Field,
+  fault,
+  Input,
+  MultiCombobox,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@franco_roura/module-01";
+import {
+  CategoryIcon,
+  formatAmountInput,
+  MoneyInput,
+  parseAmount,
+} from "@franco_roura/module-01/finance";
+import {
   type Budget,
   BudgetRepeat,
   BudgetService,
@@ -11,22 +30,6 @@ import {
   UserService,
   type Wallet,
 } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { DatePicker } from "@ledger-01/ui/components/date-picker";
-import { Field } from "@ledger-01/ui/components/field";
-import { Input } from "@ledger-01/ui/components/input";
-import { MoneyInput } from "@ledger-01/ui/components/money-input";
-import { MultiCombobox } from "@ledger-01/ui/components/multi-combobox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ledger-01/ui/components/select";
-import { fault } from "@ledger-01/ui/lib/fault";
-import { formatAmountInput, parseAmount } from "@ledger-01/ui/lib/money";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { CurrencySelect } from "@/components/currency-select";

@@ -7,8 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@ledger-01/ui/components/dropdown-menu";
-import { NavBar } from "@ledger-01/ui/components/nav-bar";
+  NavBar,
+} from "@franco_roura/module-01";
 import { LogOut, Settings, Tags, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

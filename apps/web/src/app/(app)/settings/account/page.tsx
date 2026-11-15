@@ -1,11 +1,8 @@
 "use client";
 
 import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { Button, Field, Input, Panel } from "@franco_roura/module-01";
 import { UserService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { Field } from "@ledger-01/ui/components/field";
-import { Input } from "@ledger-01/ui/components/input";
-import { Panel } from "@ledger-01/ui/components/panel";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@ledger-01/ui/components/button";
-import { Panel } from "@ledger-01/ui/components/panel";
+import { Button, Panel } from "@franco_roura/module-01";
 import { Download, Share, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {

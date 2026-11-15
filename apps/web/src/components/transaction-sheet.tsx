@@ -1,31 +1,34 @@
 "use client";
 
-import { type Transaction, TransactionKind, type Wallet } from "@ledger-01/api";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@ledger-01/ui/components/sheet";
+  useMediaQuery,
+} from "@franco_roura/module-01";
+import { type Transaction, TransactionKind, type Wallet } from "@ledger-01/api";
 import { TransactionForm } from "@/app/(app)/wallets/[id]/transaction-form";
 import { useCategories, useCurrencies, useLabels, useWallets } from "@/lib/api/hooks";
-import { useMediaQuery } from "@/lib/use-media-query";
 
 /**
  * The new/edit transaction form in a sheet: on the right on desktop, a bottom sheet capped below
- * the top on phones.
+ * the top on phones. onWalletChange lets a new transaction move to another wallet (when it's
+ * started outside a wallet page).
  */
 export function TransactionSheet({
   open,
   onOpenChange,
   wallet,
   editing,
+  onWalletChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   wallet: Wallet | undefined;
   editing: Transaction | null;
+  onWalletChange?: (id: string) => void;
 }) {
   const desktop = useMediaQuery("(min-width: 768px)");
   const { wallets } = useWallets();
@@ -54,6 +57,7 @@ export function TransactionSheet({
               minorUnits={minorUnits}
               editing={editing}
               onDone={() => onOpenChange(false)}
+              onWalletChange={editing ? undefined : onWalletChange}
             />
           </div>
         )}

@@ -1,14 +1,9 @@
 "use client";
 
 import { useQuery } from "@connectrpc/connect-query";
+import { Button, Panel, SectionHeader, Skeleton } from "@franco_roura/module-01";
+import { Amount, BudgetMeter, formatMoney } from "@franco_roura/module-01/finance";
 import { BudgetService, type BudgetSummary } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { BudgetMeter } from "@ledger-01/ui/components/budget-meter";
-import { Button } from "@ledger-01/ui/components/button";
-import { SectionHeader } from "@ledger-01/ui/components/hud";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
-import { formatMoney } from "@ledger-01/ui/lib/money";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

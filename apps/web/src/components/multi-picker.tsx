@@ -1,15 +1,17 @@
 "use client";
 
-import { Button } from "@ledger-01/ui/components/button";
 import {
+  Button,
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-} from "@ledger-01/ui/components/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@ledger-01/ui/components/popover";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@franco_roura/module-01";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 

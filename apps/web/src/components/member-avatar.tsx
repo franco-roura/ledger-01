@@ -1,5 +1,5 @@
+import { cn } from "@franco_roura/module-01";
 import type { Member } from "@ledger-01/api";
-import { cn } from "@ledger-01/ui/lib/utils";
 
 /** First letters of a person's name (or email), for an avatar without a picture. */
 export function initials(m: Pick<Member, "name" | "email">) {

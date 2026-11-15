@@ -1,15 +1,15 @@
 "use client";
 
-import type { Budget } from "@ledger-01/api";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@ledger-01/ui/components/sheet";
+  useMediaQuery,
+} from "@franco_roura/module-01";
+import type { Budget } from "@ledger-01/api";
 import { useCategories, useCurrencies, useWallets } from "@/lib/api/hooks";
-import { useMediaQuery } from "@/lib/use-media-query";
 import { BudgetForm } from "./budget-form";
 
 /** The budget form in a sheet: from the right on desktop, from the bottom on phones. */

@@ -1,20 +1,19 @@
 "use client";
 
 import { useMutation } from "@connectrpc/connect-query";
-import { WalletService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@ledger-01/ui/components/dialog";
-import { Field } from "@ledger-01/ui/components/field";
-import { Input } from "@ledger-01/ui/components/input";
-import { MoneyInput } from "@ledger-01/ui/components/money-input";
-import { parseAmount } from "@ledger-01/ui/lib/money";
+  Field,
+  Input,
+} from "@franco_roura/module-01";
+import { MoneyInput, parseAmount } from "@franco_roura/module-01/finance";
+import { WalletService } from "@ledger-01/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CurrencySelect } from "@/components/currency-select";

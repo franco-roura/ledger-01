@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
   <title>Ledger/01 social preview</title>
   <!-- GitHub social preview (1280×640). Everything sits inside a 40 px safe border. Colors are
-       packages/ui tokens; the device is docs/brand/icon.svg scaled into the studio tile. -->
+       Module/01 tokens; the device is docs/brand/icon.svg scaled into the studio tile. -->
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&amp;family=Michroma&amp;family=Space+Mono:wght@400;700&amp;display=block');

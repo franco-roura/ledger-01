@@ -1,19 +1,20 @@
 "use client";
 
 import { useMutation } from "@connectrpc/connect-query";
-import { type Label, LabelService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { ColorDot } from "@ledger-01/ui/components/category-icon";
 import {
+  Button,
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-} from "@ledger-01/ui/components/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@ledger-01/ui/components/popover";
-import { categoryColors } from "@ledger-01/ui/lib/category-icons";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@franco_roura/module-01";
+import { ColorDot, categoryColors } from "@franco_roura/module-01/finance";
+import { type Label, LabelService } from "@ledger-01/api";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { useState } from "react";
 

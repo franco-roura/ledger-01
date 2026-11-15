@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, Checkbox, Panel, Skeleton } from "@franco_roura/module-01";
+import { Amount, CategoryIcon, ColorDot } from "@franco_roura/module-01/finance";
 import {
   type Category,
   type Label,
@@ -8,12 +10,6 @@ import {
   TransactionKind,
   type Wallet,
 } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon, ColorDot } from "@ledger-01/ui/components/category-icon";
-import { Checkbox } from "@ledger-01/ui/components/checkbox";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
 import { MemberAvatar } from "@/components/member-avatar";
 import { RepeatMarker } from "@/components/repeat-marker";
 import { formatDay } from "@/lib/period";

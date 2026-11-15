@@ -1,10 +1,15 @@
 "use client";
 
+import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@franco_roura/module-01";
+import { CategoryIcon } from "@franco_roura/module-01/finance";
 import { CategoryKind } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { CategoryIcon } from "@ledger-01/ui/components/category-icon";
-import { Popover, PopoverContent, PopoverTrigger } from "@ledger-01/ui/components/popover";
-import { ToggleGroup, ToggleGroupItem } from "@ledger-01/ui/components/toggle-group";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";

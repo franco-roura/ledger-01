@@ -1,13 +1,13 @@
 "use client";
 
-import type { Wallet } from "@ledger-01/api";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@ledger-01/ui/components/select";
+} from "@franco_roura/module-01";
+import type { Wallet } from "@ledger-01/api";
 
 export function WalletSelect({
   wallets,

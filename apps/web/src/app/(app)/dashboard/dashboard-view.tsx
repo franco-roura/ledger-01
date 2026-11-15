@@ -1,11 +1,12 @@
 "use client";
 
 import { useQuery } from "@connectrpc/connect-query";
+import { SectionHeader } from "@franco_roura/module-01";
+import { Amount } from "@franco_roura/module-01/finance";
 import { DashboardService } from "@ledger-01/api";
-import { Amount } from "@ledger-01/ui/components/amount";
-import { SectionHeader } from "@ledger-01/ui/components/hud";
 import { Wallet as WalletIcon } from "lucide-react";
 import Link from "next/link";
+import { QuickAdd } from "@/components/quick-add";
 import { useBaseCurrency, useCurrencies, useWallets } from "@/lib/api/hooks";
 import { today } from "@/lib/period";
 import { DashboardBody } from "./dashboard-body";
@@ -27,7 +28,7 @@ export function DashboardView() {
 
   return (
     <div className="flex flex-col gap-8">
-      <SectionHeader code="S-00" label="Overview" title="Dashboard" />
+      <SectionHeader code="S-00" label="Overview" title="Dashboard" aside={<QuickAdd />} />
 
       <ul className="flex gap-3 overflow-x-auto pb-1">
         {wallets

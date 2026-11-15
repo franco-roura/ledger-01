@@ -2,10 +2,8 @@
 
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { Button, Panel, Skeleton } from "@franco_roura/module-01";
 import { OAuthService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Skeleton } from "@ledger-01/ui/components/skeleton";
 import { Unplug } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

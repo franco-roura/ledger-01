@@ -1,17 +1,19 @@
 "use client";
 
 import { useMutation } from "@connectrpc/connect-query";
+import {
+  Button,
+  Field,
+  Input,
+  Panel,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@franco_roura/module-01";
+import { ColorDot, ColorPicker, categoryColors } from "@franco_roura/module-01/finance";
 import { type Label, LabelService } from "@ledger-01/api";
-import { Button } from "@ledger-01/ui/components/button";
-import { ColorDot } from "@ledger-01/ui/components/category-icon";
-import { Field } from "@ledger-01/ui/components/field";
-import { Input } from "@ledger-01/ui/components/input";
-import { Panel } from "@ledger-01/ui/components/panel";
-import { Popover, PopoverContent, PopoverTrigger } from "@ledger-01/ui/components/popover";
-import { categoryColors } from "@ledger-01/ui/lib/category-icons";
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
-import { ColorPicker } from "@/components/appearance-pickers";
 import { useLabels } from "@/lib/api/hooks";
 
 export default function LabelsPage() {
