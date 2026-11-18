@@ -34,7 +34,7 @@ JOIN transactions t ON t.id = tl.transaction_id
 WHERE t.household_id = @household_id ORDER BY tl.transaction_id, tl.label_id;
 
 -- name: BackupBudgets :many
-SELECT id, name, amount_minor, currency, repeat, start_date, end_date FROM budgets
+SELECT id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories FROM budgets
 WHERE household_id = @household_id ORDER BY created_at, id;
 
 -- name: BackupBudgetWallets :many
@@ -140,8 +140,8 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 INSERT INTO transaction_labels (transaction_id, label_id) VALUES ($1, $2);
 
 -- name: RestoreBudget :exec
-INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date)
-VALUES (@id, @household_id, @name, @amount_minor, @currency, @repeat, @start_date, sqlc.narg(end_date));
+INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories)
+VALUES (@id, @household_id, @name, @amount_minor, @currency, @repeat, @start_date, sqlc.narg(end_date), @all_wallets, @all_categories);
 
 -- name: RestoreBudgetWallets :copyfrom
 INSERT INTO budget_wallets (budget_id, wallet_id) VALUES ($1, $2);

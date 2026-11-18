@@ -64,18 +64,20 @@ WHERE t.household_id = $1
   AND t.kind = 'expense'
   AND t.occurred_on BETWEEN $2 AND $3
   AND t.occurred_on <= $4
-  AND (CASE WHEN cardinality($5::uuid[]) = 0 THEN w.archived_at IS NULL ELSE t.wallet_id = ANY($5::uuid[]) END)
-  AND (cardinality($6::uuid[]) = 0 OR t.category_id = ANY($6::uuid[]))
+  AND (CASE WHEN $5::bool THEN w.archived_at IS NULL ELSE t.wallet_id = ANY($6::uuid[]) END)
+  AND ($7::bool OR t.category_id = ANY($8::uuid[]))
 ORDER BY t.occurred_on DESC, t.created_at DESC
 `
 
 type BudgetExpensesParams struct {
-	HouseholdID uuid.UUID
-	FromDate    time.Time
-	ToDate      time.Time
-	Today       time.Time
-	WalletIds   []uuid.UUID
-	CategoryIds []uuid.UUID
+	HouseholdID   uuid.UUID
+	FromDate      time.Time
+	ToDate        time.Time
+	Today         time.Time
+	AllWallets    bool
+	WalletIds     []uuid.UUID
+	AllCategories bool
+	CategoryIds   []uuid.UUID
 }
 
 type BudgetExpensesRow struct {
@@ -102,7 +104,9 @@ func (q *Queries) BudgetExpenses(ctx context.Context, arg BudgetExpensesParams) 
 		arg.FromDate,
 		arg.ToDate,
 		arg.Today,
+		arg.AllWallets,
 		arg.WalletIds,
+		arg.AllCategories,
 		arg.CategoryIds,
 	)
 	if err != nil {
@@ -189,20 +193,22 @@ func (q *Queries) CountWalletsByIDs(ctx context.Context, arg CountWalletsByIDsPa
 }
 
 const createBudget = `-- name: CreateBudget :one
-INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING id
 `
 
 type CreateBudgetParams struct {
-	ID          uuid.UUID
-	HouseholdID uuid.UUID
-	Name        string
-	AmountMinor int64
-	Currency    string
-	Repeat      BudgetRepeat
-	StartDate   time.Time
-	EndDate     *time.Time
+	ID            uuid.UUID
+	HouseholdID   uuid.UUID
+	Name          string
+	AmountMinor   int64
+	Currency      string
+	Repeat        BudgetRepeat
+	StartDate     time.Time
+	EndDate       *time.Time
+	AllWallets    bool
+	AllCategories bool
 }
 
 func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (uuid.UUID, error) {
@@ -215,6 +221,8 @@ func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (uui
 		arg.Repeat,
 		arg.StartDate,
 		arg.EndDate,
+		arg.AllWallets,
+		arg.AllCategories,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -239,7 +247,7 @@ func (q *Queries) DeleteBudget(ctx context.Context, arg DeleteBudgetParams) (int
 }
 
 const getBudget = `-- name: GetBudget :one
-SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at,
+SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at, b.all_wallets, b.all_categories,
        coalesce((SELECT array_agg(bw.wallet_id ORDER BY bw.wallet_id) FROM budget_wallets bw WHERE bw.budget_id = b.id), '{}')::uuid[] AS wallet_ids,
        coalesce((SELECT array_agg(bc.category_id ORDER BY bc.category_id) FROM budget_categories bc WHERE bc.budget_id = b.id), '{}')::uuid[] AS category_ids
 FROM budgets b
@@ -252,18 +260,20 @@ type GetBudgetParams struct {
 }
 
 type GetBudgetRow struct {
-	ID          uuid.UUID
-	HouseholdID uuid.UUID
-	Name        string
-	AmountMinor int64
-	Currency    string
-	Repeat      BudgetRepeat
-	StartDate   time.Time
-	EndDate     *time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	WalletIds   []uuid.UUID
-	CategoryIds []uuid.UUID
+	ID            uuid.UUID
+	HouseholdID   uuid.UUID
+	Name          string
+	AmountMinor   int64
+	Currency      string
+	Repeat        BudgetRepeat
+	StartDate     time.Time
+	EndDate       *time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	AllWallets    bool
+	AllCategories bool
+	WalletIds     []uuid.UUID
+	CategoryIds   []uuid.UUID
 }
 
 func (q *Queries) GetBudget(ctx context.Context, arg GetBudgetParams) (GetBudgetRow, error) {
@@ -280,6 +290,8 @@ func (q *Queries) GetBudget(ctx context.Context, arg GetBudgetParams) (GetBudget
 		&i.EndDate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AllWallets,
+		&i.AllCategories,
 		&i.WalletIds,
 		&i.CategoryIds,
 	)
@@ -287,7 +299,7 @@ func (q *Queries) GetBudget(ctx context.Context, arg GetBudgetParams) (GetBudget
 }
 
 const listBudgets = `-- name: ListBudgets :many
-SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at,
+SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at, b.all_wallets, b.all_categories,
        coalesce((SELECT array_agg(bw.wallet_id ORDER BY bw.wallet_id) FROM budget_wallets bw WHERE bw.budget_id = b.id), '{}')::uuid[] AS wallet_ids,
        coalesce((SELECT array_agg(bc.category_id ORDER BY bc.category_id) FROM budget_categories bc WHERE bc.budget_id = b.id), '{}')::uuid[] AS category_ids
 FROM budgets b
@@ -296,18 +308,20 @@ ORDER BY lower(b.name), b.id
 `
 
 type ListBudgetsRow struct {
-	ID          uuid.UUID
-	HouseholdID uuid.UUID
-	Name        string
-	AmountMinor int64
-	Currency    string
-	Repeat      BudgetRepeat
-	StartDate   time.Time
-	EndDate     *time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	WalletIds   []uuid.UUID
-	CategoryIds []uuid.UUID
+	ID            uuid.UUID
+	HouseholdID   uuid.UUID
+	Name          string
+	AmountMinor   int64
+	Currency      string
+	Repeat        BudgetRepeat
+	StartDate     time.Time
+	EndDate       *time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	AllWallets    bool
+	AllCategories bool
+	WalletIds     []uuid.UUID
+	CategoryIds   []uuid.UUID
 }
 
 func (q *Queries) ListBudgets(ctx context.Context, householdID uuid.UUID) ([]ListBudgetsRow, error) {
@@ -330,6 +344,8 @@ func (q *Queries) ListBudgets(ctx context.Context, householdID uuid.UUID) ([]Lis
 			&i.EndDate,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AllWallets,
+			&i.AllCategories,
 			&i.WalletIds,
 			&i.CategoryIds,
 		); err != nil {
@@ -344,43 +360,52 @@ func (q *Queries) ListBudgets(ctx context.Context, householdID uuid.UUID) ([]Lis
 }
 
 const reassignBudgetCategories = `-- name: ReassignBudgetCategories :exec
-INSERT INTO budget_categories (budget_id, category_id)
-SELECT DISTINCT bc.budget_id, $1::uuid
-FROM budget_categories bc
-JOIN budgets b ON b.id = bc.budget_id
-WHERE b.household_id = $2 AND bc.category_id = ANY($3::uuid[])
-ON CONFLICT DO NOTHING
+WITH reassigned AS (
+    INSERT INTO budget_categories (budget_id, category_id)
+    SELECT DISTINCT bc.budget_id, $3::uuid
+    FROM budget_categories bc
+    JOIN budgets b ON b.id = bc.budget_id
+    WHERE b.household_id = $1 AND bc.category_id = ANY($2::uuid[])
+    ON CONFLICT DO NOTHING
+)
+DELETE FROM budget_categories bc
+USING budgets b
+WHERE b.id = bc.budget_id AND b.household_id = $1
+  AND bc.category_id = ANY($2::uuid[])
 `
 
 type ReassignBudgetCategoriesParams struct {
-	ToID        uuid.UUID
 	HouseholdID uuid.UUID
 	FromIds     []uuid.UUID
+	ToID        uuid.UUID
 }
 
 // Before categories are merged or deleted with a replacement, budgets that counted them count
 // the replacement instead.
 func (q *Queries) ReassignBudgetCategories(ctx context.Context, arg ReassignBudgetCategoriesParams) error {
-	_, err := q.db.Exec(ctx, reassignBudgetCategories, arg.ToID, arg.HouseholdID, arg.FromIds)
+	_, err := q.db.Exec(ctx, reassignBudgetCategories, arg.HouseholdID, arg.FromIds, arg.ToID)
 	return err
 }
 
 const updateBudget = `-- name: UpdateBudget :execrows
 UPDATE budgets
 SET name = $1, amount_minor = $2, currency = $3, repeat = $4,
-    start_date = $5, end_date = $6, updated_at = now()
-WHERE id = $7 AND household_id = $8
+    start_date = $5, end_date = $6,
+    all_wallets = $7, all_categories = $8, updated_at = now()
+WHERE id = $9 AND household_id = $10
 `
 
 type UpdateBudgetParams struct {
-	Name        string
-	AmountMinor int64
-	Currency    string
-	Repeat      BudgetRepeat
-	StartDate   time.Time
-	EndDate     *time.Time
-	ID          uuid.UUID
-	HouseholdID uuid.UUID
+	Name          string
+	AmountMinor   int64
+	Currency      string
+	Repeat        BudgetRepeat
+	StartDate     time.Time
+	EndDate       *time.Time
+	AllWallets    bool
+	AllCategories bool
+	ID            uuid.UUID
+	HouseholdID   uuid.UUID
 }
 
 func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (int64, error) {
@@ -391,6 +416,8 @@ func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (int
 		arg.Repeat,
 		arg.StartDate,
 		arg.EndDate,
+		arg.AllWallets,
+		arg.AllCategories,
 		arg.ID,
 		arg.HouseholdID,
 	)

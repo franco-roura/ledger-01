@@ -35,10 +35,11 @@ message Budget {
   string start_date = 6;
   // Only for BUDGET_REPEAT_ONCE.
   string end_date = 7;
-  // Empty means every wallet that isn't archived.
   repeated string wallet_ids = 8;
-  // Empty means every expense category.
   repeated string category_ids = 9;
+  // When false, an empty selection counts no expenses.
+  bool all_wallets = 10;
+  bool all_categories = 11;
 }
 
 enum BudgetState {
@@ -126,6 +127,10 @@ message BudgetInput {
   string end_date = 6;
   repeated string wallet_ids = 7;
   repeated string category_ids = 8;
+  // Older clients can omit these flags. An empty selection uses the legacy "all" default,
+  // except when editing an existing empty scope, which is preserved.
+  optional bool all_wallets = 9;
+  optional bool all_categories = 10;
 }
 
 message CreateBudgetRequest {

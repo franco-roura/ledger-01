@@ -151,7 +151,7 @@ func (s *Service) ArchiveWallet(ctx context.Context, a Actor, id uuid.UUID) erro
 func (s *Service) DeleteWallet(ctx context.Context, a Actor, id uuid.UUID) error {
 	n, err := s.q.DeleteEmptyWallet(ctx, dbq.DeleteEmptyWalletParams{ID: id, HouseholdID: a.HouseholdID})
 	if err != nil {
-		return err
+		return dbErr(err, "wallet")
 	}
 	if n == 0 {
 		if _, err := s.GetWallet(ctx, a, id); err != nil {

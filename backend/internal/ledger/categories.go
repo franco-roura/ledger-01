@@ -148,6 +148,12 @@ func (s *Service) DeleteCategory(ctx context.Context, a Actor, id uuid.UUID, rep
 		if err != nil {
 			return dbErr(err, "category")
 		}
+		// Unused categories may still be selected by budgets or import rules.
+		if replacement != nil {
+			if err := checkTarget(ctx, q, a, *replacement, c.Kind, []uuid.UUID{id}); err != nil {
+				return err
+			}
+		}
 		used, err := q.CountCategoryTransactions(ctx, []uuid.UUID{id})
 		if err != nil {
 			return err
@@ -162,9 +168,6 @@ func (s *Service) DeleteCategory(ctx context.Context, a Actor, id uuid.UUID, rep
 			}
 			if replacement == nil {
 				return invalid("replacement_id", "category has %d transactions; choose a replacement or archive it", used)
-			}
-			if err := checkTarget(ctx, q, a, *replacement, c.Kind, []uuid.UUID{id}); err != nil {
-				return err
 			}
 			if moved, err = q.ReassignCategories(ctx, dbq.ReassignCategoriesParams{
 				ToID: replacement, HouseholdID: a.HouseholdID, FromIds: []uuid.UUID{id},
@@ -190,7 +193,7 @@ func (s *Service) DeleteCategory(ctx context.Context, a Actor, id uuid.UUID, rep
 			}
 		}
 		_, err = q.DeleteCategories(ctx, dbq.DeleteCategoriesParams{HouseholdID: a.HouseholdID, Ids: []uuid.UUID{id}})
-		return err
+		return dbErr(err, "category")
 	})
 	return moved, err
 }

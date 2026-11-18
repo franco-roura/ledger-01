@@ -14,14 +14,15 @@ FROM budgets b
 WHERE b.id = @id AND b.household_id = @household_id;
 
 -- name: CreateBudget :one
-INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date)
-VALUES (@id, @household_id, @name, @amount_minor, @currency, @repeat, @start_date, sqlc.narg(end_date))
+INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories)
+VALUES (@id, @household_id, @name, @amount_minor, @currency, @repeat, @start_date, sqlc.narg(end_date), @all_wallets, @all_categories)
 RETURNING id;
 
 -- name: UpdateBudget :execrows
 UPDATE budgets
 SET name = @name, amount_minor = @amount_minor, currency = @currency, repeat = @repeat,
-    start_date = @start_date, end_date = sqlc.narg(end_date), updated_at = now()
+    start_date = @start_date, end_date = sqlc.narg(end_date),
+    all_wallets = @all_wallets, all_categories = @all_categories, updated_at = now()
 WHERE id = @id AND household_id = @household_id;
 
 -- name: DeleteBudget :execrows
@@ -44,12 +45,18 @@ SELECT @budget_id, unnest(@category_ids::uuid[]);
 -- name: ReassignBudgetCategories :exec
 -- Before categories are merged or deleted with a replacement, budgets that counted them count
 -- the replacement instead.
-INSERT INTO budget_categories (budget_id, category_id)
-SELECT DISTINCT bc.budget_id, @to_id::uuid
-FROM budget_categories bc
-JOIN budgets b ON b.id = bc.budget_id
-WHERE b.household_id = @household_id AND bc.category_id = ANY(@from_ids::uuid[])
-ON CONFLICT DO NOTHING;
+WITH reassigned AS (
+    INSERT INTO budget_categories (budget_id, category_id)
+    SELECT DISTINCT bc.budget_id, @to_id::uuid
+    FROM budget_categories bc
+    JOIN budgets b ON b.id = bc.budget_id
+    WHERE b.household_id = @household_id AND bc.category_id = ANY(@from_ids::uuid[])
+    ON CONFLICT DO NOTHING
+)
+DELETE FROM budget_categories bc
+USING budgets b
+WHERE b.id = bc.budget_id AND b.household_id = @household_id
+  AND bc.category_id = ANY(@from_ids::uuid[]);
 
 -- name: CountWalletsByIDs :one
 SELECT count(*) FROM wallets WHERE household_id = @household_id AND id = ANY(@ids::uuid[]);
@@ -82,6 +89,6 @@ WHERE t.household_id = @household_id
   AND t.kind = 'expense'
   AND t.occurred_on BETWEEN @from_date AND @to_date
   AND t.occurred_on <= @today
-  AND (CASE WHEN cardinality(@wallet_ids::uuid[]) = 0 THEN w.archived_at IS NULL ELSE t.wallet_id = ANY(@wallet_ids::uuid[]) END)
-  AND (cardinality(@category_ids::uuid[]) = 0 OR t.category_id = ANY(@category_ids::uuid[]))
+  AND (CASE WHEN @all_wallets::bool THEN w.archived_at IS NULL ELSE t.wallet_id = ANY(@wallet_ids::uuid[]) END)
+  AND (@all_categories::bool OR t.category_id = ANY(@category_ids::uuid[]))
 ORDER BY t.occurred_on DESC, t.created_at DESC;
