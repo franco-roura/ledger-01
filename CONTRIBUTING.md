@@ -1,6 +1,7 @@
 # Contributing
 
-Thanks for helping out. Bug reports, fixes and new bank definitions are all welcome.
+Thanks for helping out. Bug reports, fixes and new bank definitions are all welcome. Please follow
+the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## Getting started
 
