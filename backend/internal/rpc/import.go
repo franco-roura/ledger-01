@@ -9,6 +9,7 @@ import (
 	"github.com/franco-roura/ledger-01/backend/internal/importer/banks"
 	"github.com/franco-roura/ledger-01/backend/internal/ledger"
 	"github.com/franco-roura/ledger-01/backend/internal/money"
+	"github.com/google/uuid"
 )
 
 // ImportReadMaxBytes caps an ImportService request: a 4 MB file is ~5.6 MB as base64 in JSON.
@@ -36,7 +37,8 @@ func mappingFromProto(m *v1.ImportMapping) (importer.Mapping, error) {
 	out := importer.Mapping{
 		Skip: int(m.SkipRows), HasHeader: m.HasHeader, Date: int(m.DateColumn), DateFormat: m.DateFormat, Amount: optColumn(m.AmountColumn),
 		Debit: optColumn(m.DebitColumn), Credit: optColumn(m.CreditColumn), Note: optColumn(m.NoteColumn),
-		Category: optColumn(m.CategoryColumn), Bank: m.Bank,
+		Category: optColumn(m.CategoryColumn), Bank: m.Bank, PaidFrom: m.PaidFromWalletId,
+		CardWallets: m.CardWalletIds, PayingWallets: m.PayingWalletIds,
 	}
 	switch m.Sign {
 	case v1.ImportSign_IMPORT_SIGN_NEGATIVE_IS_EXPENSE:
@@ -57,7 +59,7 @@ func mappingToProto(m importer.Mapping) *v1.ImportMapping {
 	out := &v1.ImportMapping{
 		SkipRows: int32(m.Skip), HasHeader: m.HasHeader, DateColumn: int32(max(m.Date, 0)), DateFormat: m.DateFormat, AmountColumn: protoColumn(m.Amount),
 		DebitColumn: protoColumn(m.Debit), CreditColumn: protoColumn(m.Credit), NoteColumn: protoColumn(m.Note),
-		CategoryColumn: protoColumn(m.Category), Bank: m.Bank,
+		CategoryColumn: protoColumn(m.Category), Bank: m.Bank, CardWalletIds: m.CardWallets, PayingWalletIds: m.PayingWallets,
 	}
 	switch m.Sign {
 	case importer.NegativeIsExpense:
@@ -75,7 +77,10 @@ func mappingToProto(m importer.Mapping) *v1.ImportMapping {
 }
 
 func importRowToProto(r ledger.ImportRow) *v1.ImportRow {
-	out := &v1.ImportRow{Index: int32(r.Index), Cells: r.Cells, Error: r.Err}
+	out := &v1.ImportRow{Index: int32(r.Index), Cells: r.Cells, Error: r.Err, Currency: r.Currency}
+	if r.WalletID != uuid.Nil {
+		out.WalletId = r.WalletID.String()
+	}
 	if r.Err != "" {
 		return out
 	}
@@ -120,6 +125,13 @@ func importRowToProto(r ledger.ImportRow) *v1.ImportRow {
 	if r.RefundsNote != "" {
 		out.RefundsNote, out.RefundsDate = r.RefundsNote, money.FormatDate(r.RefundsDate)
 	}
+	for _, p := range r.Payments {
+		out.Payments = append(out.Payments, &v1.ImportCardDebit{
+			TransactionId: p.ID.String(), WalletId: p.WalletID.String(), WalletName: p.WalletName, Currency: p.Currency,
+			AmountMinor: p.Amount, OccurredOn: money.FormatDate(p.Date), Note: p.Note, PartMinor: p.Part,
+			RateUnchecked: p.RateUnchecked,
+		})
+	}
 	return out
 }
 
@@ -140,12 +152,21 @@ func (s *Server) UploadImportFile(ctx context.Context, req *connect.Request[v1.U
 	for i, row := range u.Sample {
 		sample[i] = &v1.ImportCells{Cells: row}
 	}
-	return connect.NewResponse(&v1.UploadImportFileResponse{
+	out := &v1.UploadImportFileResponse{
 		BatchId: u.BatchID.String(), ColumnCount: int32(u.Columns), RowCount: int32(u.Rows), Sample: sample,
 		Mapping: mappingToProto(u.Mapping), SavedMapping: u.SavedMapping, Format: u.Info.Format,
 		Encoding: u.Info.Encoding, Delimiter: u.Info.Delimiter, DateFormats: importer.DateFormats,
 		Banks: banksToProto(),
-	}), nil
+	}
+	if st := u.Statement; st != nil {
+		out.Statement = &v1.ImportStatement{BankName: st.Bank, IssuedOn: money.FormatDate(st.Issued), DueOn: money.FormatDate(st.Due)}
+		for _, c := range st.Currencies {
+			out.Statement.Currencies = append(out.Statement.Currencies, &v1.ImportStatementCurrency{
+				Currency: c.Code, Lines: int32(c.Lines), SpentMinor: c.Spent,
+			})
+		}
+	}
+	return connect.NewResponse(out), nil
 }
 
 func (s *Server) PreviewImport(ctx context.Context, req *connect.Request[v1.PreviewImportRequest]) (*connect.Response[v1.PreviewImportResponse], error) {
@@ -189,7 +210,7 @@ func (s *Server) CommitImport(ctx context.Context, req *connect.Request[v1.Commi
 	choices := make([]ledger.ImportChoice, len(m.Rows))
 	for i, r := range m.Rows {
 		choices[i].Index = int(r.Index)
-		// Empty only for discounts of earlier purchases; the service checks the rest.
+		// Empty only for discounts of earlier purchases and card payments; the service checks the rest.
 		if r.CategoryId == "" {
 			continue
 		}
@@ -256,10 +277,12 @@ func (s *Server) DeleteCategoryRule(ctx context.Context, req *connect.Request[v1
 }
 
 func banksToProto() []*v1.ImportBank {
-	all := banks.All()
-	out := make([]*v1.ImportBank, len(all))
-	for i, b := range all {
-		out[i] = &v1.ImportBank{Id: b.ID, Name: b.Name, Country: b.Country}
+	var out []*v1.ImportBank
+	for _, b := range banks.All() {
+		// Statement readers are picked by the PDF, not from a table's columns.
+		if b.Statement == nil {
+			out = append(out, &v1.ImportBank{Id: b.ID, Name: b.Name, Country: b.Country})
+		}
 	}
 	return out
 }

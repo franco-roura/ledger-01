@@ -25,7 +25,16 @@ const (
 	RoleDiscount
 	// RoleRefund: a purchase given back, in full or in part.
 	RoleRefund
+	// RoleCardDebit: in a bank account, the debit that pays a card's statement. Importing that
+	// statement into the card's wallet turns it into a transfer to the card.
+	RoleCardDebit
+	// RoleCardPayment: in a card statement, the payment of the bill (money into the card).
+	RoleCardPayment
 )
+
+// CardPaymentWindow is how far a card's payment and the bank debit that paid it may be apart:
+// banks debit on the due date or the next working day, and list the payment within days.
+const CardPaymentWindow = 5 * 24 * time.Hour
 
 // Default windows: how long after its purchase an adjustment may be listed.
 const (
@@ -56,6 +65,26 @@ type Bank struct {
 	Name     string
 	Country  string // ISO 3166-1 alpha-2, empty for Generic
 	Patterns []Pattern
+	// Statement reads the bank's card statement PDFs; nil for banks that only export tables.
+	// ok is false when the lines aren't one of its statements.
+	Statement func(lines []TextLine) (st Statement, ok bool, err error)
+}
+
+// CardDebit says whether a bank account's row is a card statement's debit, as any of banks
+// words it.
+func CardDebit(note string, banks []Bank) bool {
+	for _, b := range banks {
+		if role, _, _ := b.Classify(note); role == RoleCardDebit {
+			return true
+		}
+	}
+	return false
+}
+
+// CardPayment says whether a card statement's row is the payment of a bill.
+func (b Bank) CardPayment(note string) bool {
+	role, _, _ := b.Classify(note)
+	return role == RoleCardPayment
 }
 
 // Generic is the bank with no wording rules: rows are still fingerprinted and checked for
@@ -83,6 +112,8 @@ func defaultWindow(r Role) time.Duration {
 		return DefaultDiscountWindow
 	case RoleRefund:
 		return DefaultRefundWindow
+	case RoleCardDebit, RoleCardPayment:
+		return CardPaymentWindow
 	}
 	return 0
 }
@@ -139,7 +170,8 @@ func DetectBank(rows []Row, banks []Bank) Bank {
 	}
 	best, bestN := Generic, 0
 	for _, b := range banks {
-		if len(b.Patterns) == 0 {
+		// Statement banks are chosen by their reader, never from a table's descriptions.
+		if len(b.Patterns) == 0 || b.Statement != nil {
 			continue
 		}
 		n := 0

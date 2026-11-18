@@ -45,11 +45,35 @@ Ledger/01 recognises discounts and refunds and counts them against the purchase 
 
 To do this it needs to know how your bank words these lines.
 
+## Card statements
+
+Some banks only give you the card's spending as a PDF, and the account just shows one debit for
+the whole bill. A card that spends in two currencies (pesos and dollars, say) keeps each in a
+wallet of its own. Drop the statement PDF on the **Import** page of any of the card's wallets:
+
+1. **Match the card's wallets:** each currency on the statement goes to the card's wallet in that
+   currency. Pick it, create it on the spot, or leave that currency's lines out. Then pick the
+   accounts the bill is debited from (all other accounts by default). Both are remembered on every
+   card wallet, so next month the statement goes straight to the review, whichever wallet you
+   drop it on. A month with only one currency simply imports that one.
+2. **Review the rows:** purchases and fees become expenses, grouped by the wallet they go to. An
+   instalment (`2/3`) is dated on the statement's issue date, with its number and purchase date in
+   the note.
+3. **The bill's payments** each find the debit already imported in one of the paying accounts and
+   turn it into a transfer to the card, at the rate the two amounts imply. The debit no longer
+   counts as spending, and the card's balance goes back to zero.
+
+The bank doesn't always debit each total from the account in its currency. A debit for the same
+amount in the same currency is taken first. Otherwise a debit in the other currency is matched
+when its rate is within 15% of your own recent exchanges. A total paid partly from each account
+becomes two transfers. If no debit is found yet, the payment is left out; next month's statement
+lists it again.
+
 ## Supported banks
 
-| Country | Bank |
-| ------- | ---- |
-| Uruguay | Itaú |
+| Country | Bank                                       |
+| ------- | ------------------------------------------ |
+| Uruguay | Itaú (account statements, Visa statements) |
 
 **Your bank isn't listed? Please add it.** A bank is one small Go file with a few patterns and a test,
 and pull requests are welcome. [CONTRIBUTING.md](../CONTRIBUTING.md#adding-your-bank) walks you

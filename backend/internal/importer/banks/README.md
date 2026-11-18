@@ -8,6 +8,7 @@ file per bank, so discounts and refunds get matched to their purchase:
 | Bank | Country | File |
 |---|---|---|
 | Itaú | Uruguay | [`uy/itau.go`](uy/itau.go) |
+| Itaú Visa (card statement PDF) | Uruguay | [`uy/itau_visa.go`](uy/itau_visa.go) |
 
 Any other bank imports as "Other bank". Fingerprints, duplicate detection and the column mapping
 still work, but discount and refund rows stay as their own rows.
@@ -51,5 +52,11 @@ there.
 
    **Use made-up data only**: no real names, account numbers, merchants you can be traced to,
    or amounts from your statements.
-5. **Check and open the PR:** run `task test` and `task lint`, then open a PR that names the bank
+5. **Card statements (PDF), optional.** A bank whose card statements are PDFs can read them with a
+   `Statement` func (see [`uy/itau_visa.go`](uy/itau_visa.go)). It gets the PDF's lines of
+   positioned words and returns the movements, the issue and due dates, and the automatic debit
+   of the total. Give the bill's payment a `RoleCardPayment` pattern, and the account's debit for
+   it a `RoleCardDebit` pattern in the account's bank. Build test PDFs with
+   `internal/importer/pdftest`, never from a real statement.
+6. **Check and open the PR:** run `task test` and `task lint`, then open a PR that names the bank
    and country and shows one anonymised sample line per pattern.
