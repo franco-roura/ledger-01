@@ -64,7 +64,8 @@ A transfer to a wallet in another currency asks for any two of sent, received an
 Rather than typing months of history, import your bank's statement. In a wallet, choose **Import**,
 or drop the file anywhere on the page.
 
-1. **Choose a file:** CSV, XLSX or XLS.
+1. **Choose a file:** CSV, XLSX or XLS, or a card statement PDF (see
+   [card statements](your-data.md#card-statements)).
 2. **Match the columns:** date, amount and description are guessed from the headers, and you can fix
    them. Ledger/01 remembers the mapping for next time.
 3. **Review the rows:** pick categories, tick or untick rows, and turn a row into a rule ("when the

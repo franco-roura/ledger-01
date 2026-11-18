@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -130,7 +131,7 @@ func TestImportReviewAndCommit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !again.SavedMapping || again.Mapping != up.Mapping {
+	if !again.SavedMapping || !reflect.DeepEqual(again.Mapping, up.Mapping) {
 		t.Fatalf("saved mapping = %v %+v", again.SavedMapping, again.Mapping)
 	}
 	rows, _, err = svc.PreviewImport(ctx, a, again.BatchID, again.Mapping, 0)

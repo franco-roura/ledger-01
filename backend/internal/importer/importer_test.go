@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -71,7 +72,7 @@ func TestNorthbankCSV(t *testing.T) {
 	}
 	m := GuessMapping(g)
 	want := Mapping{HasHeader: true, Date: 0, DateFormat: "yyyy-mm-dd", Amount: 2, Debit: -1, Credit: -1, Sign: NegativeIsExpense, Decimal: '.', Note: 1, Category: -1}
-	if m != want {
+	if !reflect.DeepEqual(m, want) {
 		t.Fatalf("guess = %+v\nwant    %+v", m, want)
 	}
 	if err := m.Validate(g.Columns(), len(g)); err != nil {
@@ -97,7 +98,7 @@ func TestBancoSurLatin1DebitCredit(t *testing.T) {
 	}
 	m := GuessMapping(g)
 	want := Mapping{HasHeader: true, Date: 0, DateFormat: "dd/mm/yyyy", Amount: -1, Debit: 2, Credit: 3, Sign: NegativeIsExpense, Decimal: ',', Note: 1, Category: -1}
-	if m != want {
+	if !reflect.DeepEqual(m, want) {
 		t.Fatalf("guess = %+v\nwant    %+v", m, want)
 	}
 	got := summary(Apply(g, m, 2))

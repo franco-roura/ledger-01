@@ -8,6 +8,11 @@ import "ledger/v1/transaction.proto";
 // rows, import them. The server parses the file and keeps its rows for 24 hours between the
 // steps, so each step may reach a different API instance. Imported rows are expenses and income
 // in the wallet's currency, validated like manual entries.
+//
+// A card statement PDF imports with no columns to map into the card's wallets, one per currency
+// the card spends in (card_wallet_ids): its purchases as expenses, and the bill's payments as
+// transfers made from the bank debits already in the accounts that pay the card
+// (paying_wallet_ids), whatever their currency.
 
 // Which amounts are money going out.
 enum ImportSign {
@@ -50,6 +55,49 @@ message ImportMapping {
   // Upload fills it in with the wallet's saved bank, else the one detected from the descriptions;
   // empty when none was detected, which detects again on every read ("generic" turns it off).
   string bank = 12;
+  // Card statements only: the card's wallets by ISO 4217 currency (an empty id leaves that
+  // currency's lines out), and the accounts the bill may be debited from, where each payment's
+  // debit is looked for (empty: every wallet that isn't the card's). Saved on every card wallet,
+  // so the statement can be dropped on either.
+  map<string, string> card_wallet_ids = 14;
+  repeated string paying_wallet_ids = 15;
+  // Deprecated: read as one of paying_wallet_ids.
+  string paid_from_wallet_id = 13 [deprecated = true];
+}
+
+// A card statement PDF, as read.
+message ImportStatement {
+  // The bank's statement, e.g. "Itaú Visa (PDF)".
+  string bank_name = 1;
+  string issued_on = 2;
+  string due_on = 3;
+  reserved 4;
+  // The currencies it has lines in, in the statement's order.
+  repeated ImportStatementCurrency currencies = 5;
+}
+
+message ImportStatementCurrency {
+  string currency = 1;
+  int32 lines = 2;
+  // Purchases and fees, positive, in the currency's minor units.
+  int64 spent_minor = 3;
+}
+
+// The bank debit that paid a card statement's payment, in the wallet that pays the card.
+message ImportCardDebit {
+  string transaction_id = 1;
+  string wallet_id = 2;
+  string wallet_name = 3;
+  string currency = 4;
+  // Positive, in the paying wallet's currency.
+  int64 amount_minor = 5;
+  string occurred_on = 6;
+  string note = 7;
+  // The part of the payment it pays, in the card wallet's currency: all of it, or its share
+  // when the bank took part from each account.
+  int64 part_minor = 8;
+  // A debit in another currency, matched without a household rate to compare it with.
+  bool rate_unchecked = 9;
 }
 
 // A bank whose statement wording the import knows ("generic" knows none).
@@ -72,9 +120,9 @@ message ImportRow {
   // Why the row can't be imported; the fields below are empty when set.
   string error = 3;
   string occurred_on = 4;
-  // Positive, in the wallet's currency.
+  // Positive, in the currency of the wallet it imports into.
   int64 amount_minor = 5;
-  // EXPENSE or INCOME.
+  // EXPENSE or INCOME; TRANSFER_IN for a card statement's payment.
   TransactionKind kind = 6;
   string note = 7;
   // The suggested category: from the category column, else from a category rule. Empty when
@@ -110,6 +158,16 @@ message ImportRow {
   // unticked; importing it adds the refund as income.
   string refunds_note = 22;
   string refunds_date = 23;
+  reserved 24;
+  // The wallet the row imports into and its currency: the uploading wallet, or for a card
+  // statement the card's wallet in the row's currency.
+  string wallet_id = 25;
+  string currency = 26;
+  // A card statement's payment (kind TRANSFER_IN) and the debits that paid it (one, or one per
+  // account when the bank took part from each): importing it turns those expenses into transfers
+  // to the card, so it needs no category. A payment without any can't be imported (error says
+  // why).
+  repeated ImportCardDebit payments = 27;
 }
 
 enum ImportDuplicate {
@@ -135,7 +193,8 @@ message CategoryRule {
 
 service ImportService {
   // Parses a CSV (UTF-8, UTF-16 or Windows-1252; comma, semicolon, tab or pipe) or XLSX file of
-  // at most 4 MB and 10,000 rows. Legacy .xls isn't supported.
+  // at most 4 MB and 10,000 rows, or a card statement PDF of a known bank. Legacy .xls isn't
+  // supported.
   rpc UploadImportFile(UploadImportFileRequest) returns (UploadImportFileResponse);
   // Reads the uploaded rows with a mapping.
   rpc PreviewImport(PreviewImportRequest) returns (PreviewImportResponse);
@@ -164,14 +223,17 @@ message UploadImportFileResponse {
   // the headers and values.
   ImportMapping mapping = 5;
   bool saved_mapping = 6;
-  // "csv" or "xlsx", and for CSV the detected encoding and delimiter.
+  // "csv", "xlsx" or "pdf", and for CSV the detected encoding and delimiter.
   string format = 7;
   string encoding = 8;
   string delimiter = 9;
   // The date formats a mapping may use.
   repeated string date_formats = 10;
-  // Banks to choose from, "generic" first.
+  // Banks to choose from, "generic" first (card statement readers aren't listed).
   repeated ImportBank banks = 11;
+  // Set for a card statement PDF. Its mapping is fixed (columns: date, description, amount);
+  // only paid_from_wallet_id is the user's to choose.
+  ImportStatement statement = 12;
 }
 
 message PreviewImportRequest {
@@ -190,7 +252,7 @@ message PreviewImportResponse {
 message ImportChoice {
   int32 index = 1;
   // The suggested category or another of the row's kind. Not needed for a row that discounts an
-  // earlier purchase (discounts_transaction_id).
+  // earlier purchase (discounts_transaction_id) or a card statement's payment.
   string category_id = 2;
 }
 

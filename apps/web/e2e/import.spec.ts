@@ -8,6 +8,10 @@ const email = process.env.E2E_EMAIL ?? "e2e@example.com";
 const statement = fileURLToPath(
   new URL("../../../backend/internal/importer/testdata/northbank.csv", import.meta.url),
 );
+// A made-up card statement PDF laid out like Itaú Uruguay's Visa (shared with the Go tests).
+const cardStatement = fileURLToPath(
+  new URL("../../../backend/internal/importer/testdata/card-statement.pdf", import.meta.url),
+);
 
 async function signIn(page: Page) {
   const res = await page.request.post("/auth/dev/login", { data: { email, name: "E2E Tester" } });
@@ -288,4 +292,68 @@ test("a statement can be dropped anywhere on the page", async ({ page }) => {
   await expect(page.getByText("Drop the statement")).toHaveCount(0);
   await expect(page.getByText("Acme Payroll", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Review rows" })).toBeVisible();
+});
+
+test("a card statement fills the card's wallet in each currency, and its debit becomes a transfer", async ({
+  page,
+}) => {
+  const id = unique();
+  const bankName = `E2E Account ${id}`;
+  const cardName = `E2E Visa ${id}`;
+  await signIn(page);
+  const api = (method: string, data: object) =>
+    page.request.post(`/api/ledger.v1.${method}`, { data }).then((r) => r.json());
+  const bank = (await api("WalletService/CreateWallet", { name: bankName, currency: "USD" }))
+    .wallet;
+  const card = (await api("WalletService/CreateWallet", { name: cardName, currency: "USD" }))
+    .wallet;
+  const { categories } = await api("CategoryService/ListCategories", {});
+  const expense = categories.find(
+    (c: { kind: string; archived?: boolean }) => c.kind === "CATEGORY_KIND_EXPENSE" && !c.archived,
+  );
+  // The account's statement already brought in the card's dollar debit, as an expense.
+  await api("TransactionService/CreateTransaction", {
+    walletId: bank.id,
+    kind: "TRANSACTION_KIND_EXPENSE",
+    categoryId: expense.id,
+    amountMinor: "2000",
+    occurredOn: "2026-11-16",
+    note: "DEB. VARIOS TARJ. VISA",
+  });
+
+  // A made-up statement in pesos and dollars, dropped on the card's dollar wallet: the pesos
+  // need a wallet of their own, made right here.
+  await page.goto(`/wallets/${card.id}/import`);
+  await page.getByLabel("Statement file").setInputFiles(cardStatement);
+  await expect(
+    page.getByText("statement of Tue, Nov 3, 2026, due Mon, Nov 16, 2026"),
+  ).toBeVisible();
+  await expect(page.getByLabel("USD wallet")).toContainText(cardName);
+  await page.getByLabel("UYU wallet").click();
+  await page.getByRole("option", { name: `New wallet “${cardName} UYU”` }).click();
+  await expect(page.getByLabel("UYU wallet")).toContainText(`${cardName} UYU`);
+  // Only this test's account pays the card (the household is shared with other runs).
+  await page.getByLabel("Accounts that pay this card").click();
+  await page.getByPlaceholder("Search accounts…").fill(bankName);
+  await page.getByRole("option", { name: new RegExp(bankName) }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByLabel("Accounts that pay this card")).toContainText(bankName);
+  await page.getByRole("button", { name: "Review rows" }).click();
+
+  // Rows are listed under the wallet they go to; the dollar total finds the dollar debit.
+  await expect(page.getByText(`${cardName} UYU · UYU`)).toBeVisible();
+  await expect(page.getByText(`${cardName} · USD`)).toBeVisible();
+  await expect(
+    page.getByText(
+      `Pays the card: the 20.00 USD debit “DEB. VARIOS TARJ. VISA” in ${bankName} on Mon, Nov 16, 2026 becomes a transfer`,
+    ),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Untick all" }).click();
+  await page.getByLabel("Import row 6").check();
+  await page.getByRole("button", { name: "Import 1 transaction" }).click();
+  await expect(page.getByText(/^Imported 1 transactions into /)).toBeVisible();
+
+  // In the account, the debit is now a transfer to the card's dollar wallet.
+  await page.goto(`/wallets/${bank.id}`);
+  await expect(page.getByText(`To ${cardName}`, { exact: false }).first()).toBeVisible();
 });

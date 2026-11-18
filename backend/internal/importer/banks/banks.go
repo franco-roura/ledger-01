@@ -12,6 +12,7 @@ func All() []importer.Bank {
 	return []importer.Bank{
 		importer.Generic,
 		uy.Itau,
+		uy.ItauVisa,
 	}
 }
 

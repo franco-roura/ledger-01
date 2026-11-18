@@ -68,8 +68,12 @@ export function checkMapping(m: ImportMapping, mode: AmountMode): MappingFault |
 /** A row can be ticked unless it can't be read or is a discount counted in another row. */
 export const canChoose = (r: ImportRow) => !r.error && r.mergedInto === undefined;
 
-/** Ticked rows need a category, except discounts that lower an earlier purchase. */
-export const needsCategory = (r: ImportRow) => canChoose(r) && !r.discountsTransactionId;
+/**
+ * Ticked rows need a category, except discounts that lower an earlier purchase and a card
+ * statement's payment (a transfer).
+ */
+export const needsCategory = (r: ImportRow) =>
+  canChoose(r) && !r.discountsTransactionId && r.payments.length === 0;
 
 /** A purchase refunded in full and its refund, in the file or against the wallet. */
 export const isRefundPair = (r: ImportRow) =>
@@ -163,7 +167,7 @@ const settledLabels: Record<SettledKind, (n: number) => string> = {
   imported: (n) => `${n} already imported`,
   duplicate: (n) => `${n} possible ${n === 1 ? "duplicate" : "duplicates"}`,
   refund: (n) => `${n} refund ${n === 1 ? "row" : "rows"} left out`,
-  unreadable: (n) => `${n} can't be read`,
+  unreadable: (n) => `${n} can't be imported`,
 };
 
 /** One line per settled kind for the "All" view, with the chip that lists them. */
@@ -192,9 +196,24 @@ export function duplicateBadge(r: ImportRow): string | undefined {
 
 /**
  * What a row matched or was merged with, in plain words, e.g. "Imported before; now “Snacks” on
- * Thu, Oct 1, 2026" or "Includes a discount of 16.39: REDIVA 19210MERCADO SOL".
+ * Thu, Oct 1, 2026" or "Includes a discount of 16.39: REDIVA 19210MERCADO SOL". `foreign`
+ * formats an amount in another currency (a card payment's debit).
  */
-export function rowRelation(r: ImportRow, money: (minor: bigint) => string): string | undefined {
+export function rowRelation(
+  r: ImportRow,
+  money: (minor: bigint) => string,
+  foreign: (minor: bigint, currency: string) => string = (m, c) => `${m} ${c}`,
+): string | undefined {
+  if (r.payments.length > 0) {
+    const debit = (d: ImportRow["payments"][number]) =>
+      `the ${foreign(d.amountMinor, d.currency)} debit “${d.note}” in ${d.walletName} on ${formatDay(d.occurredOn)}`;
+    const debits = r.payments.map(debit).join(" and ");
+    const verb = r.payments.length > 1 ? "become transfers" : "becomes a transfer";
+    const unchecked = r.payments.some((d) => d.rateUnchecked)
+      ? " (no exchange rate of yours to check it against)"
+      : "";
+    return `Pays the card: ${debits} ${verb}${unchecked}`;
+  }
   if (r.mergedInto !== undefined) return `Discount counted in row ${r.mergedInto + 1}`;
   if (r.refundedBy !== undefined) return `Refunded in full by row ${r.refundedBy + 1}`;
   if (r.refundOf !== undefined) return `Refund of row ${r.refundOf + 1}`;
@@ -216,6 +235,27 @@ export function rowRelation(r: ImportRow, money: (minor: bigint) => string): str
   if (r.discountMinor > 0n)
     return `Includes a discount of ${money(r.discountMinor)}: ${r.discountNotes.join(", ")}`;
   return undefined;
+}
+
+/**
+ * A card statement's rows in the order of the wallets they import into (the statement mixes
+ * currencies), each run of rows starting with its wallet's heading. Rows without a wallet (a
+ * currency the card has none for) group by currency.
+ */
+export function byWallet(rows: ImportRow[]): { key: string; first: boolean; row: ImportRow }[] {
+  const order: string[] = [];
+  const groups = new Map<string, ImportRow[]>();
+  for (const r of rows) {
+    const key = r.walletId || `currency:${r.currency}`;
+    if (!groups.has(key)) {
+      order.push(key);
+      groups.set(key, []);
+    }
+    groups.get(key)?.push(r);
+  }
+  return order.flatMap((key) =>
+    (groups.get(key) ?? []).map((row, i) => ({ key, first: i === 0, row })),
+  );
 }
 
 /** Category picks to start from: the suggested ones. */
