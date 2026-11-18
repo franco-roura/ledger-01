@@ -56,7 +56,8 @@ const (
 // ImportServiceClient is a client for the ledger.v1.ImportService service.
 type ImportServiceClient interface {
 	// Parses a CSV (UTF-8, UTF-16 or Windows-1252; comma, semicolon, tab or pipe) or XLSX file of
-	// at most 4 MB and 10,000 rows. Legacy .xls isn't supported.
+	// at most 4 MB and 10,000 rows, or a card statement PDF of a known bank. Legacy .xls isn't
+	// supported.
 	UploadImportFile(context.Context, *connect.Request[v1.UploadImportFileRequest]) (*connect.Response[v1.UploadImportFileResponse], error)
 	// Reads the uploaded rows with a mapping.
 	PreviewImport(context.Context, *connect.Request[v1.PreviewImportRequest]) (*connect.Response[v1.PreviewImportResponse], error)
@@ -160,7 +161,8 @@ func (c *importServiceClient) DeleteCategoryRule(ctx context.Context, req *conne
 // ImportServiceHandler is an implementation of the ledger.v1.ImportService service.
 type ImportServiceHandler interface {
 	// Parses a CSV (UTF-8, UTF-16 or Windows-1252; comma, semicolon, tab or pipe) or XLSX file of
-	// at most 4 MB and 10,000 rows. Legacy .xls isn't supported.
+	// at most 4 MB and 10,000 rows, or a card statement PDF of a known bank. Legacy .xls isn't
+	// supported.
 	UploadImportFile(context.Context, *connect.Request[v1.UploadImportFileRequest]) (*connect.Response[v1.UploadImportFileResponse], error)
 	// Reads the uploaded rows with a mapping.
 	PreviewImport(context.Context, *connect.Request[v1.PreviewImportRequest]) (*connect.Response[v1.PreviewImportResponse], error)

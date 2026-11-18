@@ -45,11 +45,27 @@ Ledger/01 recognises discounts and refunds and counts them against the purchase 
 
 To do this it needs to know how your bank words these lines.
 
+## Card statements
+
+Some banks only give you the card's spending as a PDF, and the account just shows one debit for
+the whole bill. Make a wallet for the card in its currency and drop the statement PDF on its
+**Import** page:
+
+1. **Choose who pays:** pick the account the bill is debited from. It's remembered for next time.
+2. **Review the rows:** purchases and fees become expenses in the card's wallet. An instalment
+   (`2/3`) is dated on the statement's issue date, with its number and purchase date in the note.
+3. **The bill's payment** finds the debit already imported in the account and turns it into a
+   transfer to the card, at the rate the two amounts imply. The debit no longer counts as
+   spending, and the card's balance goes back to zero.
+
+A statement with lines in two currencies imports each currency into its own card wallet. If the
+debit isn't in the account yet, the payment is left out; next month's statement lists it again.
+
 ## Supported banks
 
-| Country | Bank |
-| ------- | ---- |
-| Uruguay | Itaú |
+| Country | Bank                                       |
+| ------- | ------------------------------------------ |
+| Uruguay | Itaú (account statements, Visa statements) |
 
 **Your bank isn't listed? Please add it.** A bank is one small Go file with a few patterns and a test,
 and pull requests are welcome. [CONTRIBUTING.md](../CONTRIBUTING.md#adding-your-bank) walks you

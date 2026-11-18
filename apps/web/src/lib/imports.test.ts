@@ -277,7 +277,38 @@ describe("review views", () => {
       ["1 already imported", "duplicates"],
       ["1 possible duplicate", "duplicates"],
       ["2 refund rows left out", "left-out"],
-      ["1 can't be read", "left-out"],
+      ["1 can't be imported", "left-out"],
     ]);
+  });
+});
+
+describe("card statements", () => {
+  const money = (m: bigint) => (Number(m) / 100).toFixed(2);
+  const foreign = (m: bigint, c: string) => `${(Number(m) / 100).toFixed(2)} ${c}`;
+  const payment = row({
+    index: 4,
+    note: "PAGO TOTAL DEBITO AUTOMATICO",
+    kind: TransactionKind.TRANSFER_IN,
+    amountMinor: 1512_00n,
+    payment: {
+      transactionId: "debit",
+      walletName: "Southbank dollars",
+      currency: "USD",
+      amountMinor: 37_80n,
+      occurredOn: "2026-11-16",
+      note: "DEB. VARIOS TARJ. VISA",
+    },
+  });
+
+  test("a payment is ticked and needs no category", () => {
+    expect([...initialSelection([payment])]).toEqual([4]);
+    expect(needsCategory(payment)).toBe(false);
+    expect(firstMissingCategory([payment], new Set([4]), new Map())).toBeUndefined();
+  });
+
+  test("it says which debit becomes the transfer", () => {
+    expect(rowRelation(payment, money, foreign)).toBe(
+      "Pays the card: the 37.80 USD debit “DEB. VARIOS TARJ. VISA” in Southbank dollars on Mon, Nov 16, 2026 becomes a transfer",
+    );
   });
 });

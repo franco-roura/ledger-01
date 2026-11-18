@@ -208,9 +208,11 @@ type ImportMapping struct {
 	// How the bank words purchases, discounts and refunds: one of UploadImportFileResponse.banks.
 	// Upload fills it in with the wallet's saved bank, else the one detected from the descriptions;
 	// empty when none was detected, which detects again on every read ("generic" turns it off).
-	Bank          string `protobuf:"bytes,12,opt,name=bank,proto3" json:"bank,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Bank string `protobuf:"bytes,12,opt,name=bank,proto3" json:"bank,omitempty"`
+	// Card statements only: the wallet that pays the card, where the payment's bank debit is.
+	PaidFromWalletId string `protobuf:"bytes,13,opt,name=paid_from_wallet_id,json=paidFromWalletId,proto3" json:"paid_from_wallet_id,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *ImportMapping) Reset() {
@@ -327,6 +329,178 @@ func (x *ImportMapping) GetBank() string {
 	return ""
 }
 
+func (x *ImportMapping) GetPaidFromWalletId() string {
+	if x != nil {
+		return x.PaidFromWalletId
+	}
+	return ""
+}
+
+// A card statement PDF, as read.
+type ImportStatement struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The bank's statement, e.g. "Itaú Visa (PDF)".
+	BankName string `protobuf:"bytes,1,opt,name=bank_name,json=bankName,proto3" json:"bank_name,omitempty"`
+	IssuedOn string `protobuf:"bytes,2,opt,name=issued_on,json=issuedOn,proto3" json:"issued_on,omitempty"`
+	DueOn    string `protobuf:"bytes,3,opt,name=due_on,json=dueOn,proto3" json:"due_on,omitempty"`
+	// Lines in another currency, left for a wallet in that currency.
+	OtherCurrencyLines int32 `protobuf:"varint,4,opt,name=other_currency_lines,json=otherCurrencyLines,proto3" json:"other_currency_lines,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ImportStatement) Reset() {
+	*x = ImportStatement{}
+	mi := &file_ledger_v1_import_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportStatement) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportStatement) ProtoMessage() {}
+
+func (x *ImportStatement) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_import_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportStatement.ProtoReflect.Descriptor instead.
+func (*ImportStatement) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ImportStatement) GetBankName() string {
+	if x != nil {
+		return x.BankName
+	}
+	return ""
+}
+
+func (x *ImportStatement) GetIssuedOn() string {
+	if x != nil {
+		return x.IssuedOn
+	}
+	return ""
+}
+
+func (x *ImportStatement) GetDueOn() string {
+	if x != nil {
+		return x.DueOn
+	}
+	return ""
+}
+
+func (x *ImportStatement) GetOtherCurrencyLines() int32 {
+	if x != nil {
+		return x.OtherCurrencyLines
+	}
+	return 0
+}
+
+// The bank debit that paid a card statement's payment, in the wallet that pays the card.
+type ImportCardDebit struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TransactionId string                 `protobuf:"bytes,1,opt,name=transaction_id,json=transactionId,proto3" json:"transaction_id,omitempty"`
+	WalletId      string                 `protobuf:"bytes,2,opt,name=wallet_id,json=walletId,proto3" json:"wallet_id,omitempty"`
+	WalletName    string                 `protobuf:"bytes,3,opt,name=wallet_name,json=walletName,proto3" json:"wallet_name,omitempty"`
+	Currency      string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
+	// Positive, in the paying wallet's currency.
+	AmountMinor   int64  `protobuf:"varint,5,opt,name=amount_minor,json=amountMinor,proto3" json:"amount_minor,omitempty"`
+	OccurredOn    string `protobuf:"bytes,6,opt,name=occurred_on,json=occurredOn,proto3" json:"occurred_on,omitempty"`
+	Note          string `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImportCardDebit) Reset() {
+	*x = ImportCardDebit{}
+	mi := &file_ledger_v1_import_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportCardDebit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportCardDebit) ProtoMessage() {}
+
+func (x *ImportCardDebit) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_import_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportCardDebit.ProtoReflect.Descriptor instead.
+func (*ImportCardDebit) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ImportCardDebit) GetTransactionId() string {
+	if x != nil {
+		return x.TransactionId
+	}
+	return ""
+}
+
+func (x *ImportCardDebit) GetWalletId() string {
+	if x != nil {
+		return x.WalletId
+	}
+	return ""
+}
+
+func (x *ImportCardDebit) GetWalletName() string {
+	if x != nil {
+		return x.WalletName
+	}
+	return ""
+}
+
+func (x *ImportCardDebit) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *ImportCardDebit) GetAmountMinor() int64 {
+	if x != nil {
+		return x.AmountMinor
+	}
+	return 0
+}
+
+func (x *ImportCardDebit) GetOccurredOn() string {
+	if x != nil {
+		return x.OccurredOn
+	}
+	return ""
+}
+
+func (x *ImportCardDebit) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
 // A bank whose statement wording the import knows ("generic" knows none).
 type ImportBank struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -340,7 +514,7 @@ type ImportBank struct {
 
 func (x *ImportBank) Reset() {
 	*x = ImportBank{}
-	mi := &file_ledger_v1_import_proto_msgTypes[1]
+	mi := &file_ledger_v1_import_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -352,7 +526,7 @@ func (x *ImportBank) String() string {
 func (*ImportBank) ProtoMessage() {}
 
 func (x *ImportBank) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[1]
+	mi := &file_ledger_v1_import_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -365,7 +539,7 @@ func (x *ImportBank) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportBank.ProtoReflect.Descriptor instead.
 func (*ImportBank) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{1}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ImportBank) GetId() string {
@@ -398,7 +572,7 @@ type ImportCells struct {
 
 func (x *ImportCells) Reset() {
 	*x = ImportCells{}
-	mi := &file_ledger_v1_import_proto_msgTypes[2]
+	mi := &file_ledger_v1_import_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -410,7 +584,7 @@ func (x *ImportCells) String() string {
 func (*ImportCells) ProtoMessage() {}
 
 func (x *ImportCells) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[2]
+	mi := &file_ledger_v1_import_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -423,7 +597,7 @@ func (x *ImportCells) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportCells.ProtoReflect.Descriptor instead.
 func (*ImportCells) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{2}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ImportCells) GetCells() []string {
@@ -444,7 +618,7 @@ type ImportRow struct {
 	OccurredOn string `protobuf:"bytes,4,opt,name=occurred_on,json=occurredOn,proto3" json:"occurred_on,omitempty"`
 	// Positive, in the wallet's currency.
 	AmountMinor int64 `protobuf:"varint,5,opt,name=amount_minor,json=amountMinor,proto3" json:"amount_minor,omitempty"`
-	// EXPENSE or INCOME.
+	// EXPENSE or INCOME; TRANSFER_IN for a card statement's payment.
 	Kind TransactionKind `protobuf:"varint,6,opt,name=kind,proto3,enum=ledger.v1.TransactionKind" json:"kind,omitempty"`
 	Note string          `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
 	// The suggested category: from the category column, else from a category rule. Empty when
@@ -478,15 +652,19 @@ type ImportRow struct {
 	RefundOf   *int32 `protobuf:"varint,21,opt,name=refund_of,json=refundOf,proto3,oneof" json:"refund_of,omitempty"`
 	// A full refund of a purchase already in the wallet, as that transaction is now. Starts
 	// unticked; importing it adds the refund as income.
-	RefundsNote   string `protobuf:"bytes,22,opt,name=refunds_note,json=refundsNote,proto3" json:"refunds_note,omitempty"`
-	RefundsDate   string `protobuf:"bytes,23,opt,name=refunds_date,json=refundsDate,proto3" json:"refunds_date,omitempty"`
+	RefundsNote string `protobuf:"bytes,22,opt,name=refunds_note,json=refundsNote,proto3" json:"refunds_note,omitempty"`
+	RefundsDate string `protobuf:"bytes,23,opt,name=refunds_date,json=refundsDate,proto3" json:"refunds_date,omitempty"`
+	// A card statement's payment (kind TRANSFER_IN) and the debit that paid it: importing it turns
+	// that expense into a transfer to this wallet, so it needs no category. A payment without one
+	// can't be imported (error says why).
+	Payment       *ImportCardDebit `protobuf:"bytes,24,opt,name=payment,proto3" json:"payment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ImportRow) Reset() {
 	*x = ImportRow{}
-	mi := &file_ledger_v1_import_proto_msgTypes[3]
+	mi := &file_ledger_v1_import_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -498,7 +676,7 @@ func (x *ImportRow) String() string {
 func (*ImportRow) ProtoMessage() {}
 
 func (x *ImportRow) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[3]
+	mi := &file_ledger_v1_import_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -511,7 +689,7 @@ func (x *ImportRow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportRow.ProtoReflect.Descriptor instead.
 func (*ImportRow) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{3}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ImportRow) GetIndex() int32 {
@@ -675,6 +853,13 @@ func (x *ImportRow) GetRefundsDate() string {
 	return ""
 }
 
+func (x *ImportRow) GetPayment() *ImportCardDebit {
+	if x != nil {
+		return x.Payment
+	}
+	return nil
+}
+
 // "Note contains pattern → category", applied to imported rows the category column didn't
 // settle. The longest matching pattern wins; a rule only applies to rows of its category's kind.
 type CategoryRule struct {
@@ -688,7 +873,7 @@ type CategoryRule struct {
 
 func (x *CategoryRule) Reset() {
 	*x = CategoryRule{}
-	mi := &file_ledger_v1_import_proto_msgTypes[4]
+	mi := &file_ledger_v1_import_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -700,7 +885,7 @@ func (x *CategoryRule) String() string {
 func (*CategoryRule) ProtoMessage() {}
 
 func (x *CategoryRule) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[4]
+	mi := &file_ledger_v1_import_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -713,7 +898,7 @@ func (x *CategoryRule) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CategoryRule.ProtoReflect.Descriptor instead.
 func (*CategoryRule) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{4}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CategoryRule) GetId() string {
@@ -748,7 +933,7 @@ type UploadImportFileRequest struct {
 
 func (x *UploadImportFileRequest) Reset() {
 	*x = UploadImportFileRequest{}
-	mi := &file_ledger_v1_import_proto_msgTypes[5]
+	mi := &file_ledger_v1_import_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -760,7 +945,7 @@ func (x *UploadImportFileRequest) String() string {
 func (*UploadImportFileRequest) ProtoMessage() {}
 
 func (x *UploadImportFileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[5]
+	mi := &file_ledger_v1_import_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -773,7 +958,7 @@ func (x *UploadImportFileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadImportFileRequest.ProtoReflect.Descriptor instead.
 func (*UploadImportFileRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{5}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UploadImportFileRequest) GetWalletId() string {
@@ -809,21 +994,24 @@ type UploadImportFileResponse struct {
 	// the headers and values.
 	Mapping      *ImportMapping `protobuf:"bytes,5,opt,name=mapping,proto3" json:"mapping,omitempty"`
 	SavedMapping bool           `protobuf:"varint,6,opt,name=saved_mapping,json=savedMapping,proto3" json:"saved_mapping,omitempty"`
-	// "csv" or "xlsx", and for CSV the detected encoding and delimiter.
+	// "csv", "xlsx" or "pdf", and for CSV the detected encoding and delimiter.
 	Format    string `protobuf:"bytes,7,opt,name=format,proto3" json:"format,omitempty"`
 	Encoding  string `protobuf:"bytes,8,opt,name=encoding,proto3" json:"encoding,omitempty"`
 	Delimiter string `protobuf:"bytes,9,opt,name=delimiter,proto3" json:"delimiter,omitempty"`
 	// The date formats a mapping may use.
 	DateFormats []string `protobuf:"bytes,10,rep,name=date_formats,json=dateFormats,proto3" json:"date_formats,omitempty"`
-	// Banks to choose from, "generic" first.
-	Banks         []*ImportBank `protobuf:"bytes,11,rep,name=banks,proto3" json:"banks,omitempty"`
+	// Banks to choose from, "generic" first (card statement readers aren't listed).
+	Banks []*ImportBank `protobuf:"bytes,11,rep,name=banks,proto3" json:"banks,omitempty"`
+	// Set for a card statement PDF. Its mapping is fixed (columns: date, description, amount);
+	// only paid_from_wallet_id is the user's to choose.
+	Statement     *ImportStatement `protobuf:"bytes,12,opt,name=statement,proto3" json:"statement,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UploadImportFileResponse) Reset() {
 	*x = UploadImportFileResponse{}
-	mi := &file_ledger_v1_import_proto_msgTypes[6]
+	mi := &file_ledger_v1_import_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -835,7 +1023,7 @@ func (x *UploadImportFileResponse) String() string {
 func (*UploadImportFileResponse) ProtoMessage() {}
 
 func (x *UploadImportFileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[6]
+	mi := &file_ledger_v1_import_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -848,7 +1036,7 @@ func (x *UploadImportFileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadImportFileResponse.ProtoReflect.Descriptor instead.
 func (*UploadImportFileResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{6}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UploadImportFileResponse) GetBatchId() string {
@@ -928,6 +1116,13 @@ func (x *UploadImportFileResponse) GetBanks() []*ImportBank {
 	return nil
 }
 
+func (x *UploadImportFileResponse) GetStatement() *ImportStatement {
+	if x != nil {
+		return x.Statement
+	}
+	return nil
+}
+
 type PreviewImportRequest struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	BatchId string                 `protobuf:"bytes,1,opt,name=batch_id,json=batchId,proto3" json:"batch_id,omitempty"`
@@ -940,7 +1135,7 @@ type PreviewImportRequest struct {
 
 func (x *PreviewImportRequest) Reset() {
 	*x = PreviewImportRequest{}
-	mi := &file_ledger_v1_import_proto_msgTypes[7]
+	mi := &file_ledger_v1_import_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -952,7 +1147,7 @@ func (x *PreviewImportRequest) String() string {
 func (*PreviewImportRequest) ProtoMessage() {}
 
 func (x *PreviewImportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[7]
+	mi := &file_ledger_v1_import_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -965,7 +1160,7 @@ func (x *PreviewImportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreviewImportRequest.ProtoReflect.Descriptor instead.
 func (*PreviewImportRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{7}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PreviewImportRequest) GetBatchId() string {
@@ -1000,7 +1195,7 @@ type PreviewImportResponse struct {
 
 func (x *PreviewImportResponse) Reset() {
 	*x = PreviewImportResponse{}
-	mi := &file_ledger_v1_import_proto_msgTypes[8]
+	mi := &file_ledger_v1_import_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1012,7 +1207,7 @@ func (x *PreviewImportResponse) String() string {
 func (*PreviewImportResponse) ProtoMessage() {}
 
 func (x *PreviewImportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[8]
+	mi := &file_ledger_v1_import_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1025,7 +1220,7 @@ func (x *PreviewImportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreviewImportResponse.ProtoReflect.Descriptor instead.
 func (*PreviewImportResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{8}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *PreviewImportResponse) GetRows() []*ImportRow {
@@ -1046,7 +1241,7 @@ type ImportChoice struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Index int32                  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
 	// The suggested category or another of the row's kind. Not needed for a row that discounts an
-	// earlier purchase (discounts_transaction_id).
+	// earlier purchase (discounts_transaction_id) or a card statement's payment.
 	CategoryId    string `protobuf:"bytes,2,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1054,7 +1249,7 @@ type ImportChoice struct {
 
 func (x *ImportChoice) Reset() {
 	*x = ImportChoice{}
-	mi := &file_ledger_v1_import_proto_msgTypes[9]
+	mi := &file_ledger_v1_import_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1066,7 +1261,7 @@ func (x *ImportChoice) String() string {
 func (*ImportChoice) ProtoMessage() {}
 
 func (x *ImportChoice) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[9]
+	mi := &file_ledger_v1_import_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1079,7 +1274,7 @@ func (x *ImportChoice) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportChoice.ProtoReflect.Descriptor instead.
 func (*ImportChoice) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{9}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ImportChoice) GetIndex() int32 {
@@ -1110,7 +1305,7 @@ type CommitImportRequest struct {
 
 func (x *CommitImportRequest) Reset() {
 	*x = CommitImportRequest{}
-	mi := &file_ledger_v1_import_proto_msgTypes[10]
+	mi := &file_ledger_v1_import_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1122,7 +1317,7 @@ func (x *CommitImportRequest) String() string {
 func (*CommitImportRequest) ProtoMessage() {}
 
 func (x *CommitImportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[10]
+	mi := &file_ledger_v1_import_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1135,7 +1330,7 @@ func (x *CommitImportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitImportRequest.ProtoReflect.Descriptor instead.
 func (*CommitImportRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{10}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *CommitImportRequest) GetBatchId() string {
@@ -1175,7 +1370,7 @@ type CommitImportResponse struct {
 
 func (x *CommitImportResponse) Reset() {
 	*x = CommitImportResponse{}
-	mi := &file_ledger_v1_import_proto_msgTypes[11]
+	mi := &file_ledger_v1_import_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1187,7 +1382,7 @@ func (x *CommitImportResponse) String() string {
 func (*CommitImportResponse) ProtoMessage() {}
 
 func (x *CommitImportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[11]
+	mi := &file_ledger_v1_import_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1200,7 +1395,7 @@ func (x *CommitImportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitImportResponse.ProtoReflect.Descriptor instead.
 func (*CommitImportResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{11}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CommitImportResponse) GetImportedCount() int64 {
@@ -1218,7 +1413,7 @@ type ListCategoryRulesRequest struct {
 
 func (x *ListCategoryRulesRequest) Reset() {
 	*x = ListCategoryRulesRequest{}
-	mi := &file_ledger_v1_import_proto_msgTypes[12]
+	mi := &file_ledger_v1_import_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1230,7 +1425,7 @@ func (x *ListCategoryRulesRequest) String() string {
 func (*ListCategoryRulesRequest) ProtoMessage() {}
 
 func (x *ListCategoryRulesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[12]
+	mi := &file_ledger_v1_import_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1243,7 +1438,7 @@ func (x *ListCategoryRulesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCategoryRulesRequest.ProtoReflect.Descriptor instead.
 func (*ListCategoryRulesRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{12}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{14}
 }
 
 type ListCategoryRulesResponse struct {
@@ -1255,7 +1450,7 @@ type ListCategoryRulesResponse struct {
 
 func (x *ListCategoryRulesResponse) Reset() {
 	*x = ListCategoryRulesResponse{}
-	mi := &file_ledger_v1_import_proto_msgTypes[13]
+	mi := &file_ledger_v1_import_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1267,7 +1462,7 @@ func (x *ListCategoryRulesResponse) String() string {
 func (*ListCategoryRulesResponse) ProtoMessage() {}
 
 func (x *ListCategoryRulesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[13]
+	mi := &file_ledger_v1_import_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1280,7 +1475,7 @@ func (x *ListCategoryRulesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCategoryRulesResponse.ProtoReflect.Descriptor instead.
 func (*ListCategoryRulesResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{13}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListCategoryRulesResponse) GetRules() []*CategoryRule {
@@ -1300,7 +1495,7 @@ type CreateCategoryRuleRequest struct {
 
 func (x *CreateCategoryRuleRequest) Reset() {
 	*x = CreateCategoryRuleRequest{}
-	mi := &file_ledger_v1_import_proto_msgTypes[14]
+	mi := &file_ledger_v1_import_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1312,7 +1507,7 @@ func (x *CreateCategoryRuleRequest) String() string {
 func (*CreateCategoryRuleRequest) ProtoMessage() {}
 
 func (x *CreateCategoryRuleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[14]
+	mi := &file_ledger_v1_import_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1325,7 +1520,7 @@ func (x *CreateCategoryRuleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCategoryRuleRequest.ProtoReflect.Descriptor instead.
 func (*CreateCategoryRuleRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{14}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CreateCategoryRuleRequest) GetPattern() string {
@@ -1351,7 +1546,7 @@ type CreateCategoryRuleResponse struct {
 
 func (x *CreateCategoryRuleResponse) Reset() {
 	*x = CreateCategoryRuleResponse{}
-	mi := &file_ledger_v1_import_proto_msgTypes[15]
+	mi := &file_ledger_v1_import_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1363,7 +1558,7 @@ func (x *CreateCategoryRuleResponse) String() string {
 func (*CreateCategoryRuleResponse) ProtoMessage() {}
 
 func (x *CreateCategoryRuleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[15]
+	mi := &file_ledger_v1_import_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1376,7 +1571,7 @@ func (x *CreateCategoryRuleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCategoryRuleResponse.ProtoReflect.Descriptor instead.
 func (*CreateCategoryRuleResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{15}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *CreateCategoryRuleResponse) GetRule() *CategoryRule {
@@ -1395,7 +1590,7 @@ type DeleteCategoryRuleRequest struct {
 
 func (x *DeleteCategoryRuleRequest) Reset() {
 	*x = DeleteCategoryRuleRequest{}
-	mi := &file_ledger_v1_import_proto_msgTypes[16]
+	mi := &file_ledger_v1_import_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1407,7 +1602,7 @@ func (x *DeleteCategoryRuleRequest) String() string {
 func (*DeleteCategoryRuleRequest) ProtoMessage() {}
 
 func (x *DeleteCategoryRuleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[16]
+	mi := &file_ledger_v1_import_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1420,7 +1615,7 @@ func (x *DeleteCategoryRuleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCategoryRuleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteCategoryRuleRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{16}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DeleteCategoryRuleRequest) GetId() string {
@@ -1438,7 +1633,7 @@ type DeleteCategoryRuleResponse struct {
 
 func (x *DeleteCategoryRuleResponse) Reset() {
 	*x = DeleteCategoryRuleResponse{}
-	mi := &file_ledger_v1_import_proto_msgTypes[17]
+	mi := &file_ledger_v1_import_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1450,7 +1645,7 @@ func (x *DeleteCategoryRuleResponse) String() string {
 func (*DeleteCategoryRuleResponse) ProtoMessage() {}
 
 func (x *DeleteCategoryRuleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[17]
+	mi := &file_ledger_v1_import_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1463,14 +1658,14 @@ func (x *DeleteCategoryRuleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCategoryRuleResponse.ProtoReflect.Descriptor instead.
 func (*DeleteCategoryRuleResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{17}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{19}
 }
 
 var File_ledger_v1_import_proto protoreflect.FileDescriptor
 
 const file_ledger_v1_import_proto_rawDesc = "" +
 	"\n" +
-	"\x16ledger/v1/import.proto\x12\tledger.v1\x1a\x1bledger/v1/transaction.proto\"\xbf\x04\n" +
+	"\x16ledger/v1/import.proto\x12\tledger.v1\x1a\x1bledger/v1/transaction.proto\"\xee\x04\n" +
 	"\rImportMapping\x12\x1b\n" +
 	"\tskip_rows\x18\v \x01(\x05R\bskipRows\x12\x1d\n" +
 	"\n" +
@@ -1488,19 +1683,35 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"noteColumn\x88\x01\x01\x12,\n" +
 	"\x0fcategory_column\x18\n" +
 	" \x01(\x05H\x04R\x0ecategoryColumn\x88\x01\x01\x12\x12\n" +
-	"\x04bank\x18\f \x01(\tR\x04bankB\x10\n" +
+	"\x04bank\x18\f \x01(\tR\x04bank\x12-\n" +
+	"\x13paid_from_wallet_id\x18\r \x01(\tR\x10paidFromWalletIdB\x10\n" +
 	"\x0e_amount_columnB\x0f\n" +
 	"\r_debit_columnB\x10\n" +
 	"\x0e_credit_columnB\x0e\n" +
 	"\f_note_columnB\x12\n" +
-	"\x10_category_column\"J\n" +
+	"\x10_category_column\"\x94\x01\n" +
+	"\x0fImportStatement\x12\x1b\n" +
+	"\tbank_name\x18\x01 \x01(\tR\bbankName\x12\x1b\n" +
+	"\tissued_on\x18\x02 \x01(\tR\bissuedOn\x12\x15\n" +
+	"\x06due_on\x18\x03 \x01(\tR\x05dueOn\x120\n" +
+	"\x14other_currency_lines\x18\x04 \x01(\x05R\x12otherCurrencyLines\"\xea\x01\n" +
+	"\x0fImportCardDebit\x12%\n" +
+	"\x0etransaction_id\x18\x01 \x01(\tR\rtransactionId\x12\x1b\n" +
+	"\twallet_id\x18\x02 \x01(\tR\bwalletId\x12\x1f\n" +
+	"\vwallet_name\x18\x03 \x01(\tR\n" +
+	"walletName\x12\x1a\n" +
+	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12!\n" +
+	"\famount_minor\x18\x05 \x01(\x03R\vamountMinor\x12\x1f\n" +
+	"\voccurred_on\x18\x06 \x01(\tR\n" +
+	"occurredOn\x12\x12\n" +
+	"\x04note\x18\a \x01(\tR\x04note\"J\n" +
 	"\n" +
 	"ImportBank\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
 	"\acountry\x18\x03 \x01(\tR\acountry\"#\n" +
 	"\vImportCells\x12\x14\n" +
-	"\x05cells\x18\x01 \x03(\tR\x05cells\"\xfa\x06\n" +
+	"\x05cells\x18\x01 \x03(\tR\x05cells\"\xb0\a\n" +
 	"\tImportRow\x12\x14\n" +
 	"\x05index\x18\x01 \x01(\x05R\x05index\x12\x14\n" +
 	"\x05cells\x18\x02 \x03(\tR\x05cells\x12\x14\n" +
@@ -1531,7 +1742,8 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"refundedBy\x88\x01\x01\x12 \n" +
 	"\trefund_of\x18\x15 \x01(\x05H\x02R\brefundOf\x88\x01\x01\x12!\n" +
 	"\frefunds_note\x18\x16 \x01(\tR\vrefundsNote\x12!\n" +
-	"\frefunds_date\x18\x17 \x01(\tR\vrefundsDateB\x0e\n" +
+	"\frefunds_date\x18\x17 \x01(\tR\vrefundsDate\x124\n" +
+	"\apayment\x18\x18 \x01(\v2\x1a.ledger.v1.ImportCardDebitR\apaymentB\x0e\n" +
 	"\f_merged_intoB\x0e\n" +
 	"\f_refunded_byB\f\n" +
 	"\n" +
@@ -1544,7 +1756,7 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"\x17UploadImportFileRequest\x12\x1b\n" +
 	"\twallet_id\x18\x01 \x01(\tR\bwalletId\x12\x1b\n" +
 	"\tfile_name\x18\x02 \x01(\tR\bfileName\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\fR\acontent\"\xa0\x03\n" +
+	"\acontent\x18\x03 \x01(\fR\acontent\"\xda\x03\n" +
 	"\x18UploadImportFileResponse\x12\x19\n" +
 	"\bbatch_id\x18\x01 \x01(\tR\abatchId\x12!\n" +
 	"\fcolumn_count\x18\x02 \x01(\x05R\vcolumnCount\x12\x1b\n" +
@@ -1557,7 +1769,8 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"\tdelimiter\x18\t \x01(\tR\tdelimiter\x12!\n" +
 	"\fdate_formats\x18\n" +
 	" \x03(\tR\vdateFormats\x12+\n" +
-	"\x05banks\x18\v \x03(\v2\x15.ledger.v1.ImportBankR\x05banks\"{\n" +
+	"\x05banks\x18\v \x03(\v2\x15.ledger.v1.ImportBankR\x05banks\x128\n" +
+	"\tstatement\x18\f \x01(\v2\x1a.ledger.v1.ImportStatementR\tstatement\"{\n" +
 	"\x14PreviewImportRequest\x12\x19\n" +
 	"\bbatch_id\x18\x01 \x01(\tR\abatchId\x122\n" +
 	"\amapping\x18\x02 \x01(\v2\x18.ledger.v1.ImportMappingR\amapping\x12\x14\n" +
@@ -1626,62 +1839,66 @@ func file_ledger_v1_import_proto_rawDescGZIP() []byte {
 }
 
 var file_ledger_v1_import_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_ledger_v1_import_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_ledger_v1_import_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_ledger_v1_import_proto_goTypes = []any{
 	(ImportSign)(0),                    // 0: ledger.v1.ImportSign
 	(DecimalSeparator)(0),              // 1: ledger.v1.DecimalSeparator
 	(ImportDuplicate)(0),               // 2: ledger.v1.ImportDuplicate
 	(*ImportMapping)(nil),              // 3: ledger.v1.ImportMapping
-	(*ImportBank)(nil),                 // 4: ledger.v1.ImportBank
-	(*ImportCells)(nil),                // 5: ledger.v1.ImportCells
-	(*ImportRow)(nil),                  // 6: ledger.v1.ImportRow
-	(*CategoryRule)(nil),               // 7: ledger.v1.CategoryRule
-	(*UploadImportFileRequest)(nil),    // 8: ledger.v1.UploadImportFileRequest
-	(*UploadImportFileResponse)(nil),   // 9: ledger.v1.UploadImportFileResponse
-	(*PreviewImportRequest)(nil),       // 10: ledger.v1.PreviewImportRequest
-	(*PreviewImportResponse)(nil),      // 11: ledger.v1.PreviewImportResponse
-	(*ImportChoice)(nil),               // 12: ledger.v1.ImportChoice
-	(*CommitImportRequest)(nil),        // 13: ledger.v1.CommitImportRequest
-	(*CommitImportResponse)(nil),       // 14: ledger.v1.CommitImportResponse
-	(*ListCategoryRulesRequest)(nil),   // 15: ledger.v1.ListCategoryRulesRequest
-	(*ListCategoryRulesResponse)(nil),  // 16: ledger.v1.ListCategoryRulesResponse
-	(*CreateCategoryRuleRequest)(nil),  // 17: ledger.v1.CreateCategoryRuleRequest
-	(*CreateCategoryRuleResponse)(nil), // 18: ledger.v1.CreateCategoryRuleResponse
-	(*DeleteCategoryRuleRequest)(nil),  // 19: ledger.v1.DeleteCategoryRuleRequest
-	(*DeleteCategoryRuleResponse)(nil), // 20: ledger.v1.DeleteCategoryRuleResponse
-	(TransactionKind)(0),               // 21: ledger.v1.TransactionKind
+	(*ImportStatement)(nil),            // 4: ledger.v1.ImportStatement
+	(*ImportCardDebit)(nil),            // 5: ledger.v1.ImportCardDebit
+	(*ImportBank)(nil),                 // 6: ledger.v1.ImportBank
+	(*ImportCells)(nil),                // 7: ledger.v1.ImportCells
+	(*ImportRow)(nil),                  // 8: ledger.v1.ImportRow
+	(*CategoryRule)(nil),               // 9: ledger.v1.CategoryRule
+	(*UploadImportFileRequest)(nil),    // 10: ledger.v1.UploadImportFileRequest
+	(*UploadImportFileResponse)(nil),   // 11: ledger.v1.UploadImportFileResponse
+	(*PreviewImportRequest)(nil),       // 12: ledger.v1.PreviewImportRequest
+	(*PreviewImportResponse)(nil),      // 13: ledger.v1.PreviewImportResponse
+	(*ImportChoice)(nil),               // 14: ledger.v1.ImportChoice
+	(*CommitImportRequest)(nil),        // 15: ledger.v1.CommitImportRequest
+	(*CommitImportResponse)(nil),       // 16: ledger.v1.CommitImportResponse
+	(*ListCategoryRulesRequest)(nil),   // 17: ledger.v1.ListCategoryRulesRequest
+	(*ListCategoryRulesResponse)(nil),  // 18: ledger.v1.ListCategoryRulesResponse
+	(*CreateCategoryRuleRequest)(nil),  // 19: ledger.v1.CreateCategoryRuleRequest
+	(*CreateCategoryRuleResponse)(nil), // 20: ledger.v1.CreateCategoryRuleResponse
+	(*DeleteCategoryRuleRequest)(nil),  // 21: ledger.v1.DeleteCategoryRuleRequest
+	(*DeleteCategoryRuleResponse)(nil), // 22: ledger.v1.DeleteCategoryRuleResponse
+	(TransactionKind)(0),               // 23: ledger.v1.TransactionKind
 }
 var file_ledger_v1_import_proto_depIdxs = []int32{
 	0,  // 0: ledger.v1.ImportMapping.sign:type_name -> ledger.v1.ImportSign
 	1,  // 1: ledger.v1.ImportMapping.decimal_separator:type_name -> ledger.v1.DecimalSeparator
-	21, // 2: ledger.v1.ImportRow.kind:type_name -> ledger.v1.TransactionKind
+	23, // 2: ledger.v1.ImportRow.kind:type_name -> ledger.v1.TransactionKind
 	2,  // 3: ledger.v1.ImportRow.duplicate_reason:type_name -> ledger.v1.ImportDuplicate
-	5,  // 4: ledger.v1.UploadImportFileResponse.sample:type_name -> ledger.v1.ImportCells
-	3,  // 5: ledger.v1.UploadImportFileResponse.mapping:type_name -> ledger.v1.ImportMapping
-	4,  // 6: ledger.v1.UploadImportFileResponse.banks:type_name -> ledger.v1.ImportBank
-	3,  // 7: ledger.v1.PreviewImportRequest.mapping:type_name -> ledger.v1.ImportMapping
-	6,  // 8: ledger.v1.PreviewImportResponse.rows:type_name -> ledger.v1.ImportRow
-	3,  // 9: ledger.v1.CommitImportRequest.mapping:type_name -> ledger.v1.ImportMapping
-	12, // 10: ledger.v1.CommitImportRequest.rows:type_name -> ledger.v1.ImportChoice
-	7,  // 11: ledger.v1.ListCategoryRulesResponse.rules:type_name -> ledger.v1.CategoryRule
-	7,  // 12: ledger.v1.CreateCategoryRuleResponse.rule:type_name -> ledger.v1.CategoryRule
-	8,  // 13: ledger.v1.ImportService.UploadImportFile:input_type -> ledger.v1.UploadImportFileRequest
-	10, // 14: ledger.v1.ImportService.PreviewImport:input_type -> ledger.v1.PreviewImportRequest
-	13, // 15: ledger.v1.ImportService.CommitImport:input_type -> ledger.v1.CommitImportRequest
-	15, // 16: ledger.v1.ImportService.ListCategoryRules:input_type -> ledger.v1.ListCategoryRulesRequest
-	17, // 17: ledger.v1.ImportService.CreateCategoryRule:input_type -> ledger.v1.CreateCategoryRuleRequest
-	19, // 18: ledger.v1.ImportService.DeleteCategoryRule:input_type -> ledger.v1.DeleteCategoryRuleRequest
-	9,  // 19: ledger.v1.ImportService.UploadImportFile:output_type -> ledger.v1.UploadImportFileResponse
-	11, // 20: ledger.v1.ImportService.PreviewImport:output_type -> ledger.v1.PreviewImportResponse
-	14, // 21: ledger.v1.ImportService.CommitImport:output_type -> ledger.v1.CommitImportResponse
-	16, // 22: ledger.v1.ImportService.ListCategoryRules:output_type -> ledger.v1.ListCategoryRulesResponse
-	18, // 23: ledger.v1.ImportService.CreateCategoryRule:output_type -> ledger.v1.CreateCategoryRuleResponse
-	20, // 24: ledger.v1.ImportService.DeleteCategoryRule:output_type -> ledger.v1.DeleteCategoryRuleResponse
-	19, // [19:25] is the sub-list for method output_type
-	13, // [13:19] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	5,  // 4: ledger.v1.ImportRow.payment:type_name -> ledger.v1.ImportCardDebit
+	7,  // 5: ledger.v1.UploadImportFileResponse.sample:type_name -> ledger.v1.ImportCells
+	3,  // 6: ledger.v1.UploadImportFileResponse.mapping:type_name -> ledger.v1.ImportMapping
+	6,  // 7: ledger.v1.UploadImportFileResponse.banks:type_name -> ledger.v1.ImportBank
+	4,  // 8: ledger.v1.UploadImportFileResponse.statement:type_name -> ledger.v1.ImportStatement
+	3,  // 9: ledger.v1.PreviewImportRequest.mapping:type_name -> ledger.v1.ImportMapping
+	8,  // 10: ledger.v1.PreviewImportResponse.rows:type_name -> ledger.v1.ImportRow
+	3,  // 11: ledger.v1.CommitImportRequest.mapping:type_name -> ledger.v1.ImportMapping
+	14, // 12: ledger.v1.CommitImportRequest.rows:type_name -> ledger.v1.ImportChoice
+	9,  // 13: ledger.v1.ListCategoryRulesResponse.rules:type_name -> ledger.v1.CategoryRule
+	9,  // 14: ledger.v1.CreateCategoryRuleResponse.rule:type_name -> ledger.v1.CategoryRule
+	10, // 15: ledger.v1.ImportService.UploadImportFile:input_type -> ledger.v1.UploadImportFileRequest
+	12, // 16: ledger.v1.ImportService.PreviewImport:input_type -> ledger.v1.PreviewImportRequest
+	15, // 17: ledger.v1.ImportService.CommitImport:input_type -> ledger.v1.CommitImportRequest
+	17, // 18: ledger.v1.ImportService.ListCategoryRules:input_type -> ledger.v1.ListCategoryRulesRequest
+	19, // 19: ledger.v1.ImportService.CreateCategoryRule:input_type -> ledger.v1.CreateCategoryRuleRequest
+	21, // 20: ledger.v1.ImportService.DeleteCategoryRule:input_type -> ledger.v1.DeleteCategoryRuleRequest
+	11, // 21: ledger.v1.ImportService.UploadImportFile:output_type -> ledger.v1.UploadImportFileResponse
+	13, // 22: ledger.v1.ImportService.PreviewImport:output_type -> ledger.v1.PreviewImportResponse
+	16, // 23: ledger.v1.ImportService.CommitImport:output_type -> ledger.v1.CommitImportResponse
+	18, // 24: ledger.v1.ImportService.ListCategoryRules:output_type -> ledger.v1.ListCategoryRulesResponse
+	20, // 25: ledger.v1.ImportService.CreateCategoryRule:output_type -> ledger.v1.CreateCategoryRuleResponse
+	22, // 26: ledger.v1.ImportService.DeleteCategoryRule:output_type -> ledger.v1.DeleteCategoryRuleResponse
+	21, // [21:27] is the sub-list for method output_type
+	15, // [15:21] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_ledger_v1_import_proto_init() }
@@ -1691,14 +1908,14 @@ func file_ledger_v1_import_proto_init() {
 	}
 	file_ledger_v1_transaction_proto_init()
 	file_ledger_v1_import_proto_msgTypes[0].OneofWrappers = []any{}
-	file_ledger_v1_import_proto_msgTypes[3].OneofWrappers = []any{}
+	file_ledger_v1_import_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ledger_v1_import_proto_rawDesc), len(file_ledger_v1_import_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

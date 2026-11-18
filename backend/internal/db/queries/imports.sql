@@ -21,20 +21,48 @@ VALUES (@wallet_id, @household_id, @mapping, @headers)
 ON CONFLICT (wallet_id) DO UPDATE SET mapping = excluded.mapping, headers = excluded.headers, updated_at = now();
 
 -- name: ImportCandidates :many
--- A wallet's expenses and income in a date range, to match imported rows against: signed amounts,
--- the current note, and the bank descriptions of the rows it was imported from.
+-- A wallet's transactions in a date range, to match imported rows against: signed amounts, the
+-- current note, and the bank descriptions of the rows it was imported from.
 SELECT t.id,
        t.kind,
        t.occurred_on,
-       (CASE WHEN t.kind = 'income' THEN t.amount_minor ELSE -t.amount_minor END)::bigint AS signed_minor,
+       (CASE WHEN t.kind IN ('income', 'transfer_in') THEN t.amount_minor ELSE -t.amount_minor END)::bigint AS signed_minor,
        t.note,
        coalesce(array_agg(r.note ORDER BY r.created_at) FILTER (WHERE r.note IS NOT NULL), '{}')::text[] AS source_notes
 FROM transactions t
 LEFT JOIN import_refs r ON r.transaction_id = t.id
 WHERE t.household_id = @household_id AND t.wallet_id = @wallet_id
-  AND t.kind IN ('expense', 'income')
   AND t.occurred_on BETWEEN @from_date AND @to_date
 GROUP BY t.id;
+
+-- name: CardDebitCandidates :many
+-- The expenses of the wallet that pays a card, in a date range, to find the debit of a card
+-- statement's payment: the current note and the bank descriptions it was imported from.
+SELECT t.id,
+       t.occurred_on,
+       t.amount_minor,
+       t.note,
+       coalesce(array_agg(r.note ORDER BY r.created_at) FILTER (WHERE r.note IS NOT NULL), '{}')::text[] AS source_notes
+FROM transactions t
+LEFT JOIN import_refs r ON r.transaction_id = t.id
+WHERE t.household_id = @household_id AND t.wallet_id = @wallet_id
+  AND t.kind = 'expense'
+  AND t.occurred_on BETWEEN @from_date AND @to_date
+GROUP BY t.id;
+
+-- name: LockCardDebit :one
+-- A card debit about to become a transfer, if it's still the expense it was in the review.
+SELECT id, occurred_on, amount_minor, note, created_by FROM transactions
+WHERE id = @id AND household_id = @household_id AND wallet_id = @wallet_id AND kind = 'expense'
+FOR UPDATE;
+
+-- name: TransferLeg :one
+SELECT id FROM transactions WHERE transfer_id = @transfer_id AND household_id = @household_id AND kind = @kind;
+
+-- name: MoveImportRefs :exec
+-- Points the bank rows of a transaction at the one that replaces it.
+UPDATE import_refs SET transaction_id = @to_id
+WHERE household_id = @household_id AND transaction_id = @from_id;
 
 -- name: ImportRefsByFingerprint :many
 SELECT r.fingerprint, r.transaction_id, t.occurred_on, t.note

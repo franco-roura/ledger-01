@@ -94,7 +94,8 @@ budget.
 ## Your bank statements, without the typing
 
 Import CSV, XLSX and XLS statements with column mapping and duplicate detection. Discounts and refunds
-are matched to the purchases they belong to. Backups restore on any instance, and CSV export opens
+are matched to the purchases they belong to. Card statement PDFs import into a card wallet, and the
+bank's debit for the bill becomes a transfer to the card. Backups restore on any instance, and CSV export opens
 straight in a spreadsheet.
 
 **[Read more: import, backup and export →](docs/your-data.md)**

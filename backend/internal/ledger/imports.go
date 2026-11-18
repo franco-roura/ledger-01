@@ -36,6 +36,8 @@ type ImportUpload struct {
 	Mapping      importer.Mapping
 	SavedMapping bool
 	Info         importer.FileInfo
+	// Set for a card statement (Info.Format "pdf").
+	Statement *StatementInfo
 }
 
 // ImportRow is a data row read with a mapping. Row.Amount is signed (negative is an expense) and,
@@ -72,6 +74,9 @@ type ImportRow struct {
 	// it adds the refund as income.
 	RefundsNote string
 	RefundsDate time.Time
+	// A card statement's payment (Kind KindTransferIn) and the bank debit that paid it: importing
+	// it turns that expense into a transfer to the card.
+	Payment *CardDebit
 }
 
 // LeftOut says the row starts unticked without being a duplicate: a refund pair.
@@ -128,8 +133,26 @@ func (s *Service) UploadImport(ctx context.Context, a Actor, walletID uuid.UUID,
 	if utf8.RuneCountInString(name) > 200 {
 		name = string([]rune(name)[:200])
 	}
-	g, info, err := importer.Parse(name, content)
-	if err != nil {
+	var (
+		g    importer.Grid
+		info importer.FileInfo
+		stmt *StatementInfo
+		m    importer.Mapping
+		// The mapping was saved for this wallet (fits the file).
+		saved bool
+	)
+	if importer.IsPDF(content) {
+		var bank importer.Bank
+		var st importer.Statement
+		var si StatementInfo
+		if g, bank, si, st, err = readStatement(content, w); err != nil {
+			return ImportUpload{}, invalid("content", "%s", err.Error())
+		}
+		info, stmt = importer.FileInfo{Format: "pdf"}, &si
+		if m, saved, err = s.statementMapping(ctx, a, walletID, bank, st); err != nil {
+			return ImportUpload{}, err
+		}
+	} else if g, info, err = importer.Parse(name, content); err != nil {
 		return ImportUpload{}, invalid("content", "%s", err.Error())
 	}
 	rows, err := json.Marshal(g)
@@ -143,9 +166,10 @@ func (s *Service) UploadImport(ctx context.Context, a Actor, walletID uuid.UUID,
 	}); err != nil {
 		return ImportUpload{}, dbErr(err, "import")
 	}
-	m, saved, err := s.suggestMapping(ctx, a, walletID, g)
-	if err != nil {
-		return ImportUpload{}, err
+	if stmt == nil {
+		if m, saved, err = s.suggestMapping(ctx, a, walletID, g); err != nil {
+			return ImportUpload{}, err
+		}
 	}
 	// A bank only when detection is sure; empty means "detect again next time" (a tiny first file
 	// shouldn't pin the wallet to no bank). Choosing "Other bank" saves "generic".
@@ -156,7 +180,7 @@ func (s *Service) UploadImport(ctx context.Context, a Actor, walletID uuid.UUID,
 	}
 	return ImportUpload{
 		BatchID: id, Columns: g.Columns(), Rows: len(g), Sample: g[:min(len(g), importSample)], Mapping: m,
-		SavedMapping: saved, Info: info,
+		SavedMapping: saved, Info: info, Statement: stmt,
 	}, nil
 }
 
@@ -188,7 +212,7 @@ func sameHeaders(a, b []string) bool {
 //     imported earlier; full refunds paired with their purchase, both left out;
 //  3. the rest by heuristics: same date, amount and note as a transaction (or an earlier row),
 //     then same amount within similarDays. Each transaction matches one row at most.
-func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wallet, bank importer.Bank, rows []ImportRow, from, to time.Time) error {
+func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wallet, payer *Wallet, bank importer.Bank, rows []ImportRow, from, to time.Time) error {
 	fps := make([]string, 0, len(rows))
 	for _, r := range rows {
 		if r.Fingerprint != "" {
@@ -205,7 +229,7 @@ func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wa
 	}
 	cands, err := q.ImportCandidates(ctx, dbq.ImportCandidatesParams{
 		HouseholdID: a.HouseholdID, WalletID: w.ID,
-		FromDate: from.Add(-max(bank.MaxWindow(), similarDays*24*time.Hour)), ToDate: to.AddDate(0, 0, similarDays),
+		FromDate: from.Add(-max(bank.MaxWindow(), similarDays*24*time.Hour)), ToDate: to.Add(max(bank.MaxWindow(), similarDays*24*time.Hour)),
 	})
 	if err != nil {
 		return err
@@ -289,7 +313,8 @@ func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wa
 		return c.SignedMinor == r.Amount || c.SignedMinor == r.Gross
 	}
 	heuristic := func(i int) bool {
-		return open(i) && rows[i].MergedInto < 0 && rows[i].DiscountTarget == nil && !rows[i].LeftOut()
+		return open(i) && rows[i].MergedInto < 0 && rows[i].DiscountTarget == nil && !rows[i].LeftOut() &&
+			!(rows[i].Amount > 0 && bank.CardPayment(rows[i].Note))
 	}
 	seen := map[dupKey]bool{}
 	for i := range rows {
@@ -329,7 +354,8 @@ func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wa
 			match(r, DupSimilar, *best)
 		}
 	}
-	return nil
+	// 4. A card statement's payments, as transfers from the wallet that pays the card.
+	return s.matchCardPayments(ctx, q, a, w, payer, bank, rows, cands, used)
 }
 
 func normNote(s string) string { return importer.NormNote(s) }
@@ -363,6 +389,10 @@ func (s *Service) readImport(ctx context.Context, q *dbq.Queries, a Actor, batch
 		return b, nil, Wallet{}, nil, invalid("mapping.bank", "unknown bank %q", m.Bank)
 	}
 	w, err := s.GetWallet(ctx, a, b.WalletID)
+	if err != nil {
+		return b, nil, Wallet{}, nil, err
+	}
+	payer, err := s.payingWallet(ctx, a, w, m)
 	if err != nil {
 		return b, nil, Wallet{}, nil, err
 	}
@@ -434,7 +464,7 @@ func (s *Service) readImport(ctx context.Context, q *dbq.Queries, a Actor, batch
 	if m.Bank == "" {
 		bank = importer.DetectBank(mapped, banks.All())
 	}
-	if err := s.matchImport(ctx, q, a, w, bank, out, from, to); err != nil {
+	if err := s.matchImport(ctx, q, a, w, payer, bank, out, from, to); err != nil {
 		return b, g, w, nil, err
 	}
 	return b, g, w, out, nil
@@ -488,6 +518,7 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 		p := dbq.InsertImportedTransactionsParams{HouseholdID: a.HouseholdID, WalletID: w.ID, CreatedBy: &a.UserID}
 		refs := importRefs{InsertImportRefsParams: dbq.InsertImportRefsParams{WalletID: w.ID, HouseholdID: a.HouseholdID}}
 		chosen := map[int]bool{}
+		var payments []int // choices that are card payments
 		for i, c := range choices {
 			field := fmt.Sprintf("rows[%d]", i)
 			if c.Index < 0 || c.Index >= len(rows) || chosen[c.Index] {
@@ -514,6 +545,10 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 				refs.add(r, *r.DiscountTarget)
 				continue
 			}
+			if r.Payment != nil {
+				payments = append(payments, i)
+				continue
+			}
 			kind, ok := kindOf[c.CategoryID]
 			if !ok {
 				return invalid(field+".category_id", "choose a category for row %d", c.Index+1)
@@ -535,6 +570,15 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 		}
 		if imported, err = q.InsertImportedTransactions(ctx, p); err != nil {
 			return dbErr(err, "imported transaction")
+		}
+		for _, i := range payments {
+			r := rows[choices[i].Index]
+			leg, err := s.convertCardDebit(ctx, q, a, w, r, fmt.Sprintf("rows[%d].index", i))
+			if err != nil {
+				return err
+			}
+			refs.add(r, leg)
+			imported++
 		}
 		if len(refs.Fingerprints) > 0 {
 			if err := q.InsertImportRefs(ctx, refs.InsertImportRefsParams); err != nil {

@@ -28,6 +28,7 @@ import {
   type ImportMapping,
   type ImportRow,
   ImportService,
+  type ImportStatement,
   TransactionKind,
   type Wallet,
 } from "@ledger-01/api";
@@ -36,7 +37,7 @@ import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { toast } from "sonner";
 import { CategoryPicker } from "@/components/category-picker";
-import { useCategories, useCurrencies } from "@/lib/api/hooks";
+import { useCategories, useCurrencies, useWallets } from "@/lib/api/hooks";
 import {
   applyRule,
   canChoose,
@@ -79,6 +80,7 @@ export function ReviewStep({
   mapping,
   wallet,
   savedMapping,
+  statement,
   onBack,
   onDone,
 }: {
@@ -86,12 +88,15 @@ export function ReviewStep({
   mapping: ImportMapping;
   wallet: Wallet;
   savedMapping: boolean;
+  /** Set for a card statement PDF. */
+  statement?: ImportStatement;
   onBack: () => void;
   onDone: (imported: bigint) => void;
 }) {
   const id = useId();
   const { minorUnits } = useCurrencies();
   const { categories } = useCategories();
+  const { byId: walletsById } = useWallets();
   const q = useQuery(
     ImportService.method.previewImport,
     { batchId, mapping, limit: 0 },
@@ -125,6 +130,8 @@ export function ReviewStep({
   const choosable = listed.filter(canChoose);
   const units = minorUnits(wallet.currency);
   const money = (minor: bigint) => formatMoney(minor, wallet.currency, units, { code: false });
+  const foreign = (minor: bigint, currency: string) =>
+    formatMoney(minor, currency, minorUnits(currency));
   const allTicked = choosable.length > 0 && choosable.every((r) => sel.has(r.index));
   const noneTicked = choosable.every((r) => !sel.has(r.index));
 
@@ -216,7 +223,7 @@ export function ReviewStep({
         <div className="flex flex-col items-start gap-4">
           <p className="text-body-md text-ink">{q.error.rawMessage}</p>
           <Button variant="secondary" onClick={onBack}>
-            Change columns
+            {statement ? "Change the paying account" : "Change columns"}
           </Button>
         </div>
       </Panel>
@@ -225,7 +232,21 @@ export function ReviewStep({
 
   return (
     <div className="flex flex-col gap-6">
-      {savedMapping && (
+      {statement && (
+        <p className="text-body-sm text-ink-soft">
+          {statement.bankName} statement of {formatDay(statement.issuedOn)}, due{" "}
+          {formatDay(statement.dueOn)}, paid from{" "}
+          {walletsById.get(mapping.paidFromWalletId)?.name ?? "no account"}.{" "}
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-signal-ink underline-offset-4 hover:underline"
+          >
+            Change
+          </button>
+        </p>
+      )}
+      {savedMapping && !statement && (
         <p className="text-body-sm text-ink-soft">
           Read with the columns saved for this wallet.{" "}
           <button
@@ -245,7 +266,7 @@ export function ReviewStep({
           ` · ${counts.refunded} refunded ${counts.refunded === 1 ? "purchase" : "purchases"} left out`}
         {counts.merged > 0 &&
           ` · ${counts.merged} ${counts.merged === 1 ? "discount" : "discounts"} merged`}
-        {counts.failed > 0 && ` · ${counts.failed} can't be read`}
+        {counts.failed > 0 && ` · ${counts.failed} can't be imported`}
       </p>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -323,10 +344,13 @@ export function ReviewStep({
                     </span>
                     {leftOutBadge(r) && <Badge variant="tint">{leftOutBadge(r)}</Badge>}
                     {r.discountsTransactionId && <Badge variant="outline">Discount</Badge>}
+                    {r.payment && <Badge variant="outline">Card payment</Badge>}
                     {r.categorySource === "rule" && <Badge variant="outline">Rule</Badge>}
                   </span>
-                  {rowRelation(r, money) && (
-                    <span className="text-body-sm text-ink-soft">{rowRelation(r, money)}</span>
+                  {rowRelation(r, money, foreign) && (
+                    <span className="text-body-sm text-ink-soft">
+                      {rowRelation(r, money, foreign)}
+                    </span>
                   )}
                   {r.error && <span className="text-body-sm text-danger">{r.error}</span>}
                 </span>
@@ -429,11 +453,13 @@ export function ReviewStep({
             onCheckedChange={(v) => setRemember(v === true)}
           />
           <Label htmlFor={`${id}-remember`} className="text-body-sm text-ink">
-            Remember these columns for {wallet.name}
+            {statement
+              ? `Remember the paying account for ${wallet.name}`
+              : `Remember these columns for ${wallet.name}`}
           </Label>
         </div>
         <Button variant="ghost" onClick={onBack}>
-          Change columns
+          {statement ? "Change the paying account" : "Change columns"}
         </Button>
       </div>
       <p className="text-body-sm text-ink-soft">

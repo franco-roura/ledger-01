@@ -40,6 +40,68 @@ func (q *Queries) ApplyImportDiscount(ctx context.Context, arg ApplyImportDiscou
 	return result.RowsAffected(), nil
 }
 
+const cardDebitCandidates = `-- name: CardDebitCandidates :many
+SELECT t.id,
+       t.occurred_on,
+       t.amount_minor,
+       t.note,
+       coalesce(array_agg(r.note ORDER BY r.created_at) FILTER (WHERE r.note IS NOT NULL), '{}')::text[] AS source_notes
+FROM transactions t
+LEFT JOIN import_refs r ON r.transaction_id = t.id
+WHERE t.household_id = $1 AND t.wallet_id = $2
+  AND t.kind = 'expense'
+  AND t.occurred_on BETWEEN $3 AND $4
+GROUP BY t.id
+`
+
+type CardDebitCandidatesParams struct {
+	HouseholdID uuid.UUID
+	WalletID    uuid.UUID
+	FromDate    time.Time
+	ToDate      time.Time
+}
+
+type CardDebitCandidatesRow struct {
+	ID          uuid.UUID
+	OccurredOn  time.Time
+	AmountMinor int64
+	Note        string
+	SourceNotes []string
+}
+
+// The expenses of the wallet that pays a card, in a date range, to find the debit of a card
+// statement's payment: the current note and the bank descriptions it was imported from.
+func (q *Queries) CardDebitCandidates(ctx context.Context, arg CardDebitCandidatesParams) ([]CardDebitCandidatesRow, error) {
+	rows, err := q.db.Query(ctx, cardDebitCandidates,
+		arg.HouseholdID,
+		arg.WalletID,
+		arg.FromDate,
+		arg.ToDate,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CardDebitCandidatesRow{}
+	for rows.Next() {
+		var i CardDebitCandidatesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OccurredOn,
+			&i.AmountMinor,
+			&i.Note,
+			&i.SourceNotes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createImportBatch = `-- name: CreateImportBatch :exec
 INSERT INTO import_batches (id, household_id, wallet_id, file_name, rows, created_by, expires_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -196,13 +258,12 @@ const importCandidates = `-- name: ImportCandidates :many
 SELECT t.id,
        t.kind,
        t.occurred_on,
-       (CASE WHEN t.kind = 'income' THEN t.amount_minor ELSE -t.amount_minor END)::bigint AS signed_minor,
+       (CASE WHEN t.kind IN ('income', 'transfer_in') THEN t.amount_minor ELSE -t.amount_minor END)::bigint AS signed_minor,
        t.note,
        coalesce(array_agg(r.note ORDER BY r.created_at) FILTER (WHERE r.note IS NOT NULL), '{}')::text[] AS source_notes
 FROM transactions t
 LEFT JOIN import_refs r ON r.transaction_id = t.id
 WHERE t.household_id = $1 AND t.wallet_id = $2
-  AND t.kind IN ('expense', 'income')
   AND t.occurred_on BETWEEN $3 AND $4
 GROUP BY t.id
 `
@@ -223,8 +284,8 @@ type ImportCandidatesRow struct {
 	SourceNotes []string
 }
 
-// A wallet's expenses and income in a date range, to match imported rows against: signed amounts,
-// the current note, and the bank descriptions of the rows it was imported from.
+// A wallet's transactions in a date range, to match imported rows against: signed amounts, the
+// current note, and the bank descriptions of the rows it was imported from.
 func (q *Queries) ImportCandidates(ctx context.Context, arg ImportCandidatesParams) ([]ImportCandidatesRow, error) {
 	rows, err := q.db.Query(ctx, importCandidates,
 		arg.HouseholdID,
@@ -404,6 +465,57 @@ func (q *Queries) ListImportCategoryRules(ctx context.Context, householdID uuid.
 	return items, nil
 }
 
+const lockCardDebit = `-- name: LockCardDebit :one
+SELECT id, occurred_on, amount_minor, note, created_by FROM transactions
+WHERE id = $1 AND household_id = $2 AND wallet_id = $3 AND kind = 'expense'
+FOR UPDATE
+`
+
+type LockCardDebitParams struct {
+	ID          uuid.UUID
+	HouseholdID uuid.UUID
+	WalletID    uuid.UUID
+}
+
+type LockCardDebitRow struct {
+	ID          uuid.UUID
+	OccurredOn  time.Time
+	AmountMinor int64
+	Note        string
+	CreatedBy   *uuid.UUID
+}
+
+// A card debit about to become a transfer, if it's still the expense it was in the review.
+func (q *Queries) LockCardDebit(ctx context.Context, arg LockCardDebitParams) (LockCardDebitRow, error) {
+	row := q.db.QueryRow(ctx, lockCardDebit, arg.ID, arg.HouseholdID, arg.WalletID)
+	var i LockCardDebitRow
+	err := row.Scan(
+		&i.ID,
+		&i.OccurredOn,
+		&i.AmountMinor,
+		&i.Note,
+		&i.CreatedBy,
+	)
+	return i, err
+}
+
+const moveImportRefs = `-- name: MoveImportRefs :exec
+UPDATE import_refs SET transaction_id = $1
+WHERE household_id = $2 AND transaction_id = $3
+`
+
+type MoveImportRefsParams struct {
+	ToID        uuid.UUID
+	HouseholdID uuid.UUID
+	FromID      uuid.UUID
+}
+
+// Points the bank rows of a transaction at the one that replaces it.
+func (q *Queries) MoveImportRefs(ctx context.Context, arg MoveImportRefsParams) error {
+	_, err := q.db.Exec(ctx, moveImportRefs, arg.ToID, arg.HouseholdID, arg.FromID)
+	return err
+}
+
 const reassignImportRuleCategories = `-- name: ReassignImportRuleCategories :exec
 UPDATE import_category_rules
 SET category_id = $1
@@ -442,4 +554,21 @@ func (q *Queries) SaveImportProfile(ctx context.Context, arg SaveImportProfilePa
 		arg.Headers,
 	)
 	return err
+}
+
+const transferLeg = `-- name: TransferLeg :one
+SELECT id FROM transactions WHERE transfer_id = $1 AND household_id = $2 AND kind = $3
+`
+
+type TransferLegParams struct {
+	TransferID  *uuid.UUID
+	HouseholdID uuid.UUID
+	Kind        TransactionKind
+}
+
+func (q *Queries) TransferLeg(ctx context.Context, arg TransferLegParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, transferLeg, arg.TransferID, arg.HouseholdID, arg.Kind)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }

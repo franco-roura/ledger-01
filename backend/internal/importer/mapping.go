@@ -41,6 +41,9 @@ type Mapping struct {
 	// How the bank words purchases, discounts and refunds (a banks ID, e.g. "uy-itau"). Empty
 	// means detect it from the file.
 	Bank string `json:"bank"`
+	// For a card statement: the wallet that pays the card (its id), where the payment's bank
+	// debit is. Empty for other files.
+	PaidFrom string `json:"paid_from,omitempty"`
 }
 
 // FieldError is a mapping problem with a specific field, named as in the API.
