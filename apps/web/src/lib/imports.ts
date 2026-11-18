@@ -73,7 +73,7 @@ export const canChoose = (r: ImportRow) => !r.error && r.mergedInto === undefine
  * statement's payment (a transfer).
  */
 export const needsCategory = (r: ImportRow) =>
-  canChoose(r) && !r.discountsTransactionId && !r.payment;
+  canChoose(r) && !r.discountsTransactionId && r.payments.length === 0;
 
 /** A purchase refunded in full and its refund, in the file or against the wallet. */
 export const isRefundPair = (r: ImportRow) =>
@@ -204,8 +204,16 @@ export function rowRelation(
   money: (minor: bigint) => string,
   foreign: (minor: bigint, currency: string) => string = (m, c) => `${m} ${c}`,
 ): string | undefined {
-  if (r.payment)
-    return `Pays the card: the ${foreign(r.payment.amountMinor, r.payment.currency)} debit “${r.payment.note}” in ${r.payment.walletName} on ${formatDay(r.payment.occurredOn)} becomes a transfer`;
+  if (r.payments.length > 0) {
+    const debit = (d: ImportRow["payments"][number]) =>
+      `the ${foreign(d.amountMinor, d.currency)} debit “${d.note}” in ${d.walletName} on ${formatDay(d.occurredOn)}`;
+    const debits = r.payments.map(debit).join(" and ");
+    const verb = r.payments.length > 1 ? "become transfers" : "becomes a transfer";
+    const unchecked = r.payments.some((d) => d.rateUnchecked)
+      ? " (no exchange rate of yours to check it against)"
+      : "";
+    return `Pays the card: ${debits} ${verb}${unchecked}`;
+  }
   if (r.mergedInto !== undefined) return `Discount counted in row ${r.mergedInto + 1}`;
   if (r.refundedBy !== undefined) return `Refunded in full by row ${r.refundedBy + 1}`;
   if (r.refundOf !== undefined) return `Refund of row ${r.refundOf + 1}`;
@@ -227,6 +235,27 @@ export function rowRelation(
   if (r.discountMinor > 0n)
     return `Includes a discount of ${money(r.discountMinor)}: ${r.discountNotes.join(", ")}`;
   return undefined;
+}
+
+/**
+ * A card statement's rows in the order of the wallets they import into (the statement mixes
+ * currencies), each run of rows starting with its wallet's heading. Rows without a wallet (a
+ * currency the card has none for) group by currency.
+ */
+export function byWallet(rows: ImportRow[]): { key: string; first: boolean; row: ImportRow }[] {
+  const order: string[] = [];
+  const groups = new Map<string, ImportRow[]>();
+  for (const r of rows) {
+    const key = r.walletId || `currency:${r.currency}`;
+    if (!groups.has(key)) {
+      order.push(key);
+      groups.set(key, []);
+    }
+    groups.get(key)?.push(r);
+  }
+  return order.flatMap((key) =>
+    (groups.get(key) ?? []).map((row, i) => ({ key, first: i === 0, row })),
+  );
 }
 
 /** Category picks to start from: the suggested ones. */

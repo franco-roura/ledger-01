@@ -48,18 +48,26 @@ To do this it needs to know how your bank words these lines.
 ## Card statements
 
 Some banks only give you the card's spending as a PDF, and the account just shows one debit for
-the whole bill. Make a wallet for the card in its currency and drop the statement PDF on its
-**Import** page:
+the whole bill. A card that spends in two currencies (pesos and dollars, say) keeps each in a
+wallet of its own. Drop the statement PDF on the **Import** page of any of the card's wallets:
 
-1. **Choose who pays:** pick the account the bill is debited from. It's remembered for next time.
-2. **Review the rows:** purchases and fees become expenses in the card's wallet. An instalment
-   (`2/3`) is dated on the statement's issue date, with its number and purchase date in the note.
-3. **The bill's payment** finds the debit already imported in the account and turns it into a
-   transfer to the card, at the rate the two amounts imply. The debit no longer counts as
-   spending, and the card's balance goes back to zero.
+1. **Match the card's wallets:** each currency on the statement goes to the card's wallet in that
+   currency. Pick it, create it on the spot, or leave that currency's lines out. Then pick the
+   accounts the bill is debited from (all other accounts by default). Both are remembered on every
+   card wallet, so next month the statement goes straight to the review, whichever wallet you
+   drop it on. A month with only one currency simply imports that one.
+2. **Review the rows:** purchases and fees become expenses, grouped by the wallet they go to. An
+   instalment (`2/3`) is dated on the statement's issue date, with its number and purchase date in
+   the note.
+3. **The bill's payments** each find the debit already imported in one of the paying accounts and
+   turn it into a transfer to the card, at the rate the two amounts imply. The debit no longer
+   counts as spending, and the card's balance goes back to zero.
 
-A statement with lines in two currencies imports each currency into its own card wallet. If the
-debit isn't in the account yet, the payment is left out; next month's statement lists it again.
+The bank doesn't always debit each total from the account in its currency. A debit for the same
+amount in the same currency is taken first. Otherwise a debit in the other currency is matched
+when its rate is within 15% of your own recent exchanges. A total paid partly from each account
+becomes two transfers. If no debit is found yet, the payment is left out; next month's statement
+lists it again.
 
 ## Supported banks
 

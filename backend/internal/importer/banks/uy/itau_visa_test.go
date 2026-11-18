@@ -113,7 +113,7 @@ func TestItauVisaFixture(t *testing.T) {
 		t.Fatal(err)
 	}
 	st, ok, err := ItauVisa.Statement(lines)
-	if err != nil || !ok || len(st.Lines) != 4 || st.Lines[3].Amount != "-1.512,00" {
+	if err != nil || !ok || len(st.Lines) != 6 || st.Lines[3].Currency != "USD" || st.Lines[5].Amount != "-20,00" {
 		t.Fatalf("ok = %v, err = %v, lines = %+v", ok, err, st.Lines)
 	}
 }

@@ -74,9 +74,14 @@ type ImportRow struct {
 	// it adds the refund as income.
 	RefundsNote string
 	RefundsDate time.Time
-	// A card statement's payment (Kind KindTransferIn) and the bank debit that paid it: importing
-	// it turns that expense into a transfer to the card.
-	Payment *CardDebit
+	// The wallet the row imports into, and its currency (a card statement's rows go to the
+	// card's wallet in their currency).
+	WalletID uuid.UUID
+	Currency string
+	// A card statement's payment (Kind KindTransferIn) and the bank debits that paid it (one, or
+	// one per account when the bank took part from each): importing it turns those expenses into
+	// transfers to the card.
+	Payments []CardDebit
 }
 
 // LeftOut says the row starts unticked without being a duplicate: a refund pair.
@@ -145,11 +150,11 @@ func (s *Service) UploadImport(ctx context.Context, a Actor, walletID uuid.UUID,
 		var bank importer.Bank
 		var st importer.Statement
 		var si StatementInfo
-		if g, bank, si, st, err = readStatement(content, w); err != nil {
+		if g, bank, si, st, err = s.readStatement(ctx, content); err != nil {
 			return ImportUpload{}, invalid("content", "%s", err.Error())
 		}
 		info, stmt = importer.FileInfo{Format: "pdf"}, &si
-		if m, saved, err = s.statementMapping(ctx, a, walletID, bank, st); err != nil {
+		if m, saved, err = s.statementMapping(ctx, a, w, bank, st, si); err != nil {
 			return ImportUpload{}, err
 		}
 	} else if g, info, err = importer.Parse(name, content); err != nil {
@@ -212,7 +217,7 @@ func sameHeaders(a, b []string) bool {
 //     imported earlier; full refunds paired with their purchase, both left out;
 //  3. the rest by heuristics: same date, amount and note as a transaction (or an earlier row),
 //     then same amount within similarDays. Each transaction matches one row at most.
-func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wallet, payer *Wallet, bank importer.Bank, rows []ImportRow, from, to time.Time) error {
+func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wallet, bank importer.Bank, rows []ImportRow, from, to time.Time) error {
 	fps := make([]string, 0, len(rows))
 	for _, r := range rows {
 		if r.Fingerprint != "" {
@@ -354,8 +359,10 @@ func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wa
 			match(r, DupSimilar, *best)
 		}
 	}
-	// 4. A card statement's payments, as transfers from the wallet that pays the card.
-	return s.matchCardPayments(ctx, q, a, w, payer, bank, rows, cands, used)
+	// 4. A card statement's payments, as transfers into the card (their debits are found across
+	// the card's wallets afterwards).
+	markCardPayments(bank, rows, cands, used)
+	return nil
 }
 
 func normNote(s string) string { return importer.NormNote(s) }
@@ -366,64 +373,87 @@ type dupKey struct {
 	note   string
 }
 
-// readImport loads a staged batch and reads it with m: kinds, suggested categories (column, then
-// rules) and duplicates (against the wallet's transactions and earlier rows of the file).
-func (s *Service) readImport(ctx context.Context, q *dbq.Queries, a Actor, batchID uuid.UUID, m importer.Mapping) (
-	dbq.GetImportBatchRow, importer.Grid, Wallet, []ImportRow, error,
-) {
-	b, err := q.GetImportBatch(ctx, dbq.GetImportBatchParams{ID: batchID, HouseholdID: a.HouseholdID})
-	if errors.Is(err, pgx.ErrNoRows) {
-		return b, nil, Wallet{}, nil, invalid("batch_id", "this upload has expired; upload the file again")
-	}
-	if err != nil {
-		return b, nil, Wallet{}, nil, err
-	}
-	var g importer.Grid
-	if err := json.Unmarshal(b.Rows, &g); err != nil {
-		return b, nil, Wallet{}, nil, fmt.Errorf("import batch %s: %w", batchID, err)
-	}
-	if err := m.Validate(g.Columns(), len(g)); err != nil {
-		return b, nil, Wallet{}, nil, mappingErr(err)
-	}
-	if m.Bank != "" && banks.ByID(m.Bank).ID != m.Bank {
-		return b, nil, Wallet{}, nil, invalid("mapping.bank", "unknown bank %q", m.Bank)
-	}
-	w, err := s.GetWallet(ctx, a, b.WalletID)
-	if err != nil {
-		return b, nil, Wallet{}, nil, err
-	}
-	payer, err := s.payingWallet(ctx, a, w, m)
-	if err != nil {
-		return b, nil, Wallet{}, nil, err
-	}
+// importRead is a staged batch read with a mapping.
+type importRead struct {
+	batch dbq.GetImportBatchRow
+	grid  importer.Grid
+	// The wallet the file was uploaded to.
+	wallet Wallet
+	// A card statement's wallets by currency (nil where that currency is left out), and the
+	// accounts that pay the card. Empty for other files.
+	cards  map[string]*Wallet
+	payers []Wallet
+	rows   []ImportRow
+}
 
+// target is the wallet a row imports into.
+func (rd importRead) target(r ImportRow) Wallet {
+	if w := rd.cards[r.Currency]; w != nil && r.WalletID == w.ID {
+		return *w
+	}
+	return rd.wallet
+}
+
+// rowClassifier suggests a category for a row: from the category column, else the longest
+// "note contains" rule of the row's kind.
+type rowClassifier struct {
+	byName map[TransactionKind]map[string]uuid.UUID
+	kindOf map[uuid.UUID]TransactionKind
+	rules  []dbq.ListImportCategoryRulesRow
+}
+
+func (s *Service) classifier(ctx context.Context, q *dbq.Queries, a Actor) (rowClassifier, error) {
 	cats, err := q.ListCategories(ctx, dbq.ListCategoriesParams{HouseholdID: a.HouseholdID, IncludeArchived: false})
 	if err != nil {
-		return b, nil, Wallet{}, nil, err
+		return rowClassifier{}, err
 	}
-	byName := map[TransactionKind]map[string]uuid.UUID{KindExpense: {}, KindIncome: {}}
-	kindOf := map[uuid.UUID]TransactionKind{}
-	for _, c := range cats {
+	c := rowClassifier{byName: map[TransactionKind]map[string]uuid.UUID{KindExpense: {}, KindIncome: {}}, kindOf: map[uuid.UUID]TransactionKind{}}
+	for _, cat := range cats {
 		k := KindExpense
-		if c.Kind == CategoryIncome {
+		if cat.Kind == CategoryIncome {
 			k = KindIncome
 		}
-		byName[k][strings.ToLower(strings.TrimSpace(c.Name))] = c.ID
-		kindOf[c.ID] = k
+		c.byName[k][strings.ToLower(strings.TrimSpace(cat.Name))] = cat.ID
+		c.kindOf[cat.ID] = k
 	}
-	rules, err := q.ListImportCategoryRules(ctx, a.HouseholdID)
-	if err != nil {
-		return b, nil, Wallet{}, nil, err
+	if c.rules, err = q.ListImportCategoryRules(ctx, a.HouseholdID); err != nil {
+		return rowClassifier{}, err
 	}
 	// The longest (most specific) pattern wins.
-	slices.SortStableFunc(rules, func(x, y dbq.ListImportCategoryRulesRow) int { return len(y.Pattern) - len(x.Pattern) })
+	slices.SortStableFunc(c.rules, func(x, y dbq.ListImportCategoryRulesRow) int { return len(y.Pattern) - len(x.Pattern) })
+	return c, nil
+}
 
-	mapped := importer.Apply(g, m, w.MinorUnits)
+func (c rowClassifier) classify(row *ImportRow) {
+	if id, ok := c.byName[row.Kind][strings.ToLower(strings.TrimSpace(row.Category))]; ok && row.Category != "" {
+		row.CategoryID, row.CategorySource = &id, "column"
+		return
+	}
+	note := strings.ToLower(row.Note)
+	if note == "" {
+		return
+	}
+	for _, rule := range c.rules {
+		if c.kindOf[rule.CategoryID] == row.Kind && strings.Contains(note, strings.ToLower(rule.Pattern)) {
+			id := rule.CategoryID
+			row.CategoryID, row.CategorySource = &id, "rule"
+			return
+		}
+	}
+}
+
+// walletRows reads mapped rows that import into one wallet: kinds, suggested categories and
+// duplicates (against the wallet's transactions and the other rows). Indexes between the rows
+// (merged discounts, refund pairs) are positions in mapped.
+func (s *Service) walletRows(ctx context.Context, q *dbq.Queries, a Actor, w Wallet, bank importer.Bank, mapped []importer.Row, cl rowClassifier) ([]ImportRow, error) {
 	fingerprints := importer.Fingerprints(mapped)
 	out := make([]ImportRow, len(mapped))
 	var from, to time.Time
 	for i, r := range mapped {
-		row := ImportRow{Row: r, Gross: r.Amount, Fingerprint: fingerprints[i], MergedInto: -1, RefundedBy: -1, RefundOf: -1}
+		row := ImportRow{
+			Row: r, Gross: r.Amount, Fingerprint: fingerprints[i], WalletID: w.ID, Currency: w.Currency,
+			MergedInto: -1, RefundedBy: -1, RefundOf: -1,
+		}
 		if r.Err == "" && abs(r.Amount) > MaxAmount {
 			row.Err = "the amount is too large"
 		}
@@ -435,17 +465,7 @@ func (s *Service) readImport(ctx context.Context, q *dbq.Queries, a Actor, batch
 			if r.Amount < 0 {
 				row.Kind = KindExpense
 			}
-			if id, ok := byName[row.Kind][strings.ToLower(strings.TrimSpace(r.Category))]; ok && r.Category != "" {
-				row.CategoryID, row.CategorySource = &id, "column"
-			} else if note := strings.ToLower(row.Note); note != "" {
-				for _, rule := range rules {
-					if kindOf[rule.CategoryID] == row.Kind && strings.Contains(note, strings.ToLower(rule.Pattern)) {
-						id := rule.CategoryID
-						row.CategoryID, row.CategorySource = &id, "rule"
-						break
-					}
-				}
-			}
+			cl.classify(&row)
 			if from.IsZero() || r.Date.Before(from) {
 				from = r.Date
 			}
@@ -458,25 +478,124 @@ func (s *Service) readImport(ctx context.Context, q *dbq.Queries, a Actor, batch
 		out[i] = row
 	}
 	if from.IsZero() {
-		return b, g, w, out, nil
+		return out, nil
+	}
+	if err := s.matchImport(ctx, q, a, w, bank, out, from, to); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// readImport loads a staged batch and reads it with m. A card statement's rows go to the card's
+// wallet in their currency, each wallet's rows matched against that wallet, and its payments
+// to the debits that paid them.
+func (s *Service) readImport(ctx context.Context, q *dbq.Queries, a Actor, batchID uuid.UUID, m importer.Mapping) (importRead, error) {
+	var rd importRead
+	b, err := q.GetImportBatch(ctx, dbq.GetImportBatchParams{ID: batchID, HouseholdID: a.HouseholdID})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return rd, invalid("batch_id", "this upload has expired; upload the file again")
+	}
+	if err != nil {
+		return rd, err
+	}
+	rd.batch = b
+	if err := json.Unmarshal(b.Rows, &rd.grid); err != nil {
+		return rd, fmt.Errorf("import batch %s: %w", batchID, err)
+	}
+	g := rd.grid
+	if err := m.Validate(g.Columns(), len(g)); err != nil {
+		return rd, mappingErr(err)
+	}
+	if m.Bank != "" && banks.ByID(m.Bank).ID != m.Bank {
+		return rd, invalid("mapping.bank", "unknown bank %q", m.Bank)
+	}
+	if rd.wallet, err = s.GetWallet(ctx, a, b.WalletID); err != nil {
+		return rd, err
+	}
+	cl, err := s.classifier(ctx, q, a)
+	if err != nil {
+		return rd, err
 	}
 	bank := banks.ByID(m.Bank)
-	if m.Bank == "" {
-		bank = importer.DetectBank(mapped, banks.All())
+
+	if !isStatement(m) {
+		mapped := importer.Apply(g, m, rd.wallet.MinorUnits)
+		if m.Bank == "" {
+			bank = importer.DetectBank(mapped, banks.All())
+		}
+		rd.rows, err = s.walletRows(ctx, q, a, rd.wallet, bank, mapped, cl)
+		return rd, err
 	}
-	if err := s.matchImport(ctx, q, a, w, payer, bank, out, from, to); err != nil {
-		return b, g, w, nil, err
+
+	if rd.cards, rd.payers, err = s.cardWallets(ctx, a, rd.wallet, m); err != nil {
+		return rd, err
 	}
-	return b, g, w, out, nil
+	all := importer.Apply(g, m, rd.wallet.MinorUnits)
+	rd.rows = make([]ImportRow, len(all))
+	currencyOf := func(r importer.Row) string {
+		if c := importer.StatementCurrency(r); c != "" {
+			return c
+		}
+		return rd.wallet.Currency // a batch staged before statements kept their currency
+	}
+	for i, r := range all {
+		cur := currencyOf(r)
+		rd.rows[i] = ImportRow{Row: r, Gross: r.Amount, Currency: cur, MergedInto: -1, RefundedBy: -1, RefundOf: -1}
+		cw, linked := rd.cards[cur]
+		switch {
+		case r.Err != "":
+		case !linked:
+			rd.rows[i].Err = fmt.Sprintf("choose a %s wallet for this card", cur)
+		case cw == nil:
+			rd.rows[i].Err = fmt.Sprintf("%s lines are left out for this card", cur)
+		}
+	}
+	currencies := make([]string, 0, len(rd.cards))
+	for cur := range rd.cards {
+		currencies = append(currencies, cur)
+	}
+	slices.Sort(currencies)
+	for _, cur := range currencies {
+		cw := rd.cards[cur]
+		if cw == nil {
+			continue
+		}
+		var idx []int
+		var mapped []importer.Row
+		for i, r := range importer.Apply(g, m, cw.MinorUnits) {
+			if currencyOf(r) == cur {
+				idx, mapped = append(idx, i), append(mapped, r)
+			}
+		}
+		rows, err := s.walletRows(ctx, q, a, *cw, bank, mapped, cl)
+		if err != nil {
+			return rd, err
+		}
+		global := func(j int) int {
+			if j < 0 {
+				return j
+			}
+			return idx[j]
+		}
+		for j, r := range rows {
+			r.MergedInto, r.RefundedBy, r.RefundOf = global(r.MergedInto), global(r.RefundedBy), global(r.RefundOf)
+			for k, d := range r.DiscountRows {
+				r.DiscountRows[k] = global(d)
+			}
+			rd.rows[idx[j]] = r
+		}
+	}
+	return rd, s.assignCardDebits(ctx, q, a, rd.rows, rd.cards, rd.payers)
 }
 
 // PreviewImport reads a staged upload with a mapping: every data row, or the first limit ones.
 // Returns the rows and how many data rows the file has.
 func (s *Service) PreviewImport(ctx context.Context, a Actor, batchID uuid.UUID, m importer.Mapping, limit int) ([]ImportRow, int, error) {
-	_, _, _, rows, err := s.readImport(ctx, s.q, a, batchID, m)
+	rd, err := s.readImport(ctx, s.q, a, batchID, m)
 	if err != nil {
 		return nil, 0, err
 	}
+	rows := rd.rows
 	total := len(rows)
 	if limit > 0 && limit < len(rows) {
 		rows = rows[:limit]
@@ -486,20 +605,23 @@ func (s *Service) PreviewImport(ctx context.Context, a Actor, batchID uuid.UUID,
 
 // CommitImport imports the chosen rows of a staged upload in one database transaction, each
 // with its chosen category (which must exist and match the row's kind), then deletes the upload.
-// With saveMapping the mapping becomes the wallet's suggestion for its next import.
+// A card statement's rows go into the card's wallet in their currency, and its payments turn the
+// debits that paid them into transfers. With saveMapping the mapping becomes the suggestion for
+// the wallet's next import (for a card statement, every card wallet's).
 func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, m importer.Mapping, choices []ImportChoice, saveMapping bool) (int64, error) {
 	if len(choices) == 0 {
 		return 0, invalid("rows", "choose at least one row to import")
 	}
 	var imported int64
 	err := s.inTx(ctx, func(q *dbq.Queries) error {
-		b, g, w, rows, err := s.readImport(ctx, q, a, batchID, m)
+		rd, err := s.readImport(ctx, q, a, batchID, m)
 		if err != nil {
 			return err
 		}
-		if w.Archived {
+		if rd.wallet.Archived {
 			return invalid("wallet_id", "wallet is archived")
 		}
+		rows := rd.rows
 		catIDs := make([]uuid.UUID, 0, len(choices))
 		for _, c := range choices {
 			catIDs = append(catIDs, c.CategoryID)
@@ -515,8 +637,18 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 				kindOf[c.ID] = KindIncome
 			}
 		}
-		p := dbq.InsertImportedTransactionsParams{HouseholdID: a.HouseholdID, WalletID: w.ID, CreatedBy: &a.UserID}
-		refs := importRefs{InsertImportRefsParams: dbq.InsertImportRefsParams{WalletID: w.ID, HouseholdID: a.HouseholdID}}
+		// One insert and one set of import refs per wallet.
+		var order []uuid.UUID
+		inserts := map[uuid.UUID]*dbq.InsertImportedTransactionsParams{}
+		refs := map[uuid.UUID]*importRefs{}
+		forWallet := func(id uuid.UUID) (*dbq.InsertImportedTransactionsParams, *importRefs) {
+			if inserts[id] == nil {
+				order = append(order, id)
+				inserts[id] = &dbq.InsertImportedTransactionsParams{HouseholdID: a.HouseholdID, WalletID: id, CreatedBy: &a.UserID}
+				refs[id] = &importRefs{InsertImportRefsParams: dbq.InsertImportRefsParams{WalletID: id, HouseholdID: a.HouseholdID}}
+			}
+			return inserts[id], refs[id]
+		}
 		chosen := map[int]bool{}
 		var payments []int // choices that are card payments
 		for i, c := range choices {
@@ -532,9 +664,10 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 			if r.MergedInto >= 0 {
 				return invalid(field+".index", "row %d is a discount already counted in row %d", c.Index+1, r.MergedInto+1)
 			}
+			p, ref := forWallet(r.WalletID)
 			if r.DiscountTarget != nil {
 				n, err := q.ApplyImportDiscount(ctx, dbq.ApplyImportDiscountParams{
-					ID: *r.DiscountTarget, HouseholdID: a.HouseholdID, WalletID: w.ID, DiscountMinor: r.Gross,
+					ID: *r.DiscountTarget, HouseholdID: a.HouseholdID, WalletID: r.WalletID, DiscountMinor: r.Gross,
 				})
 				if err != nil {
 					return err
@@ -542,10 +675,10 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 				if n == 0 {
 					return invalid(field+".index", "row %d: the purchase it discounts has changed; upload the file again", c.Index+1)
 				}
-				refs.add(r, *r.DiscountTarget)
+				ref.add(r, *r.DiscountTarget)
 				continue
 			}
-			if r.Payment != nil {
+			if len(r.Payments) > 0 {
 				payments = append(payments, i)
 				continue
 			}
@@ -558,9 +691,9 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 			}
 			txID := newID()
 			p.Ids = append(p.Ids, txID)
-			refs.add(r, txID)
+			ref.add(r, txID)
 			for _, d := range r.DiscountRows {
-				refs.add(rows[d], txID)
+				ref.add(rows[d], txID)
 			}
 			p.Kinds = append(p.Kinds, string(r.Kind))
 			p.CategoryIds = append(p.CategoryIds, c.CategoryID)
@@ -568,43 +701,84 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 			p.Dates = append(p.Dates, r.Date)
 			p.Notes = append(p.Notes, r.Note)
 		}
-		if imported, err = q.InsertImportedTransactions(ctx, p); err != nil {
-			return dbErr(err, "imported transaction")
+		for _, id := range order {
+			if len(inserts[id].Ids) == 0 {
+				continue
+			}
+			n, err := q.InsertImportedTransactions(ctx, *inserts[id])
+			if err != nil {
+				return dbErr(err, "imported transaction")
+			}
+			imported += n
 		}
 		for _, i := range payments {
 			r := rows[choices[i].Index]
-			leg, err := s.convertCardDebit(ctx, q, a, w, r, fmt.Sprintf("rows[%d].index", i))
-			if err != nil {
-				return err
+			card := rd.target(r)
+			var first uuid.UUID
+			for _, d := range r.Payments {
+				leg, err := s.convertCardDebit(ctx, q, a, card, r, d, fmt.Sprintf("rows[%d].index", i))
+				if err != nil {
+					return err
+				}
+				if first == uuid.Nil {
+					first = leg
+				}
 			}
-			refs.add(r, leg)
+			_, ref := forWallet(r.WalletID)
+			ref.add(r, first)
 			imported++
 		}
-		if len(refs.Fingerprints) > 0 {
-			if err := q.InsertImportRefs(ctx, refs.InsertImportRefsParams); err != nil {
-				return err
+		for _, id := range order {
+			if len(refs[id].Fingerprints) > 0 {
+				if err := q.InsertImportRefs(ctx, refs[id].InsertImportRefsParams); err != nil {
+					return err
+				}
 			}
 		}
 		if saveMapping {
-			mapping, err := json.Marshal(m)
-			if err != nil {
-				return err
-			}
-			headers := m.Header(g)
-			if headers == nil {
-				headers = []string{}
-			}
-			hb, err := json.Marshal(headers)
-			if err != nil {
-				return err
-			}
-			if err := q.SaveImportProfile(ctx, dbq.SaveImportProfileParams{WalletID: w.ID, HouseholdID: a.HouseholdID, Mapping: mapping, Headers: hb}); err != nil {
+			if err := s.saveImportProfiles(ctx, q, a, rd, m); err != nil {
 				return err
 			}
 		}
-		return q.DeleteImportBatch(ctx, dbq.DeleteImportBatchParams{ID: b.ID, HouseholdID: a.HouseholdID})
+		return q.DeleteImportBatch(ctx, dbq.DeleteImportBatchParams{ID: rd.batch.ID, HouseholdID: a.HouseholdID})
 	})
 	return imported, err
+}
+
+// saveImportProfiles remembers the mapping for the wallet's next import: for a card statement,
+// on every card wallet (so a statement dropped on either finds the card), with the single
+// paying wallet older profiles had turned into the list.
+func (s *Service) saveImportProfiles(ctx context.Context, q *dbq.Queries, a Actor, rd importRead, m importer.Mapping) error {
+	wallets := []uuid.UUID{rd.wallet.ID}
+	if isStatement(m) {
+		if len(m.PayingWallets) == 0 && m.PaidFrom != "" {
+			m.PayingWallets = []string{m.PaidFrom}
+		}
+		m.PaidFrom = ""
+		for _, cw := range rd.cards {
+			if cw != nil && !slices.Contains(wallets, cw.ID) {
+				wallets = append(wallets, cw.ID)
+			}
+		}
+	}
+	mapping, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	headers := m.Header(rd.grid)
+	if headers == nil {
+		headers = []string{}
+	}
+	hb, err := json.Marshal(headers)
+	if err != nil {
+		return err
+	}
+	for _, id := range wallets {
+		if err := q.SaveImportProfile(ctx, dbq.SaveImportProfileParams{WalletID: id, HouseholdID: a.HouseholdID, Mapping: mapping, Headers: hb}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // importRefs collects the source rows of a commit's transactions.

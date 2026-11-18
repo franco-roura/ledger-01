@@ -9,9 +9,10 @@ import "ledger/v1/transaction.proto";
 // steps, so each step may reach a different API instance. Imported rows are expenses and income
 // in the wallet's currency, validated like manual entries.
 //
-// A card statement PDF imports into the card's wallet with no columns to map: its purchases as
-// expenses, and the bill's payment as a transfer from the wallet that pays the card
-// (paid_from_wallet_id), made from the bank debit already in that wallet.
+// A card statement PDF imports with no columns to map into the card's wallets, one per currency
+// the card spends in (card_wallet_ids): its purchases as expenses, and the bill's payments as
+// transfers made from the bank debits already in the accounts that pay the card
+// (paying_wallet_ids), whatever their currency.
 
 // Which amounts are money going out.
 enum ImportSign {
@@ -54,8 +55,14 @@ message ImportMapping {
   // Upload fills it in with the wallet's saved bank, else the one detected from the descriptions;
   // empty when none was detected, which detects again on every read ("generic" turns it off).
   string bank = 12;
-  // Card statements only: the wallet that pays the card, where the payment's bank debit is.
-  string paid_from_wallet_id = 13;
+  // Card statements only: the card's wallets by ISO 4217 currency (an empty id leaves that
+  // currency's lines out), and the accounts the bill may be debited from, where each payment's
+  // debit is looked for (empty: every wallet that isn't the card's). Saved on every card wallet,
+  // so the statement can be dropped on either.
+  map<string, string> card_wallet_ids = 14;
+  repeated string paying_wallet_ids = 15;
+  // Deprecated: read as one of paying_wallet_ids.
+  string paid_from_wallet_id = 13 [deprecated = true];
 }
 
 // A card statement PDF, as read.
@@ -64,8 +71,16 @@ message ImportStatement {
   string bank_name = 1;
   string issued_on = 2;
   string due_on = 3;
-  // Lines in another currency, left for a wallet in that currency.
-  int32 other_currency_lines = 4;
+  reserved 4;
+  // The currencies it has lines in, in the statement's order.
+  repeated ImportStatementCurrency currencies = 5;
+}
+
+message ImportStatementCurrency {
+  string currency = 1;
+  int32 lines = 2;
+  // Purchases and fees, positive, in the currency's minor units.
+  int64 spent_minor = 3;
 }
 
 // The bank debit that paid a card statement's payment, in the wallet that pays the card.
@@ -78,6 +93,11 @@ message ImportCardDebit {
   int64 amount_minor = 5;
   string occurred_on = 6;
   string note = 7;
+  // The part of the payment it pays, in the card wallet's currency: all of it, or its share
+  // when the bank took part from each account.
+  int64 part_minor = 8;
+  // A debit in another currency, matched without a household rate to compare it with.
+  bool rate_unchecked = 9;
 }
 
 // A bank whose statement wording the import knows ("generic" knows none).
@@ -100,7 +120,7 @@ message ImportRow {
   // Why the row can't be imported; the fields below are empty when set.
   string error = 3;
   string occurred_on = 4;
-  // Positive, in the wallet's currency.
+  // Positive, in the currency of the wallet it imports into.
   int64 amount_minor = 5;
   // EXPENSE or INCOME; TRANSFER_IN for a card statement's payment.
   TransactionKind kind = 6;
@@ -138,10 +158,16 @@ message ImportRow {
   // unticked; importing it adds the refund as income.
   string refunds_note = 22;
   string refunds_date = 23;
-  // A card statement's payment (kind TRANSFER_IN) and the debit that paid it: importing it turns
-  // that expense into a transfer to this wallet, so it needs no category. A payment without one
-  // can't be imported (error says why).
-  ImportCardDebit payment = 24;
+  reserved 24;
+  // The wallet the row imports into and its currency: the uploading wallet, or for a card
+  // statement the card's wallet in the row's currency.
+  string wallet_id = 25;
+  string currency = 26;
+  // A card statement's payment (kind TRANSFER_IN) and the debits that paid it (one, or one per
+  // account when the bank took part from each): importing it turns those expenses into transfers
+  // to the card, so it needs no category. A payment without any can't be imported (error says
+  // why).
+  repeated ImportCardDebit payments = 27;
 }
 
 enum ImportDuplicate {

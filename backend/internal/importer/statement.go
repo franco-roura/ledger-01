@@ -39,7 +39,17 @@ const (
 	stmtDate = iota
 	stmtNote
 	stmtAmount
+	stmtCurrency
 )
+
+// StatementCurrency is the currency of a row of a StatementGrid, as Apply read it (the cells are
+// kept on the row).
+func StatementCurrency(r Row) string {
+	if stmtCurrency < len(r.Cells) {
+		return r.Cells[stmtCurrency]
+	}
+	return ""
+}
 
 // StatementMapping is the mapping that reads a StatementGrid: a card statement's purchases are
 // positive.
@@ -58,20 +68,17 @@ func IsStatementMapping(m Mapping) bool {
 		m.Debit == -1 && m.Credit == -1 && m.Sign == s.Sign && m.Note == s.Note && m.Category == -1
 }
 
-// StatementGrid lays out a statement's lines in one currency as a table with a header row
-// (date, description, amount) and counts the lines left out for being in another currency.
+// StatementGrid lays out a statement's lines as a table with a header row (date, description,
+// amount, currency). A card can spend in several currencies; each one imports into its own
+// wallet.
 //
 // An instalment is dated on the statement's issue date (it's this month's spending), with its
 // number and purchase date in the note: the same instalment of the same purchase has the same
 // date and amount every month, so the number is what tells them apart. Lines with no date are
 // dated on the issue date too.
-func StatementGrid(st Statement, currency string) (g Grid, otherCurrency int) {
-	g = Grid{{"Date", "Description", "Amount"}}
+func StatementGrid(st Statement) Grid {
+	g := Grid{{"Date", "Description", "Amount", "Currency"}}
 	for _, l := range st.Lines {
-		if l.Currency != currency {
-			otherCurrency++
-			continue
-		}
 		on, note := l.Date, l.Detail
 		if l.Instalment != "" {
 			note += " " + l.Instalment
@@ -83,7 +90,7 @@ func StatementGrid(st Statement, currency string) (g Grid, otherCurrency int) {
 		if on.IsZero() {
 			on = st.Issued
 		}
-		g = append(g, []string{on.Format("02/01/2006"), note, l.Amount})
+		g = append(g, []string{on.Format("02/01/2006"), note, l.Amount, l.Currency})
 	}
-	return g, otherCurrency
+	return g
 }

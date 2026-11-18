@@ -12,6 +12,7 @@ import { CircleCheck, FileUp } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";
 import { toast } from "sonner";
+import { useWallets } from "@/lib/api/hooks";
 import { MAX_IMPORT_BYTES } from "@/lib/imports";
 import { today } from "@/lib/period";
 import { useFileDrop } from "@/lib/use-file-drop";
@@ -25,7 +26,7 @@ type Step = "file" | "columns" | "card" | "review" | "done";
 const stepTitles: Record<Step, string> = {
   file: "Choose a file",
   columns: "Match the columns",
-  card: "Choose who pays",
+  card: "Match the card's wallets",
   review: "Review the rows",
   done: "Imported",
 };
@@ -35,7 +36,8 @@ const stepTitles: Record<Step, string> = {
  * staged upload again on the server, so nothing but the mapping lives in the browser. A wallet
  * whose columns were saved last time goes straight from the file to the review. A file can be
  * dropped anywhere on the page at any step (a later step starts over with it), or chosen with the
- * file input. A card statement PDF has no columns: its step picks the account that pays the card.
+ * file input. A card statement PDF has no columns: its step links each of its currencies to the
+ * card's wallet in it, and picks the accounts that pay the card.
  */
 export function ImportView({ walletId }: { walletId: string }) {
   const id = useId();
@@ -48,6 +50,14 @@ export function ImportView({ walletId }: { walletId: string }) {
   const [fileError, setFileError] = useState<string>();
   const [converting, setConverting] = useState(false);
   const send = useMutation(ImportService.method.uploadImportFile);
+  const { byId: walletsById } = useWallets();
+  // A card statement imports into the card's wallets; any other file into this one.
+  const importedInto = upload?.statement
+    ? Object.values(mapping?.cardWalletIds ?? {})
+        .filter(Boolean)
+        .map((id) => walletsById.get(id)?.name ?? "a wallet")
+        .join(" and ")
+    : wallet?.name;
   const busy = send.isPending || converting;
   const dragging = useFileDrop(Boolean(wallet) && !busy, (file) => choose(file));
 
@@ -160,12 +170,12 @@ export function ImportView({ walletId }: { walletId: string }) {
         />
       )}
 
-      {step === "card" && upload?.statement && mapping && (
+      {step === "card" && upload?.statement && mapping && wallet && (
         <CardStep
           statement={upload.statement}
           mapping={mapping}
           onChange={setMapping}
-          walletId={walletId}
+          wallet={wallet}
           onBack={() => setStep("file")}
           onNext={() => setStep("review")}
         />
@@ -192,7 +202,7 @@ export function ImportView({ walletId }: { walletId: string }) {
           <div className="flex flex-col items-start gap-4">
             <p className="flex items-center gap-2 text-body-md text-ink">
               <CircleCheck strokeWidth={1.25} className="size-5 text-income-ink" />
-              Imported {imported.toString()} transactions into {wallet?.name}.
+              Imported {imported.toString()} transactions into {importedInto}.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild>

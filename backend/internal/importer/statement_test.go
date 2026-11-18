@@ -55,9 +55,9 @@ func TestStatementGrid(t *testing.T) {
 			{Date: date("2026-10-02"), Detail: "LIBRERIA NORTE", Currency: "USD", Amount: "20,00"},
 		},
 	}
-	g, other := importer.StatementGrid(st, "UYU")
-	if other != 1 || len(g) != 4 {
-		t.Fatalf("grid = %v, other = %d", g, other)
+	g := importer.StatementGrid(st)
+	if len(g) != 5 || g.Columns() != 4 {
+		t.Fatalf("grid = %v", g)
 	}
 	m := importer.StatementMapping("bank", st.Decimal)
 	if !importer.IsStatementMapping(m) || m.Validate(g.Columns(), len(g)) != nil {
@@ -73,11 +73,15 @@ func TestStatementGrid(t *testing.T) {
 		// An instalment is this statement's spending: dated on the issue date, numbered in the note.
 		{"2026-11-03", -1500_00, "MUEBLERIA SUR 2/3 (13/06/26)"},
 		{"2026-11-03", -12_00, "SEGURO"},
+		{"2026-10-02", -20_00, "LIBRERIA NORTE"},
 	}
 	for i, w := range want {
 		r := rows[i]
 		if r.Err != "" || r.Date.Format(time.DateOnly) != w.on || r.Amount != w.amount || r.Note != w.note {
 			t.Errorf("row %d = %+v, want %+v", i, r, w)
 		}
+	}
+	if importer.StatementCurrency(rows[0]) != "UYU" || importer.StatementCurrency(rows[3]) != "USD" {
+		t.Errorf("currencies = %v, %v", rows[0].Cells, rows[3].Cells)
 	}
 }

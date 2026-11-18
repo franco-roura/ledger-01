@@ -41,9 +41,13 @@ type Mapping struct {
 	// How the bank words purchases, discounts and refunds (a banks ID, e.g. "uy-itau"). Empty
 	// means detect it from the file.
 	Bank string `json:"bank"`
-	// For a card statement: the wallet that pays the card (its id), where the payment's bank
-	// debit is. Empty for other files.
-	PaidFrom string `json:"paid_from,omitempty"`
+	// Card statements only. CardWallets are the card's wallets by currency (ids); an empty id
+	// leaves that currency's lines out. PayingWallets are the accounts the bill may be debited
+	// from, where the payment's bank debit is looked for. PaidFrom is the single paying wallet of
+	// profiles saved before PayingWallets; it's read as one of them and no longer written.
+	CardWallets   map[string]string `json:"card_wallets,omitempty"`
+	PayingWallets []string          `json:"paying_wallets,omitempty"`
+	PaidFrom      string            `json:"paid_from,omitempty"`
 }
 
 // FieldError is a mapping problem with a specific field, named as in the API.

@@ -34,12 +34,13 @@ import {
 } from "@ledger-01/api";
 import { WandSparkles } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useState } from "react";
+import { Fragment, useEffect, useId, useState } from "react";
 import { toast } from "sonner";
 import { CategoryPicker } from "@/components/category-picker";
 import { useCategories, useCurrencies, useWallets } from "@/lib/api/hooks";
 import {
   applyRule,
+  byWallet,
   canChoose,
   firstMissingCategory,
   initialCategories,
@@ -128,8 +129,10 @@ export function ReviewStep({
   const folded = view === "all" && !showSettled ? settledGroups(rows) : [];
   // Tick all / Untick all act on the rows the current view lists.
   const choosable = listed.filter(canChoose);
-  const units = minorUnits(wallet.currency);
-  const money = (minor: bigint) => formatMoney(minor, wallet.currency, units, { code: false });
+  // A card statement's rows are in the currency of the card wallet they import into.
+  const currencyOf = (r: ImportRow) => r.currency || wallet.currency;
+  const moneyOf = (r: ImportRow) => (minor: bigint) =>
+    formatMoney(minor, currencyOf(r), minorUnits(currencyOf(r)), { code: false });
   const foreign = (minor: bigint, currency: string) =>
     formatMoney(minor, currency, minorUnits(currency));
   const allTicked = choosable.length > 0 && choosable.every((r) => sel.has(r.index));
@@ -223,7 +226,7 @@ export function ReviewStep({
         <div className="flex flex-col items-start gap-4">
           <p className="text-body-md text-ink">{q.error.rawMessage}</p>
           <Button variant="secondary" onClick={onBack}>
-            {statement ? "Change the paying account" : "Change columns"}
+            {statement ? "Change the card's wallets" : "Change columns"}
           </Button>
         </div>
       </Panel>
@@ -235,8 +238,13 @@ export function ReviewStep({
       {statement && (
         <p className="text-body-sm text-ink-soft">
           {statement.bankName} statement of {formatDay(statement.issuedOn)}, due{" "}
-          {formatDay(statement.dueOn)}, paid from{" "}
-          {walletsById.get(mapping.paidFromWalletId)?.name ?? "no account"}.{" "}
+          {formatDay(statement.dueOn)}. Debits looked for in{" "}
+          {mapping.payingWalletIds.length === 0
+            ? "every other account"
+            : mapping.payingWalletIds
+                .map((id) => walletsById.get(id)?.name ?? "an account")
+                .join(", ")}
+          .{" "}
           <button
             type="button"
             onClick={onBack}
@@ -320,87 +328,99 @@ export function ReviewStep({
           <p className="px-4 py-6 text-body-sm text-ink-soft sm:px-6">No rows here.</p>
         )}
         <ul className="flex flex-col">
-          {listed.slice(0, shown).map((r) => (
-            <li
-              key={r.index}
-              className="flex flex-col gap-2 border-b border-seam/60 px-4 py-3 last:border-b-0 sm:px-6"
-            >
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  aria-label={`Import row ${r.index + 1}`}
-                  checked={sel.has(r.index)}
-                  disabled={!canChoose(r)}
-                  onCheckedChange={(v) => toggle(r.index, v === true)}
-                  className="mt-0.5 shrink-0"
-                />
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="truncate text-body-sm text-ink">
-                    {r.error ? r.cells.join(" · ") : r.note || "—"}
+          {(statement
+            ? byWallet(listed.slice(0, shown))
+            : listed.slice(0, shown).map((row) => ({ key: "", first: false, row }))
+          ).map(({ key, first, row: r }) => (
+            <Fragment key={r.index}>
+              {first && (
+                <li className="border-b border-seam/60 bg-shell-recess px-4 py-2 sm:px-6">
+                  <span className="hud-sm text-ink-soft">
+                    {walletsById.get(r.walletId)?.name ?? `No ${r.currency} wallet`} · {r.currency}
                   </span>
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="hud-sm text-ink-soft">
-                      Row {r.index + 1}
-                      {!r.error && ` · ${formatDay(r.occurredOn)}`}
-                    </span>
-                    {leftOutBadge(r) && <Badge variant="tint">{leftOutBadge(r)}</Badge>}
-                    {r.discountsTransactionId && <Badge variant="outline">Discount</Badge>}
-                    {r.payment && <Badge variant="outline">Card payment</Badge>}
-                    {r.categorySource === "rule" && <Badge variant="outline">Rule</Badge>}
-                  </span>
-                  {rowRelation(r, money, foreign) && (
-                    <span className="text-body-sm text-ink-soft">
-                      {rowRelation(r, money, foreign)}
-                    </span>
-                  )}
-                  {r.error && <span className="text-body-sm text-danger">{r.error}</span>}
-                </span>
-                {!r.error && (
-                  <Amount
-                    minor={r.kind === TransactionKind.EXPENSE ? -r.amountMinor : r.amountMinor}
-                    currency={wallet.currency}
-                    minorUnits={units}
-                    size="sm"
-                    tone={r.mergedInto !== undefined ? "muted" : "auto"}
-                    className="shrink-0"
-                  />
-                )}
-              </div>
-              {needsCategory(r) && sel.has(r.index) && (
-                <div className="flex items-center gap-2 pl-8">
-                  {/* Set categories show as a small chip; missing ones get the full picker. */}
-                  <div
-                    className={
-                      picks.get(r.index) && missing !== r.index
-                        ? "flex min-w-0 flex-col gap-1"
-                        : "flex min-w-0 flex-1 flex-col gap-1"
-                    }
-                  >
-                    <CategoryPicker
-                      id={pickerId(r.index)}
-                      compact={Boolean(picks.get(r.index)) && missing !== r.index}
-                      categories={kindCategories(r.kind)}
-                      walletId={wallet.id}
-                      value={picks.get(r.index) ?? ""}
-                      onChange={(v) => {
-                        setPicks(new Map(picks).set(r.index, v));
-                        if (missing === r.index) setMissing(null);
-                      }}
-                    />
-                    {missing === r.index && <FieldError>Choose a category</FieldError>}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`Make a rule from row ${r.index + 1}`}
-                    title="Make a rule"
-                    onClick={() => setRuleFor(r)}
-                  >
-                    <WandSparkles strokeWidth={1.25} />
-                  </Button>
-                </div>
+                </li>
               )}
-            </li>
+              <li
+                data-group={key || undefined}
+                className="flex flex-col gap-2 border-b border-seam/60 px-4 py-3 last:border-b-0 sm:px-6"
+              >
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    aria-label={`Import row ${r.index + 1}`}
+                    checked={sel.has(r.index)}
+                    disabled={!canChoose(r)}
+                    onCheckedChange={(v) => toggle(r.index, v === true)}
+                    className="mt-0.5 shrink-0"
+                  />
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="truncate text-body-sm text-ink">
+                      {r.error ? r.cells.join(" · ") : r.note || "—"}
+                    </span>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="hud-sm text-ink-soft">
+                        Row {r.index + 1}
+                        {!r.error && ` · ${formatDay(r.occurredOn)}`}
+                      </span>
+                      {leftOutBadge(r) && <Badge variant="tint">{leftOutBadge(r)}</Badge>}
+                      {r.discountsTransactionId && <Badge variant="outline">Discount</Badge>}
+                      {r.payments.length > 0 && <Badge variant="outline">Card payment</Badge>}
+                      {r.categorySource === "rule" && <Badge variant="outline">Rule</Badge>}
+                    </span>
+                    {rowRelation(r, moneyOf(r), foreign) && (
+                      <span className="text-body-sm text-ink-soft">
+                        {rowRelation(r, moneyOf(r), foreign)}
+                      </span>
+                    )}
+                    {r.error && <span className="text-body-sm text-danger">{r.error}</span>}
+                  </span>
+                  {!r.error && (
+                    <Amount
+                      minor={r.kind === TransactionKind.EXPENSE ? -r.amountMinor : r.amountMinor}
+                      currency={currencyOf(r)}
+                      minorUnits={minorUnits(currencyOf(r))}
+                      size="sm"
+                      tone={r.mergedInto !== undefined ? "muted" : "auto"}
+                      className="shrink-0"
+                    />
+                  )}
+                </div>
+                {needsCategory(r) && sel.has(r.index) && (
+                  <div className="flex items-center gap-2 pl-8">
+                    {/* Set categories show as a small chip; missing ones get the full picker. */}
+                    <div
+                      className={
+                        picks.get(r.index) && missing !== r.index
+                          ? "flex min-w-0 flex-col gap-1"
+                          : "flex min-w-0 flex-1 flex-col gap-1"
+                      }
+                    >
+                      <CategoryPicker
+                        id={pickerId(r.index)}
+                        compact={Boolean(picks.get(r.index)) && missing !== r.index}
+                        categories={kindCategories(r.kind)}
+                        walletId={r.walletId || wallet.id}
+                        value={picks.get(r.index) ?? ""}
+                        onChange={(v) => {
+                          setPicks(new Map(picks).set(r.index, v));
+                          if (missing === r.index) setMissing(null);
+                        }}
+                      />
+                      {missing === r.index && <FieldError>Choose a category</FieldError>}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Make a rule from row ${r.index + 1}`}
+                      title="Make a rule"
+                      onClick={() => setRuleFor(r)}
+                    >
+                      <WandSparkles strokeWidth={1.25} />
+                    </Button>
+                  </div>
+                )}
+              </li>
+            </Fragment>
           ))}
         </ul>
         {listed.length > shown && (
@@ -454,12 +474,12 @@ export function ReviewStep({
           />
           <Label htmlFor={`${id}-remember`} className="text-body-sm text-ink">
             {statement
-              ? `Remember the paying account for ${wallet.name}`
+              ? "Remember this card's wallets and accounts"
               : `Remember these columns for ${wallet.name}`}
           </Label>
         </div>
         <Button variant="ghost" onClick={onBack}>
-          {statement ? "Change the paying account" : "Change columns"}
+          {statement ? "Change the card's wallets" : "Change columns"}
         </Button>
       </div>
       <p className="text-body-sm text-ink-soft">

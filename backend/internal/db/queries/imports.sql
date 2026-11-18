@@ -36,16 +36,17 @@ WHERE t.household_id = @household_id AND t.wallet_id = @wallet_id
 GROUP BY t.id;
 
 -- name: CardDebitCandidates :many
--- The expenses of the wallet that pays a card, in a date range, to find the debit of a card
--- statement's payment: the current note and the bank descriptions it was imported from.
+-- The expenses of the wallets that pay a card, in a date range, to find the debits of a card
+-- statement's payments: the current note and the bank descriptions it was imported from.
 SELECT t.id,
+       t.wallet_id,
        t.occurred_on,
        t.amount_minor,
        t.note,
        coalesce(array_agg(r.note ORDER BY r.created_at) FILTER (WHERE r.note IS NOT NULL), '{}')::text[] AS source_notes
 FROM transactions t
 LEFT JOIN import_refs r ON r.transaction_id = t.id
-WHERE t.household_id = @household_id AND t.wallet_id = @wallet_id
+WHERE t.household_id = @household_id AND t.wallet_id = ANY(@wallet_ids::uuid[])
   AND t.kind = 'expense'
   AND t.occurred_on BETWEEN @from_date AND @to_date
 GROUP BY t.id;

@@ -42,13 +42,14 @@ func (q *Queries) ApplyImportDiscount(ctx context.Context, arg ApplyImportDiscou
 
 const cardDebitCandidates = `-- name: CardDebitCandidates :many
 SELECT t.id,
+       t.wallet_id,
        t.occurred_on,
        t.amount_minor,
        t.note,
        coalesce(array_agg(r.note ORDER BY r.created_at) FILTER (WHERE r.note IS NOT NULL), '{}')::text[] AS source_notes
 FROM transactions t
 LEFT JOIN import_refs r ON r.transaction_id = t.id
-WHERE t.household_id = $1 AND t.wallet_id = $2
+WHERE t.household_id = $1 AND t.wallet_id = ANY($2::uuid[])
   AND t.kind = 'expense'
   AND t.occurred_on BETWEEN $3 AND $4
 GROUP BY t.id
@@ -56,25 +57,26 @@ GROUP BY t.id
 
 type CardDebitCandidatesParams struct {
 	HouseholdID uuid.UUID
-	WalletID    uuid.UUID
+	WalletIds   []uuid.UUID
 	FromDate    time.Time
 	ToDate      time.Time
 }
 
 type CardDebitCandidatesRow struct {
 	ID          uuid.UUID
+	WalletID    uuid.UUID
 	OccurredOn  time.Time
 	AmountMinor int64
 	Note        string
 	SourceNotes []string
 }
 
-// The expenses of the wallet that pays a card, in a date range, to find the debit of a card
-// statement's payment: the current note and the bank descriptions it was imported from.
+// The expenses of the wallets that pay a card, in a date range, to find the debits of a card
+// statement's payments: the current note and the bank descriptions it was imported from.
 func (q *Queries) CardDebitCandidates(ctx context.Context, arg CardDebitCandidatesParams) ([]CardDebitCandidatesRow, error) {
 	rows, err := q.db.Query(ctx, cardDebitCandidates,
 		arg.HouseholdID,
-		arg.WalletID,
+		arg.WalletIds,
 		arg.FromDate,
 		arg.ToDate,
 	)
@@ -87,6 +89,7 @@ func (q *Queries) CardDebitCandidates(ctx context.Context, arg CardDebitCandidat
 		var i CardDebitCandidatesRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.WalletID,
 			&i.OccurredOn,
 			&i.AmountMinor,
 			&i.Note,

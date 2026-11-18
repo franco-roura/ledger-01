@@ -10,6 +10,7 @@ import {
 import {
   amountMode,
   applyRule,
+  byWallet,
   checkMapping,
   columnFromValue,
   columnOptions,
@@ -285,19 +286,22 @@ describe("review views", () => {
 describe("card statements", () => {
   const money = (m: bigint) => (Number(m) / 100).toFixed(2);
   const foreign = (m: bigint, c: string) => `${(Number(m) / 100).toFixed(2)} ${c}`;
+  const debit = {
+    transactionId: "debit",
+    walletName: "Southbank dollars",
+    currency: "USD",
+    amountMinor: 37_80n,
+    occurredOn: "2026-11-16",
+    note: "DEB. VARIOS TARJ. VISA",
+  };
   const payment = row({
     index: 4,
+    walletId: "visa-uyu",
+    currency: "UYU",
     note: "PAGO TOTAL DEBITO AUTOMATICO",
     kind: TransactionKind.TRANSFER_IN,
     amountMinor: 1512_00n,
-    payment: {
-      transactionId: "debit",
-      walletName: "Southbank dollars",
-      currency: "USD",
-      amountMinor: 37_80n,
-      occurredOn: "2026-11-16",
-      note: "DEB. VARIOS TARJ. VISA",
-    },
+    payments: [debit],
   });
 
   test("a payment is ticked and needs no category", () => {
@@ -306,9 +310,37 @@ describe("card statements", () => {
     expect(firstMissingCategory([payment], new Set([4]), new Map())).toBeUndefined();
   });
 
-  test("it says which debit becomes the transfer", () => {
+  test("it says which debits become transfers", () => {
     expect(rowRelation(payment, money, foreign)).toBe(
       "Pays the card: the 37.80 USD debit “DEB. VARIOS TARJ. VISA” in Southbank dollars on Mon, Nov 16, 2026 becomes a transfer",
     );
+    const split = row({
+      index: 4,
+      kind: TransactionKind.TRANSFER_IN,
+      payments: [
+        { ...debit, walletName: "Southbank pesos", currency: "UYU", amountMinor: 1000_00n },
+        { ...debit, amountMinor: 12_80n, rateUnchecked: true },
+      ],
+    });
+    expect(rowRelation(split, money, foreign)).toBe(
+      "Pays the card: the 1000.00 UYU debit “DEB. VARIOS TARJ. VISA” in Southbank pesos on Mon, Nov 16, 2026 and the 12.80 USD debit “DEB. VARIOS TARJ. VISA” in Southbank dollars on Mon, Nov 16, 2026 become transfers (no exchange rate of yours to check it against)",
+    );
+  });
+
+  test("rows are listed by the wallet they import into", () => {
+    const purchase = (index: number, walletId: string, currency: string) =>
+      row({ index, walletId, currency, note: `row ${index}` });
+    const rows = [
+      purchase(0, "visa-uyu", "UYU"),
+      purchase(1, "visa-usd", "USD"),
+      purchase(2, "visa-uyu", "UYU"),
+      purchase(3, "", "EUR"),
+    ];
+    expect(byWallet(rows).map((g) => [g.row.index, g.first])).toEqual([
+      [0, true],
+      [2, false],
+      [1, true],
+      [3, true],
+    ]);
   });
 });

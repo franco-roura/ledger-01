@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ledger/v1/import.proto.
  */
 export const file_ledger_v1_import: GenFile = /*@__PURE__*/
-  fileDesc("ChZsZWRnZXIvdjEvaW1wb3J0LnByb3RvEglsZWRnZXIudjEizAMKDUltcG9ydE1hcHBpbmcSEQoJc2tpcF9yb3dzGAsgASgFEhIKCmhhc19oZWFkZXIYASABKAgSEwoLZGF0ZV9jb2x1bW4YAiABKAUSEwoLZGF0ZV9mb3JtYXQYAyABKAkSGgoNYW1vdW50X2NvbHVtbhgEIAEoBUgAiAEBEhkKDGRlYml0X2NvbHVtbhgFIAEoBUgBiAEBEhoKDWNyZWRpdF9jb2x1bW4YBiABKAVIAogBARIjCgRzaWduGAcgASgOMhUubGVkZ2VyLnYxLkltcG9ydFNpZ24SNgoRZGVjaW1hbF9zZXBhcmF0b3IYCCABKA4yGy5sZWRnZXIudjEuRGVjaW1hbFNlcGFyYXRvchIYCgtub3RlX2NvbHVtbhgJIAEoBUgDiAEBEhwKD2NhdGVnb3J5X2NvbHVtbhgKIAEoBUgEiAEBEgwKBGJhbmsYDCABKAkSGwoTcGFpZF9mcm9tX3dhbGxldF9pZBgNIAEoCUIQCg5fYW1vdW50X2NvbHVtbkIPCg1fZGViaXRfY29sdW1uQhAKDl9jcmVkaXRfY29sdW1uQg4KDF9ub3RlX2NvbHVtbkISChBfY2F0ZWdvcnlfY29sdW1uImUKD0ltcG9ydFN0YXRlbWVudBIRCgliYW5rX25hbWUYASABKAkSEQoJaXNzdWVkX29uGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRIcChRvdGhlcl9jdXJyZW5jeV9saW5lcxgEIAEoBSKcAQoPSW1wb3J0Q2FyZERlYml0EhYKDnRyYW5zYWN0aW9uX2lkGAEgASgJEhEKCXdhbGxldF9pZBgCIAEoCRITCgt3YWxsZXRfbmFtZRgDIAEoCRIQCghjdXJyZW5jeRgEIAEoCRIUCgxhbW91bnRfbWlub3IYBSABKAMSEwoLb2NjdXJyZWRfb24YBiABKAkSDAoEbm90ZRgHIAEoCSI3CgpJbXBvcnRCYW5rEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDwoHY291bnRyeRgDIAEoCSIcCgtJbXBvcnRDZWxscxINCgVjZWxscxgBIAMoCSKPBQoJSW1wb3J0Um93Eg0KBWluZGV4GAEgASgFEg0KBWNlbGxzGAIgAygJEg0KBWVycm9yGAMgASgJEhMKC29jY3VycmVkX29uGAQgASgJEhQKDGFtb3VudF9taW5vchgFIAEoAxIoCgRraW5kGAYgASgOMhoubGVkZ2VyLnYxLlRyYW5zYWN0aW9uS2luZBIMCgRub3RlGAcgASgJEhMKC2NhdGVnb3J5X2lkGAggASgJEhcKD2NhdGVnb3J5X3NvdXJjZRgJIAEoCRIRCglkdXBsaWNhdGUYCiABKAgSNAoQZHVwbGljYXRlX3JlYXNvbhgLIAEoDjIaLmxlZGdlci52MS5JbXBvcnREdXBsaWNhdGUSEgoKbWF0Y2hfbm90ZRgMIAEoCRISCgptYXRjaF9kYXRlGA0gASgJEhYKDmRpc2NvdW50X21pbm9yGA4gASgDEhYKDmRpc2NvdW50X25vdGVzGA8gAygJEhgKC21lcmdlZF9pbnRvGBAgASgFSACIAQESIAoYZGlzY291bnRzX3RyYW5zYWN0aW9uX2lkGBEgASgJEhYKDmRpc2NvdW50c19ub3RlGBIgASgJEhYKDmRpc2NvdW50c19kYXRlGBMgASgJEhgKC3JlZnVuZGVkX2J5GBQgASgFSAGIAQESFgoJcmVmdW5kX29mGBUgASgFSAKIAQESFAoMcmVmdW5kc19ub3RlGBYgASgJEhQKDHJlZnVuZHNfZGF0ZRgXIAEoCRIrCgdwYXltZW50GBggASgLMhoubGVkZ2VyLnYxLkltcG9ydENhcmREZWJpdEIOCgxfbWVyZ2VkX2ludG9CDgoMX3JlZnVuZGVkX2J5QgwKCl9yZWZ1bmRfb2YiQAoMQ2F0ZWdvcnlSdWxlEgoKAmlkGAEgASgJEg8KB3BhdHRlcm4YAiABKAkSEwoLY2F0ZWdvcnlfaWQYAyABKAkiUAoXVXBsb2FkSW1wb3J0RmlsZVJlcXVlc3QSEQoJd2FsbGV0X2lkGAEgASgJEhEKCWZpbGVfbmFtZRgCIAEoCRIPCgdjb250ZW50GAMgASgMIt8CChhVcGxvYWRJbXBvcnRGaWxlUmVzcG9uc2USEAoIYmF0Y2hfaWQYASABKAkSFAoMY29sdW1uX2NvdW50GAIgASgFEhEKCXJvd19jb3VudBgDIAEoBRImCgZzYW1wbGUYBCADKAsyFi5sZWRnZXIudjEuSW1wb3J0Q2VsbHMSKQoHbWFwcGluZxgFIAEoCzIYLmxlZGdlci52MS5JbXBvcnRNYXBwaW5nEhUKDXNhdmVkX21hcHBpbmcYBiABKAgSDgoGZm9ybWF0GAcgASgJEhAKCGVuY29kaW5nGAggASgJEhEKCWRlbGltaXRlchgJIAEoCRIUCgxkYXRlX2Zvcm1hdHMYCiADKAkSJAoFYmFua3MYCyADKAsyFS5sZWRnZXIudjEuSW1wb3J0QmFuaxItCglzdGF0ZW1lbnQYDCABKAsyGi5sZWRnZXIudjEuSW1wb3J0U3RhdGVtZW50ImIKFFByZXZpZXdJbXBvcnRSZXF1ZXN0EhAKCGJhdGNoX2lkGAEgASgJEikKB21hcHBpbmcYAiABKAsyGC5sZWRnZXIudjEuSW1wb3J0TWFwcGluZxINCgVsaW1pdBgDIAEoBSJKChVQcmV2aWV3SW1wb3J0UmVzcG9uc2USIgoEcm93cxgBIAMoCzIULmxlZGdlci52MS5JbXBvcnRSb3cSDQoFdG90YWwYAiABKAUiMgoMSW1wb3J0Q2hvaWNlEg0KBWluZGV4GAEgASgFEhMKC2NhdGVnb3J5X2lkGAIgASgJIo8BChNDb21taXRJbXBvcnRSZXF1ZXN0EhAKCGJhdGNoX2lkGAEgASgJEikKB21hcHBpbmcYAiABKAsyGC5sZWRnZXIudjEuSW1wb3J0TWFwcGluZxIlCgRyb3dzGAMgAygLMhcubGVkZ2VyLnYxLkltcG9ydENob2ljZRIUCgxzYXZlX21hcHBpbmcYBCABKAgiLgoUQ29tbWl0SW1wb3J0UmVzcG9uc2USFgoOaW1wb3J0ZWRfY291bnQYASABKAMiGgoYTGlzdENhdGVnb3J5UnVsZXNSZXF1ZXN0IkMKGUxpc3RDYXRlZ29yeVJ1bGVzUmVzcG9uc2USJgoFcnVsZXMYASADKAsyFy5sZWRnZXIudjEuQ2F0ZWdvcnlSdWxlIkEKGUNyZWF0ZUNhdGVnb3J5UnVsZVJlcXVlc3QSDwoHcGF0dGVybhgBIAEoCRITCgtjYXRlZ29yeV9pZBgCIAEoCSJDChpDcmVhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRIlCgRydWxlGAEgASgLMhcubGVkZ2VyLnYxLkNhdGVnb3J5UnVsZSInChlEZWxldGVDYXRlZ29yeVJ1bGVSZXF1ZXN0EgoKAmlkGAEgASgJIhwKGkRlbGV0ZUNhdGVnb3J5UnVsZVJlc3BvbnNlKnMKCkltcG9ydFNpZ24SGwoXSU1QT1JUX1NJR05fVU5TUEVDSUZJRUQQABIjCh9JTVBPUlRfU0lHTl9ORUdBVElWRV9JU19FWFBFTlNFEAESIwofSU1QT1JUX1NJR05fUE9TSVRJVkVfSVNfRVhQRU5TRRACKm0KEERlY2ltYWxTZXBhcmF0b3ISIQodREVDSU1BTF9TRVBBUkFUT1JfVU5TUEVDSUZJRUQQABIZChVERUNJTUFMX1NFUEFSQVRPUl9ET1QQARIbChdERUNJTUFMX1NFUEFSQVRPUl9DT01NQRACKqYBCg9JbXBvcnREdXBsaWNhdGUSIAocSU1QT1JUX0RVUExJQ0FURV9VTlNQRUNJRklFRBAAEh0KGUlNUE9SVF9EVVBMSUNBVEVfSU1QT1JURUQQARIZChVJTVBPUlRfRFVQTElDQVRFX1NBTUUQAhIcChhJTVBPUlRfRFVQTElDQVRFX1NJTUlMQVIQAxIZChVJTVBPUlRfRFVQTElDQVRFX0ZJTEUQBDK3BAoNSW1wb3J0U2VydmljZRJbChBVcGxvYWRJbXBvcnRGaWxlEiIubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXF1ZXN0GiMubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXNwb25zZRJSCg1QcmV2aWV3SW1wb3J0Eh8ubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXF1ZXN0GiAubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXNwb25zZRJPCgxDb21taXRJbXBvcnQSHi5sZWRnZXIudjEuQ29tbWl0SW1wb3J0UmVxdWVzdBofLmxlZGdlci52MS5Db21taXRJbXBvcnRSZXNwb25zZRJeChFMaXN0Q2F0ZWdvcnlSdWxlcxIjLmxlZGdlci52MS5MaXN0Q2F0ZWdvcnlSdWxlc1JlcXVlc3QaJC5sZWRnZXIudjEuTGlzdENhdGVnb3J5UnVsZXNSZXNwb25zZRJhChJDcmVhdGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuQ3JlYXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5DcmVhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRJhChJEZWxldGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuRGVsZXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5EZWxldGVDYXRlZ29yeVJ1bGVSZXNwb25zZUKjAQoNY29tLmxlZGdlci52MUILSW1wb3J0UHJvdG9QAVpAZ2l0aHViLmNvbS9mcmFuY28tcm91cmEvbGVkZ2VyLTAxL2JhY2tlbmQvZ2VuL2xlZGdlci92MTtsZWRnZXJ2MaICA0xYWKoCCUxlZGdlci5WMcoCCUxlZGdlclxWMeICFUxlZGdlclxWMVxHUEJNZXRhZGF0YeoCCkxlZGdlcjo6VjFiBnByb3RvMw", [file_ledger_v1_transaction]);
+  fileDesc("ChZsZWRnZXIvdjEvaW1wb3J0LnByb3RvEglsZWRnZXIudjEi5wQKDUltcG9ydE1hcHBpbmcSEQoJc2tpcF9yb3dzGAsgASgFEhIKCmhhc19oZWFkZXIYASABKAgSEwoLZGF0ZV9jb2x1bW4YAiABKAUSEwoLZGF0ZV9mb3JtYXQYAyABKAkSGgoNYW1vdW50X2NvbHVtbhgEIAEoBUgAiAEBEhkKDGRlYml0X2NvbHVtbhgFIAEoBUgBiAEBEhoKDWNyZWRpdF9jb2x1bW4YBiABKAVIAogBARIjCgRzaWduGAcgASgOMhUubGVkZ2VyLnYxLkltcG9ydFNpZ24SNgoRZGVjaW1hbF9zZXBhcmF0b3IYCCABKA4yGy5sZWRnZXIudjEuRGVjaW1hbFNlcGFyYXRvchIYCgtub3RlX2NvbHVtbhgJIAEoBUgDiAEBEhwKD2NhdGVnb3J5X2NvbHVtbhgKIAEoBUgEiAEBEgwKBGJhbmsYDCABKAkSRAoPY2FyZF93YWxsZXRfaWRzGA4gAygLMisubGVkZ2VyLnYxLkltcG9ydE1hcHBpbmcuQ2FyZFdhbGxldElkc0VudHJ5EhkKEXBheWluZ193YWxsZXRfaWRzGA8gAygJEh8KE3BhaWRfZnJvbV93YWxsZXRfaWQYDSABKAlCAhgBGjQKEkNhcmRXYWxsZXRJZHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBQhAKDl9hbW91bnRfY29sdW1uQg8KDV9kZWJpdF9jb2x1bW5CEAoOX2NyZWRpdF9jb2x1bW5CDgoMX25vdGVfY29sdW1uQhIKEF9jYXRlZ29yeV9jb2x1bW4ihQEKD0ltcG9ydFN0YXRlbWVudBIRCgliYW5rX25hbWUYASABKAkSEQoJaXNzdWVkX29uGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRI2CgpjdXJyZW5jaWVzGAUgAygLMiIubGVkZ2VyLnYxLkltcG9ydFN0YXRlbWVudEN1cnJlbmN5SgQIBBAFIk8KF0ltcG9ydFN0YXRlbWVudEN1cnJlbmN5EhAKCGN1cnJlbmN5GAEgASgJEg0KBWxpbmVzGAIgASgFEhMKC3NwZW50X21pbm9yGAMgASgDIsgBCg9JbXBvcnRDYXJkRGViaXQSFgoOdHJhbnNhY3Rpb25faWQYASABKAkSEQoJd2FsbGV0X2lkGAIgASgJEhMKC3dhbGxldF9uYW1lGAMgASgJEhAKCGN1cnJlbmN5GAQgASgJEhQKDGFtb3VudF9taW5vchgFIAEoAxITCgtvY2N1cnJlZF9vbhgGIAEoCRIMCgRub3RlGAcgASgJEhIKCnBhcnRfbWlub3IYCCABKAMSFgoOcmF0ZV91bmNoZWNrZWQYCSABKAgiNwoKSW1wb3J0QmFuaxIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEg8KB2NvdW50cnkYAyABKAkiHAoLSW1wb3J0Q2VsbHMSDQoFY2VsbHMYASADKAkiuwUKCUltcG9ydFJvdxINCgVpbmRleBgBIAEoBRINCgVjZWxscxgCIAMoCRINCgVlcnJvchgDIAEoCRITCgtvY2N1cnJlZF9vbhgEIAEoCRIUCgxhbW91bnRfbWlub3IYBSABKAMSKAoEa2luZBgGIAEoDjIaLmxlZGdlci52MS5UcmFuc2FjdGlvbktpbmQSDAoEbm90ZRgHIAEoCRITCgtjYXRlZ29yeV9pZBgIIAEoCRIXCg9jYXRlZ29yeV9zb3VyY2UYCSABKAkSEQoJZHVwbGljYXRlGAogASgIEjQKEGR1cGxpY2F0ZV9yZWFzb24YCyABKA4yGi5sZWRnZXIudjEuSW1wb3J0RHVwbGljYXRlEhIKCm1hdGNoX25vdGUYDCABKAkSEgoKbWF0Y2hfZGF0ZRgNIAEoCRIWCg5kaXNjb3VudF9taW5vchgOIAEoAxIWCg5kaXNjb3VudF9ub3RlcxgPIAMoCRIYCgttZXJnZWRfaW50bxgQIAEoBUgAiAEBEiAKGGRpc2NvdW50c190cmFuc2FjdGlvbl9pZBgRIAEoCRIWCg5kaXNjb3VudHNfbm90ZRgSIAEoCRIWCg5kaXNjb3VudHNfZGF0ZRgTIAEoCRIYCgtyZWZ1bmRlZF9ieRgUIAEoBUgBiAEBEhYKCXJlZnVuZF9vZhgVIAEoBUgCiAEBEhQKDHJlZnVuZHNfbm90ZRgWIAEoCRIUCgxyZWZ1bmRzX2RhdGUYFyABKAkSEQoJd2FsbGV0X2lkGBkgASgJEhAKCGN1cnJlbmN5GBogASgJEiwKCHBheW1lbnRzGBsgAygLMhoubGVkZ2VyLnYxLkltcG9ydENhcmREZWJpdEIOCgxfbWVyZ2VkX2ludG9CDgoMX3JlZnVuZGVkX2J5QgwKCl9yZWZ1bmRfb2ZKBAgYEBkiQAoMQ2F0ZWdvcnlSdWxlEgoKAmlkGAEgASgJEg8KB3BhdHRlcm4YAiABKAkSEwoLY2F0ZWdvcnlfaWQYAyABKAkiUAoXVXBsb2FkSW1wb3J0RmlsZVJlcXVlc3QSEQoJd2FsbGV0X2lkGAEgASgJEhEKCWZpbGVfbmFtZRgCIAEoCRIPCgdjb250ZW50GAMgASgMIt8CChhVcGxvYWRJbXBvcnRGaWxlUmVzcG9uc2USEAoIYmF0Y2hfaWQYASABKAkSFAoMY29sdW1uX2NvdW50GAIgASgFEhEKCXJvd19jb3VudBgDIAEoBRImCgZzYW1wbGUYBCADKAsyFi5sZWRnZXIudjEuSW1wb3J0Q2VsbHMSKQoHbWFwcGluZxgFIAEoCzIYLmxlZGdlci52MS5JbXBvcnRNYXBwaW5nEhUKDXNhdmVkX21hcHBpbmcYBiABKAgSDgoGZm9ybWF0GAcgASgJEhAKCGVuY29kaW5nGAggASgJEhEKCWRlbGltaXRlchgJIAEoCRIUCgxkYXRlX2Zvcm1hdHMYCiADKAkSJAoFYmFua3MYCyADKAsyFS5sZWRnZXIudjEuSW1wb3J0QmFuaxItCglzdGF0ZW1lbnQYDCABKAsyGi5sZWRnZXIudjEuSW1wb3J0U3RhdGVtZW50ImIKFFByZXZpZXdJbXBvcnRSZXF1ZXN0EhAKCGJhdGNoX2lkGAEgASgJEikKB21hcHBpbmcYAiABKAsyGC5sZWRnZXIudjEuSW1wb3J0TWFwcGluZxINCgVsaW1pdBgDIAEoBSJKChVQcmV2aWV3SW1wb3J0UmVzcG9uc2USIgoEcm93cxgBIAMoCzIULmxlZGdlci52MS5JbXBvcnRSb3cSDQoFdG90YWwYAiABKAUiMgoMSW1wb3J0Q2hvaWNlEg0KBWluZGV4GAEgASgFEhMKC2NhdGVnb3J5X2lkGAIgASgJIo8BChNDb21taXRJbXBvcnRSZXF1ZXN0EhAKCGJhdGNoX2lkGAEgASgJEikKB21hcHBpbmcYAiABKAsyGC5sZWRnZXIudjEuSW1wb3J0TWFwcGluZxIlCgRyb3dzGAMgAygLMhcubGVkZ2VyLnYxLkltcG9ydENob2ljZRIUCgxzYXZlX21hcHBpbmcYBCABKAgiLgoUQ29tbWl0SW1wb3J0UmVzcG9uc2USFgoOaW1wb3J0ZWRfY291bnQYASABKAMiGgoYTGlzdENhdGVnb3J5UnVsZXNSZXF1ZXN0IkMKGUxpc3RDYXRlZ29yeVJ1bGVzUmVzcG9uc2USJgoFcnVsZXMYASADKAsyFy5sZWRnZXIudjEuQ2F0ZWdvcnlSdWxlIkEKGUNyZWF0ZUNhdGVnb3J5UnVsZVJlcXVlc3QSDwoHcGF0dGVybhgBIAEoCRITCgtjYXRlZ29yeV9pZBgCIAEoCSJDChpDcmVhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRIlCgRydWxlGAEgASgLMhcubGVkZ2VyLnYxLkNhdGVnb3J5UnVsZSInChlEZWxldGVDYXRlZ29yeVJ1bGVSZXF1ZXN0EgoKAmlkGAEgASgJIhwKGkRlbGV0ZUNhdGVnb3J5UnVsZVJlc3BvbnNlKnMKCkltcG9ydFNpZ24SGwoXSU1QT1JUX1NJR05fVU5TUEVDSUZJRUQQABIjCh9JTVBPUlRfU0lHTl9ORUdBVElWRV9JU19FWFBFTlNFEAESIwofSU1QT1JUX1NJR05fUE9TSVRJVkVfSVNfRVhQRU5TRRACKm0KEERlY2ltYWxTZXBhcmF0b3ISIQodREVDSU1BTF9TRVBBUkFUT1JfVU5TUEVDSUZJRUQQABIZChVERUNJTUFMX1NFUEFSQVRPUl9ET1QQARIbChdERUNJTUFMX1NFUEFSQVRPUl9DT01NQRACKqYBCg9JbXBvcnREdXBsaWNhdGUSIAocSU1QT1JUX0RVUExJQ0FURV9VTlNQRUNJRklFRBAAEh0KGUlNUE9SVF9EVVBMSUNBVEVfSU1QT1JURUQQARIZChVJTVBPUlRfRFVQTElDQVRFX1NBTUUQAhIcChhJTVBPUlRfRFVQTElDQVRFX1NJTUlMQVIQAxIZChVJTVBPUlRfRFVQTElDQVRFX0ZJTEUQBDK3BAoNSW1wb3J0U2VydmljZRJbChBVcGxvYWRJbXBvcnRGaWxlEiIubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXF1ZXN0GiMubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXNwb25zZRJSCg1QcmV2aWV3SW1wb3J0Eh8ubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXF1ZXN0GiAubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXNwb25zZRJPCgxDb21taXRJbXBvcnQSHi5sZWRnZXIudjEuQ29tbWl0SW1wb3J0UmVxdWVzdBofLmxlZGdlci52MS5Db21taXRJbXBvcnRSZXNwb25zZRJeChFMaXN0Q2F0ZWdvcnlSdWxlcxIjLmxlZGdlci52MS5MaXN0Q2F0ZWdvcnlSdWxlc1JlcXVlc3QaJC5sZWRnZXIudjEuTGlzdENhdGVnb3J5UnVsZXNSZXNwb25zZRJhChJDcmVhdGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuQ3JlYXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5DcmVhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRJhChJEZWxldGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuRGVsZXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5EZWxldGVDYXRlZ29yeVJ1bGVSZXNwb25zZUKjAQoNY29tLmxlZGdlci52MUILSW1wb3J0UHJvdG9QAVpAZ2l0aHViLmNvbS9mcmFuY28tcm91cmEvbGVkZ2VyLTAxL2JhY2tlbmQvZ2VuL2xlZGdlci92MTtsZWRnZXJ2MaICA0xYWKoCCUxlZGdlci5WMcoCCUxlZGdlclxWMeICFUxlZGdlclxWMVxHUEJNZXRhZGF0YeoCCkxlZGdlcjo6VjFiBnByb3RvMw", [file_ledger_v1_transaction]);
 
 /**
  * Which file columns hold what. Columns are 0-based; an unset optional column isn't mapped.
@@ -97,9 +97,25 @@ export type ImportMapping = Message<"ledger.v1.ImportMapping"> & {
   bank: string;
 
   /**
-   * Card statements only: the wallet that pays the card, where the payment's bank debit is.
+   * Card statements only: the card's wallets by ISO 4217 currency (an empty id leaves that
+   * currency's lines out), and the accounts the bill may be debited from, where each payment's
+   * debit is looked for (empty: every wallet that isn't the card's). Saved on every card wallet,
+   * so the statement can be dropped on either.
    *
-   * @generated from field: string paid_from_wallet_id = 13;
+   * @generated from field: map<string, string> card_wallet_ids = 14;
+   */
+  cardWalletIds: { [key: string]: string };
+
+  /**
+   * @generated from field: repeated string paying_wallet_ids = 15;
+   */
+  payingWalletIds: string[];
+
+  /**
+   * Deprecated: read as one of paying_wallet_ids.
+   *
+   * @generated from field: string paid_from_wallet_id = 13 [deprecated = true];
+   * @deprecated
    */
   paidFromWalletId: string;
 };
@@ -135,11 +151,11 @@ export type ImportStatement = Message<"ledger.v1.ImportStatement"> & {
   dueOn: string;
 
   /**
-   * Lines in another currency, left for a wallet in that currency.
+   * The currencies it has lines in, in the statement's order.
    *
-   * @generated from field: int32 other_currency_lines = 4;
+   * @generated from field: repeated ledger.v1.ImportStatementCurrency currencies = 5;
    */
-  otherCurrencyLines: number;
+  currencies: ImportStatementCurrency[];
 };
 
 /**
@@ -148,6 +164,35 @@ export type ImportStatement = Message<"ledger.v1.ImportStatement"> & {
  */
 export const ImportStatementSchema: GenMessage<ImportStatement> = /*@__PURE__*/
   messageDesc(file_ledger_v1_import, 1);
+
+/**
+ * @generated from message ledger.v1.ImportStatementCurrency
+ */
+export type ImportStatementCurrency = Message<"ledger.v1.ImportStatementCurrency"> & {
+  /**
+   * @generated from field: string currency = 1;
+   */
+  currency: string;
+
+  /**
+   * @generated from field: int32 lines = 2;
+   */
+  lines: number;
+
+  /**
+   * Purchases and fees, positive, in the currency's minor units.
+   *
+   * @generated from field: int64 spent_minor = 3;
+   */
+  spentMinor: bigint;
+};
+
+/**
+ * Describes the message ledger.v1.ImportStatementCurrency.
+ * Use `create(ImportStatementCurrencySchema)` to create a new message.
+ */
+export const ImportStatementCurrencySchema: GenMessage<ImportStatementCurrency> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_import, 2);
 
 /**
  * The bank debit that paid a card statement's payment, in the wallet that pays the card.
@@ -191,6 +236,21 @@ export type ImportCardDebit = Message<"ledger.v1.ImportCardDebit"> & {
    * @generated from field: string note = 7;
    */
   note: string;
+
+  /**
+   * The part of the payment it pays, in the card wallet's currency: all of it, or its share
+   * when the bank took part from each account.
+   *
+   * @generated from field: int64 part_minor = 8;
+   */
+  partMinor: bigint;
+
+  /**
+   * A debit in another currency, matched without a household rate to compare it with.
+   *
+   * @generated from field: bool rate_unchecked = 9;
+   */
+  rateUnchecked: boolean;
 };
 
 /**
@@ -198,7 +258,7 @@ export type ImportCardDebit = Message<"ledger.v1.ImportCardDebit"> & {
  * Use `create(ImportCardDebitSchema)` to create a new message.
  */
 export const ImportCardDebitSchema: GenMessage<ImportCardDebit> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 2);
+  messageDesc(file_ledger_v1_import, 3);
 
 /**
  * A bank whose statement wording the import knows ("generic" knows none).
@@ -229,7 +289,7 @@ export type ImportBank = Message<"ledger.v1.ImportBank"> & {
  * Use `create(ImportBankSchema)` to create a new message.
  */
 export const ImportBankSchema: GenMessage<ImportBank> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 3);
+  messageDesc(file_ledger_v1_import, 4);
 
 /**
  * @generated from message ledger.v1.ImportCells
@@ -246,7 +306,7 @@ export type ImportCells = Message<"ledger.v1.ImportCells"> & {
  * Use `create(ImportCellsSchema)` to create a new message.
  */
 export const ImportCellsSchema: GenMessage<ImportCells> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 4);
+  messageDesc(file_ledger_v1_import, 5);
 
 /**
  * One data row of the file, read with a mapping.
@@ -279,7 +339,7 @@ export type ImportRow = Message<"ledger.v1.ImportRow"> & {
   occurredOn: string;
 
   /**
-   * Positive, in the wallet's currency.
+   * Positive, in the currency of the wallet it imports into.
    *
    * @generated from field: int64 amount_minor = 5;
    */
@@ -404,13 +464,27 @@ export type ImportRow = Message<"ledger.v1.ImportRow"> & {
   refundsDate: string;
 
   /**
-   * A card statement's payment (kind TRANSFER_IN) and the debit that paid it: importing it turns
-   * that expense into a transfer to this wallet, so it needs no category. A payment without one
-   * can't be imported (error says why).
+   * The wallet the row imports into and its currency: the uploading wallet, or for a card
+   * statement the card's wallet in the row's currency.
    *
-   * @generated from field: ledger.v1.ImportCardDebit payment = 24;
+   * @generated from field: string wallet_id = 25;
    */
-  payment?: ImportCardDebit | undefined;
+  walletId: string;
+
+  /**
+   * @generated from field: string currency = 26;
+   */
+  currency: string;
+
+  /**
+   * A card statement's payment (kind TRANSFER_IN) and the debits that paid it (one, or one per
+   * account when the bank took part from each): importing it turns those expenses into transfers
+   * to the card, so it needs no category. A payment without any can't be imported (error says
+   * why).
+   *
+   * @generated from field: repeated ledger.v1.ImportCardDebit payments = 27;
+   */
+  payments: ImportCardDebit[];
 };
 
 /**
@@ -418,7 +492,7 @@ export type ImportRow = Message<"ledger.v1.ImportRow"> & {
  * Use `create(ImportRowSchema)` to create a new message.
  */
 export const ImportRowSchema: GenMessage<ImportRow> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 5);
+  messageDesc(file_ledger_v1_import, 6);
 
 /**
  * "Note contains pattern → category", applied to imported rows the category column didn't
@@ -448,7 +522,7 @@ export type CategoryRule = Message<"ledger.v1.CategoryRule"> & {
  * Use `create(CategoryRuleSchema)` to create a new message.
  */
 export const CategoryRuleSchema: GenMessage<CategoryRule> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 6);
+  messageDesc(file_ledger_v1_import, 7);
 
 /**
  * @generated from message ledger.v1.UploadImportFileRequest
@@ -475,7 +549,7 @@ export type UploadImportFileRequest = Message<"ledger.v1.UploadImportFileRequest
  * Use `create(UploadImportFileRequestSchema)` to create a new message.
  */
 export const UploadImportFileRequestSchema: GenMessage<UploadImportFileRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 7);
+  messageDesc(file_ledger_v1_import, 8);
 
 /**
  * @generated from message ledger.v1.UploadImportFileResponse
@@ -563,7 +637,7 @@ export type UploadImportFileResponse = Message<"ledger.v1.UploadImportFileRespon
  * Use `create(UploadImportFileResponseSchema)` to create a new message.
  */
 export const UploadImportFileResponseSchema: GenMessage<UploadImportFileResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 8);
+  messageDesc(file_ledger_v1_import, 9);
 
 /**
  * @generated from message ledger.v1.PreviewImportRequest
@@ -592,7 +666,7 @@ export type PreviewImportRequest = Message<"ledger.v1.PreviewImportRequest"> & {
  * Use `create(PreviewImportRequestSchema)` to create a new message.
  */
 export const PreviewImportRequestSchema: GenMessage<PreviewImportRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 9);
+  messageDesc(file_ledger_v1_import, 10);
 
 /**
  * @generated from message ledger.v1.PreviewImportResponse
@@ -616,7 +690,7 @@ export type PreviewImportResponse = Message<"ledger.v1.PreviewImportResponse"> &
  * Use `create(PreviewImportResponseSchema)` to create a new message.
  */
 export const PreviewImportResponseSchema: GenMessage<PreviewImportResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 10);
+  messageDesc(file_ledger_v1_import, 11);
 
 /**
  * @generated from message ledger.v1.ImportChoice
@@ -641,7 +715,7 @@ export type ImportChoice = Message<"ledger.v1.ImportChoice"> & {
  * Use `create(ImportChoiceSchema)` to create a new message.
  */
 export const ImportChoiceSchema: GenMessage<ImportChoice> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 11);
+  messageDesc(file_ledger_v1_import, 12);
 
 /**
  * @generated from message ledger.v1.CommitImportRequest
@@ -677,7 +751,7 @@ export type CommitImportRequest = Message<"ledger.v1.CommitImportRequest"> & {
  * Use `create(CommitImportRequestSchema)` to create a new message.
  */
 export const CommitImportRequestSchema: GenMessage<CommitImportRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 12);
+  messageDesc(file_ledger_v1_import, 13);
 
 /**
  * @generated from message ledger.v1.CommitImportResponse
@@ -694,7 +768,7 @@ export type CommitImportResponse = Message<"ledger.v1.CommitImportResponse"> & {
  * Use `create(CommitImportResponseSchema)` to create a new message.
  */
 export const CommitImportResponseSchema: GenMessage<CommitImportResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 13);
+  messageDesc(file_ledger_v1_import, 14);
 
 /**
  * @generated from message ledger.v1.ListCategoryRulesRequest
@@ -707,7 +781,7 @@ export type ListCategoryRulesRequest = Message<"ledger.v1.ListCategoryRulesReque
  * Use `create(ListCategoryRulesRequestSchema)` to create a new message.
  */
 export const ListCategoryRulesRequestSchema: GenMessage<ListCategoryRulesRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 14);
+  messageDesc(file_ledger_v1_import, 15);
 
 /**
  * @generated from message ledger.v1.ListCategoryRulesResponse
@@ -724,7 +798,7 @@ export type ListCategoryRulesResponse = Message<"ledger.v1.ListCategoryRulesResp
  * Use `create(ListCategoryRulesResponseSchema)` to create a new message.
  */
 export const ListCategoryRulesResponseSchema: GenMessage<ListCategoryRulesResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 15);
+  messageDesc(file_ledger_v1_import, 16);
 
 /**
  * @generated from message ledger.v1.CreateCategoryRuleRequest
@@ -746,7 +820,7 @@ export type CreateCategoryRuleRequest = Message<"ledger.v1.CreateCategoryRuleReq
  * Use `create(CreateCategoryRuleRequestSchema)` to create a new message.
  */
 export const CreateCategoryRuleRequestSchema: GenMessage<CreateCategoryRuleRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 16);
+  messageDesc(file_ledger_v1_import, 17);
 
 /**
  * @generated from message ledger.v1.CreateCategoryRuleResponse
@@ -763,7 +837,7 @@ export type CreateCategoryRuleResponse = Message<"ledger.v1.CreateCategoryRuleRe
  * Use `create(CreateCategoryRuleResponseSchema)` to create a new message.
  */
 export const CreateCategoryRuleResponseSchema: GenMessage<CreateCategoryRuleResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 17);
+  messageDesc(file_ledger_v1_import, 18);
 
 /**
  * @generated from message ledger.v1.DeleteCategoryRuleRequest
@@ -780,7 +854,7 @@ export type DeleteCategoryRuleRequest = Message<"ledger.v1.DeleteCategoryRuleReq
  * Use `create(DeleteCategoryRuleRequestSchema)` to create a new message.
  */
 export const DeleteCategoryRuleRequestSchema: GenMessage<DeleteCategoryRuleRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 18);
+  messageDesc(file_ledger_v1_import, 19);
 
 /**
  * @generated from message ledger.v1.DeleteCategoryRuleResponse
@@ -793,7 +867,7 @@ export type DeleteCategoryRuleResponse = Message<"ledger.v1.DeleteCategoryRuleRe
  * Use `create(DeleteCategoryRuleResponseSchema)` to create a new message.
  */
 export const DeleteCategoryRuleResponseSchema: GenMessage<DeleteCategoryRuleResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 19);
+  messageDesc(file_ledger_v1_import, 20);
 
 /**
  * Which amounts are money going out.
