@@ -1,5 +1,11 @@
 # @ledger-01/backend
 
+## 1.1.0
+
+### Patch Changes
+
+- [#18](https://github.com/franco-roura/ledger-01/pull/18) [`fa49980`](https://github.com/franco-roura/ledger-01/commit/fa49980a30edbdb71c780f8be65811d8c87c2f9e) Thanks [@gbarrera97](https://github.com/gbarrera97)! - Show matching category transactions even when they fall beyond the newest 200 unfiltered rows. Note and converted amount filters now apply before the response limit.
+
 ## 1.0.1
 
 ### Patch Changes

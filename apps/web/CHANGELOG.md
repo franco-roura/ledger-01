@@ -1,5 +1,17 @@
 # @ledger-01/web
 
+## 1.1.0
+
+### Minor Changes
+
+- [#22](https://github.com/franco-roura/ledger-01/pull/22) [`9726c73`](https://github.com/franco-roura/ledger-01/commit/9726c73f518573e075296aa1b87b8713e2ef6abd) Thanks [@aaugoustis](https://github.com/aaugoustis)! - Add transactions from the dashboard: a **New transaction** button (the pinned + on phones) that starts in the wallet you last added to, with a Wallet field to pick another. The installed app also gets a **New transaction** shortcut: press and hold its icon.
+
+### Patch Changes
+
+- [#30](https://github.com/franco-roura/ledger-01/pull/30) [`b5b02b1`](https://github.com/franco-roura/ledger-01/commit/b5b02b140b579c3938c2a74ea7e5ba3aad7f21d2) Thanks [@franco-roura](https://github.com/franco-roura)! - Use the published Module/01 kit (`@franco_roura/module-01`) instead of a copy kept in this repository.
+- Updated dependencies []:
+  - @ledger-01/api@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes
