@@ -12,6 +12,7 @@
       "!backend",
       "!vault",
       "!.changeset",
+      "!.github/ISSUE_TEMPLATE",
       "!**/*.tsbuildinfo",
       "!**/next-env.d.ts"
     ]
