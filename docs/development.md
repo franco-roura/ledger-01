@@ -34,6 +34,13 @@ above. It installs the toolchain, starts Postgres (Docker, or a native PostgreSQ
 writes a development `.env` with the dev-only login on, and applies migrations. `START=1 bash setup.sh`
 also runs `task dev`.
 
+`task dev:api` (part of `task dev`) rebuilds and restarts the API when a `.go` or `.sql` file under
+`backend/` changes, so it never needs a manual restart; the web app reloads by itself too. A build
+that fails is printed and the previous API keeps serving. It always builds to `backend/bin/api`
+(`api.exe` on Windows) instead of a new temporary file per run, so a firewall or antivirus prompt
+about it shows up once rather than on every restart. `task dev:api:once` runs the API without
+watching.
+
 ## Google sign-in
 
 Create an OAuth client (type **Web application**) in the Google Cloud console and add
