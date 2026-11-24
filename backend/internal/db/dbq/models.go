@@ -327,6 +327,7 @@ type ImportCategoryRule struct {
 	Pattern     string
 	CategoryID  uuid.UUID
 	CreatedAt   time.Time
+	Rename      string
 }
 
 type ImportProfile struct {

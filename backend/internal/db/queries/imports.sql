@@ -87,14 +87,46 @@ WHERE id = @id AND household_id = @household_id AND wallet_id = @wallet_id
   AND kind = 'expense' AND amount_minor > @discount_minor;
 
 -- name: ListImportCategoryRules :many
-SELECT id, pattern, category_id FROM import_category_rules
+SELECT id, pattern, category_id, rename FROM import_category_rules
 WHERE household_id = $1
 ORDER BY lower(pattern);
 
--- name: CreateImportCategoryRule :one
-INSERT INTO import_category_rules (id, household_id, pattern, category_id)
-VALUES (@id, @household_id, @pattern, @category_id)
-RETURNING id, pattern, category_id;
+-- name: GetImportCategoryRule :one
+SELECT id, pattern, category_id, rename FROM import_category_rules
+WHERE id = @id AND household_id = @household_id;
+
+-- name: UpsertImportCategoryRule :one
+-- Creates a rule, or updates the one for the same text (case-insensitive), returning the rename
+-- it had before (empty for a new rule).
+WITH old AS (
+    SELECT rename FROM import_category_rules
+    WHERE household_id = @household_id AND lower(pattern) = lower(@pattern::text)
+)
+INSERT INTO import_category_rules (id, household_id, pattern, category_id, rename)
+VALUES (@id, @household_id, @pattern, @category_id, @rename)
+ON CONFLICT (household_id, lower(pattern)) DO UPDATE
+SET pattern = EXCLUDED.pattern, category_id = EXCLUDED.category_id, rename = EXCLUDED.rename
+RETURNING id, pattern, category_id, rename, coalesce((SELECT rename FROM old), '')::text AS previous_rename;
+
+-- name: UpdateImportCategoryRule :one
+UPDATE import_category_rules
+SET pattern = @pattern, category_id = @category_id, rename = @rename
+WHERE id = @id AND household_id = @household_id
+RETURNING id, pattern, category_id, rename;
+
+-- name: RuleRenameCandidates :many
+-- Imported expenses and income whose bank text contains a rule's pattern: the transaction's
+-- current note and the bank text of each row it was imported from.
+SELECT t.id, t.kind, t.note, r.note AS source_note
+FROM transactions t
+JOIN import_refs r ON r.transaction_id = t.id
+WHERE t.household_id = @household_id AND t.kind IN ('expense', 'income')
+  AND strpos(lower(r.note), lower(@pattern::text)) > 0
+ORDER BY t.id, r.created_at;
+
+-- name: RenameTransactions :execrows
+UPDATE transactions SET note = @note, updated_at = now()
+WHERE household_id = @household_id AND id = ANY(@ids::uuid[]);
 
 -- name: DeleteImportCategoryRule :execrows
 DELETE FROM import_category_rules WHERE id = @id AND household_id = @household_id;

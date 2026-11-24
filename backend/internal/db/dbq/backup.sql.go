@@ -197,7 +197,7 @@ func (q *Queries) BackupHousehold(ctx context.Context, householdID uuid.UUID) (B
 }
 
 const backupImportCategoryRules = `-- name: BackupImportCategoryRules :many
-SELECT id, pattern, category_id FROM import_category_rules WHERE household_id = $1
+SELECT id, pattern, category_id, rename FROM import_category_rules WHERE household_id = $1
 ORDER BY created_at, id
 `
 
@@ -205,6 +205,7 @@ type BackupImportCategoryRulesRow struct {
 	ID         uuid.UUID
 	Pattern    string
 	CategoryID uuid.UUID
+	Rename     string
 }
 
 func (q *Queries) BackupImportCategoryRules(ctx context.Context, householdID uuid.UUID) ([]BackupImportCategoryRulesRow, error) {
@@ -216,7 +217,12 @@ func (q *Queries) BackupImportCategoryRules(ctx context.Context, householdID uui
 	items := []BackupImportCategoryRulesRow{}
 	for rows.Next() {
 		var i BackupImportCategoryRulesRow
-		if err := rows.Scan(&i.ID, &i.Pattern, &i.CategoryID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Pattern,
+			&i.CategoryID,
+			&i.Rename,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -846,8 +852,8 @@ func (q *Queries) RestoreHouseholdSettings(ctx context.Context, arg RestoreHouse
 }
 
 const restoreImportCategoryRule = `-- name: RestoreImportCategoryRule :exec
-INSERT INTO import_category_rules (id, household_id, pattern, category_id)
-VALUES ($1, $2, $3, $4)
+INSERT INTO import_category_rules (id, household_id, pattern, category_id, rename)
+VALUES ($1, $2, $3, $4, $5)
 `
 
 type RestoreImportCategoryRuleParams struct {
@@ -855,6 +861,7 @@ type RestoreImportCategoryRuleParams struct {
 	HouseholdID uuid.UUID
 	Pattern     string
 	CategoryID  uuid.UUID
+	Rename      string
 }
 
 func (q *Queries) RestoreImportCategoryRule(ctx context.Context, arg RestoreImportCategoryRuleParams) error {
@@ -863,6 +870,7 @@ func (q *Queries) RestoreImportCategoryRule(ctx context.Context, arg RestoreImpo
 		arg.HouseholdID,
 		arg.Pattern,
 		arg.CategoryID,
+		arg.Rename,
 	)
 	return err
 }

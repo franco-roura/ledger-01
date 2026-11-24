@@ -168,6 +168,9 @@ message ImportRow {
   // to the card, so it needs no category. A payment without any can't be imported (error says
   // why).
   repeated ImportCardDebit payments = 27;
+  // The note the row imports with when a rule renames it (the longest matching rule of the row's
+  // kind, even when the category column set the category); empty keeps note, the bank's text.
+  string rename = 28;
 }
 
 enum ImportDuplicate {
@@ -185,10 +188,14 @@ enum ImportDuplicate {
 
 // "Note contains pattern → category", applied to imported rows the category column didn't
 // settle. The longest matching pattern wins; a rule only applies to rows of its category's kind.
+// A rule may also rename the rows it matches: they import with rename as their note, while the
+// bank's text is still what later imports match against.
 message CategoryRule {
   string id = 1;
   string pattern = 2;
   string category_id = 3;
+  // Empty keeps the bank's text.
+  string rename = 4;
 }
 
 service ImportService {
@@ -202,8 +209,14 @@ service ImportService {
   rpc CommitImport(CommitImportRequest) returns (CommitImportResponse);
 
   rpc ListCategoryRules(ListCategoryRulesRequest) returns (ListCategoryRulesResponse);
+  // Creates a rule, or updates the one for the same text (case-insensitive).
   rpc CreateCategoryRule(CreateCategoryRuleRequest) returns (CreateCategoryRuleResponse);
+  rpc UpdateCategoryRule(UpdateCategoryRuleRequest) returns (UpdateCategoryRuleResponse);
   rpc DeleteCategoryRule(DeleteCategoryRuleRequest) returns (DeleteCategoryRuleResponse);
+  // Renames the transactions imported earlier that the rule would rename now: those whose bank
+  // text it is the longest matching rule for, of its category's kind, and whose note is still
+  // the bank's text or the rule's earlier rename (notes edited by hand are kept).
+  rpc RenameRuleTransactions(RenameRuleTransactionsRequest) returns (RenameRuleTransactionsResponse);
 }
 
 message UploadImportFileRequest {
@@ -254,6 +267,8 @@ message ImportChoice {
   // The suggested category or another of the row's kind. Not needed for a row that discounts an
   // earlier purchase (discounts_transaction_id) or a card statement's payment.
   string category_id = 2;
+  // A note for this row only, over the row's rename and bank text (at most 500 characters).
+  optional string note = 3;
 }
 
 message CommitImportRequest {
@@ -278,10 +293,40 @@ message ListCategoryRulesResponse {
 message CreateCategoryRuleRequest {
   string pattern = 1;
   string category_id = 2;
+  string rename = 3;
 }
 
 message CreateCategoryRuleResponse {
   CategoryRule rule = 1;
+  // Transactions imported earlier that RenameRuleTransactions would rename (0 without a rename),
+  // counting, for an updated rule, notes still equal to its earlier rename.
+  int32 renamable = 2;
+  // The rule's rename before, when a rule for the same text existed (pass it to
+  // RenameRuleTransactions); empty for a new rule.
+  string previous_rename = 3;
+}
+
+message UpdateCategoryRuleRequest {
+  string id = 1;
+  string pattern = 2;
+  string category_id = 3;
+  string rename = 4;
+}
+
+message UpdateCategoryRuleResponse {
+  CategoryRule rule = 1;
+  // As in CreateCategoryRuleResponse, counting notes still equal to the rule's earlier rename.
+  int32 renamable = 2;
+}
+
+message RenameRuleTransactionsRequest {
+  string rule_id = 1;
+  // The rule's rename before an update: notes still equal to it are renamed too.
+  string previous_rename = 2;
+}
+
+message RenameRuleTransactionsResponse {
+  int64 renamed_count = 1;
 }
 
 message DeleteCategoryRuleRequest {

@@ -765,7 +765,10 @@ type ImportRow struct {
 	// account when the bank took part from each): importing it turns those expenses into transfers
 	// to the card, so it needs no category. A payment without any can't be imported (error says
 	// why).
-	Payments      []*ImportCardDebit `protobuf:"bytes,27,rep,name=payments,proto3" json:"payments,omitempty"`
+	Payments []*ImportCardDebit `protobuf:"bytes,27,rep,name=payments,proto3" json:"payments,omitempty"`
+	// The note the row imports with when a rule renames it (the longest matching rule of the row's
+	// kind, even when the category column set the category); empty keeps note, the bank's text.
+	Rename        string `protobuf:"bytes,28,opt,name=rename,proto3" json:"rename,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -982,13 +985,24 @@ func (x *ImportRow) GetPayments() []*ImportCardDebit {
 	return nil
 }
 
+func (x *ImportRow) GetRename() string {
+	if x != nil {
+		return x.Rename
+	}
+	return ""
+}
+
 // "Note contains pattern → category", applied to imported rows the category column didn't
 // settle. The longest matching pattern wins; a rule only applies to rows of its category's kind.
+// A rule may also rename the rows it matches: they import with rename as their note, while the
+// bank's text is still what later imports match against.
 type CategoryRule struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Pattern       string                 `protobuf:"bytes,2,opt,name=pattern,proto3" json:"pattern,omitempty"`
-	CategoryId    string                 `protobuf:"bytes,3,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Pattern    string                 `protobuf:"bytes,2,opt,name=pattern,proto3" json:"pattern,omitempty"`
+	CategoryId string                 `protobuf:"bytes,3,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	// Empty keeps the bank's text.
+	Rename        string `protobuf:"bytes,4,opt,name=rename,proto3" json:"rename,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1040,6 +1054,13 @@ func (x *CategoryRule) GetPattern() string {
 func (x *CategoryRule) GetCategoryId() string {
 	if x != nil {
 		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *CategoryRule) GetRename() string {
+	if x != nil {
+		return x.Rename
 	}
 	return ""
 }
@@ -1364,7 +1385,9 @@ type ImportChoice struct {
 	Index int32                  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
 	// The suggested category or another of the row's kind. Not needed for a row that discounts an
 	// earlier purchase (discounts_transaction_id) or a card statement's payment.
-	CategoryId    string `protobuf:"bytes,2,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	CategoryId string `protobuf:"bytes,2,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	// A note for this row only, over the row's rename and bank text (at most 500 characters).
+	Note          *string `protobuf:"bytes,3,opt,name=note,proto3,oneof" json:"note,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1409,6 +1432,13 @@ func (x *ImportChoice) GetIndex() int32 {
 func (x *ImportChoice) GetCategoryId() string {
 	if x != nil {
 		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *ImportChoice) GetNote() string {
+	if x != nil && x.Note != nil {
+		return *x.Note
 	}
 	return ""
 }
@@ -1611,6 +1641,7 @@ type CreateCategoryRuleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Pattern       string                 `protobuf:"bytes,1,opt,name=pattern,proto3" json:"pattern,omitempty"`
 	CategoryId    string                 `protobuf:"bytes,2,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Rename        string                 `protobuf:"bytes,3,opt,name=rename,proto3" json:"rename,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1659,11 +1690,24 @@ func (x *CreateCategoryRuleRequest) GetCategoryId() string {
 	return ""
 }
 
+func (x *CreateCategoryRuleRequest) GetRename() string {
+	if x != nil {
+		return x.Rename
+	}
+	return ""
+}
+
 type CreateCategoryRuleResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Rule          *CategoryRule          `protobuf:"bytes,1,opt,name=rule,proto3" json:"rule,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Rule  *CategoryRule          `protobuf:"bytes,1,opt,name=rule,proto3" json:"rule,omitempty"`
+	// Transactions imported earlier that RenameRuleTransactions would rename (0 without a rename),
+	// counting, for an updated rule, notes still equal to its earlier rename.
+	Renamable int32 `protobuf:"varint,2,opt,name=renamable,proto3" json:"renamable,omitempty"`
+	// The rule's rename before, when a rule for the same text existed (pass it to
+	// RenameRuleTransactions); empty for a new rule.
+	PreviousRename string `protobuf:"bytes,3,opt,name=previous_rename,json=previousRename,proto3" json:"previous_rename,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CreateCategoryRuleResponse) Reset() {
@@ -1703,6 +1747,238 @@ func (x *CreateCategoryRuleResponse) GetRule() *CategoryRule {
 	return nil
 }
 
+func (x *CreateCategoryRuleResponse) GetRenamable() int32 {
+	if x != nil {
+		return x.Renamable
+	}
+	return 0
+}
+
+func (x *CreateCategoryRuleResponse) GetPreviousRename() string {
+	if x != nil {
+		return x.PreviousRename
+	}
+	return ""
+}
+
+type UpdateCategoryRuleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Pattern       string                 `protobuf:"bytes,2,opt,name=pattern,proto3" json:"pattern,omitempty"`
+	CategoryId    string                 `protobuf:"bytes,3,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Rename        string                 `protobuf:"bytes,4,opt,name=rename,proto3" json:"rename,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateCategoryRuleRequest) Reset() {
+	*x = UpdateCategoryRuleRequest{}
+	mi := &file_ledger_v1_import_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateCategoryRuleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateCategoryRuleRequest) ProtoMessage() {}
+
+func (x *UpdateCategoryRuleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_import_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateCategoryRuleRequest.ProtoReflect.Descriptor instead.
+func (*UpdateCategoryRuleRequest) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *UpdateCategoryRuleRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateCategoryRuleRequest) GetPattern() string {
+	if x != nil {
+		return x.Pattern
+	}
+	return ""
+}
+
+func (x *UpdateCategoryRuleRequest) GetCategoryId() string {
+	if x != nil {
+		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *UpdateCategoryRuleRequest) GetRename() string {
+	if x != nil {
+		return x.Rename
+	}
+	return ""
+}
+
+type UpdateCategoryRuleResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Rule  *CategoryRule          `protobuf:"bytes,1,opt,name=rule,proto3" json:"rule,omitempty"`
+	// As in CreateCategoryRuleResponse, counting notes still equal to the rule's earlier rename.
+	Renamable     int32 `protobuf:"varint,2,opt,name=renamable,proto3" json:"renamable,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateCategoryRuleResponse) Reset() {
+	*x = UpdateCategoryRuleResponse{}
+	mi := &file_ledger_v1_import_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateCategoryRuleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateCategoryRuleResponse) ProtoMessage() {}
+
+func (x *UpdateCategoryRuleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_import_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateCategoryRuleResponse.ProtoReflect.Descriptor instead.
+func (*UpdateCategoryRuleResponse) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *UpdateCategoryRuleResponse) GetRule() *CategoryRule {
+	if x != nil {
+		return x.Rule
+	}
+	return nil
+}
+
+func (x *UpdateCategoryRuleResponse) GetRenamable() int32 {
+	if x != nil {
+		return x.Renamable
+	}
+	return 0
+}
+
+type RenameRuleTransactionsRequest struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	RuleId string                 `protobuf:"bytes,1,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
+	// The rule's rename before an update: notes still equal to it are renamed too.
+	PreviousRename string `protobuf:"bytes,2,opt,name=previous_rename,json=previousRename,proto3" json:"previous_rename,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *RenameRuleTransactionsRequest) Reset() {
+	*x = RenameRuleTransactionsRequest{}
+	mi := &file_ledger_v1_import_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenameRuleTransactionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenameRuleTransactionsRequest) ProtoMessage() {}
+
+func (x *RenameRuleTransactionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_import_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenameRuleTransactionsRequest.ProtoReflect.Descriptor instead.
+func (*RenameRuleTransactionsRequest) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *RenameRuleTransactionsRequest) GetRuleId() string {
+	if x != nil {
+		return x.RuleId
+	}
+	return ""
+}
+
+func (x *RenameRuleTransactionsRequest) GetPreviousRename() string {
+	if x != nil {
+		return x.PreviousRename
+	}
+	return ""
+}
+
+type RenameRuleTransactionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RenamedCount  int64                  `protobuf:"varint,1,opt,name=renamed_count,json=renamedCount,proto3" json:"renamed_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RenameRuleTransactionsResponse) Reset() {
+	*x = RenameRuleTransactionsResponse{}
+	mi := &file_ledger_v1_import_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenameRuleTransactionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenameRuleTransactionsResponse) ProtoMessage() {}
+
+func (x *RenameRuleTransactionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_import_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenameRuleTransactionsResponse.ProtoReflect.Descriptor instead.
+func (*RenameRuleTransactionsResponse) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *RenameRuleTransactionsResponse) GetRenamedCount() int64 {
+	if x != nil {
+		return x.RenamedCount
+	}
+	return 0
+}
+
 type DeleteCategoryRuleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1712,7 +1988,7 @@ type DeleteCategoryRuleRequest struct {
 
 func (x *DeleteCategoryRuleRequest) Reset() {
 	*x = DeleteCategoryRuleRequest{}
-	mi := &file_ledger_v1_import_proto_msgTypes[19]
+	mi := &file_ledger_v1_import_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1724,7 +2000,7 @@ func (x *DeleteCategoryRuleRequest) String() string {
 func (*DeleteCategoryRuleRequest) ProtoMessage() {}
 
 func (x *DeleteCategoryRuleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[19]
+	mi := &file_ledger_v1_import_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1737,7 +2013,7 @@ func (x *DeleteCategoryRuleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCategoryRuleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteCategoryRuleRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{19}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *DeleteCategoryRuleRequest) GetId() string {
@@ -1755,7 +2031,7 @@ type DeleteCategoryRuleResponse struct {
 
 func (x *DeleteCategoryRuleResponse) Reset() {
 	*x = DeleteCategoryRuleResponse{}
-	mi := &file_ledger_v1_import_proto_msgTypes[20]
+	mi := &file_ledger_v1_import_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1767,7 +2043,7 @@ func (x *DeleteCategoryRuleResponse) String() string {
 func (*DeleteCategoryRuleResponse) ProtoMessage() {}
 
 func (x *DeleteCategoryRuleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_import_proto_msgTypes[20]
+	mi := &file_ledger_v1_import_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1780,7 +2056,7 @@ func (x *DeleteCategoryRuleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCategoryRuleResponse.ProtoReflect.Descriptor instead.
 func (*DeleteCategoryRuleResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_import_proto_rawDescGZIP(), []int{20}
+	return file_ledger_v1_import_proto_rawDescGZIP(), []int{24}
 }
 
 var File_ledger_v1_import_proto protoreflect.FileDescriptor
@@ -1848,7 +2124,7 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
 	"\acountry\x18\x03 \x01(\tR\acountry\"#\n" +
 	"\vImportCells\x12\x14\n" +
-	"\x05cells\x18\x01 \x03(\tR\x05cells\"\xf1\a\n" +
+	"\x05cells\x18\x01 \x03(\tR\x05cells\"\x89\b\n" +
 	"\tImportRow\x12\x14\n" +
 	"\x05index\x18\x01 \x01(\x05R\x05index\x12\x14\n" +
 	"\x05cells\x18\x02 \x03(\tR\x05cells\x12\x14\n" +
@@ -1882,16 +2158,18 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"\frefunds_date\x18\x17 \x01(\tR\vrefundsDate\x12\x1b\n" +
 	"\twallet_id\x18\x19 \x01(\tR\bwalletId\x12\x1a\n" +
 	"\bcurrency\x18\x1a \x01(\tR\bcurrency\x126\n" +
-	"\bpayments\x18\x1b \x03(\v2\x1a.ledger.v1.ImportCardDebitR\bpaymentsB\x0e\n" +
+	"\bpayments\x18\x1b \x03(\v2\x1a.ledger.v1.ImportCardDebitR\bpayments\x12\x16\n" +
+	"\x06rename\x18\x1c \x01(\tR\x06renameB\x0e\n" +
 	"\f_merged_intoB\x0e\n" +
 	"\f_refunded_byB\f\n" +
 	"\n" +
-	"_refund_ofJ\x04\b\x18\x10\x19\"Y\n" +
+	"_refund_ofJ\x04\b\x18\x10\x19\"q\n" +
 	"\fCategoryRule\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\apattern\x18\x02 \x01(\tR\apattern\x12\x1f\n" +
 	"\vcategory_id\x18\x03 \x01(\tR\n" +
-	"categoryId\"m\n" +
+	"categoryId\x12\x16\n" +
+	"\x06rename\x18\x04 \x01(\tR\x06rename\"m\n" +
 	"\x17UploadImportFileRequest\x12\x1b\n" +
 	"\twallet_id\x18\x01 \x01(\tR\bwalletId\x12\x1b\n" +
 	"\tfile_name\x18\x02 \x01(\tR\bfileName\x12\x18\n" +
@@ -1916,11 +2194,13 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"\x05limit\x18\x03 \x01(\x05R\x05limit\"W\n" +
 	"\x15PreviewImportResponse\x12(\n" +
 	"\x04rows\x18\x01 \x03(\v2\x14.ledger.v1.ImportRowR\x04rows\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"E\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"g\n" +
 	"\fImportChoice\x12\x14\n" +
 	"\x05index\x18\x01 \x01(\x05R\x05index\x12\x1f\n" +
 	"\vcategory_id\x18\x02 \x01(\tR\n" +
-	"categoryId\"\xb4\x01\n" +
+	"categoryId\x12\x17\n" +
+	"\x04note\x18\x03 \x01(\tH\x00R\x04note\x88\x01\x01B\a\n" +
+	"\x05_note\"\xb4\x01\n" +
 	"\x13CommitImportRequest\x12\x19\n" +
 	"\bbatch_id\x18\x01 \x01(\tR\abatchId\x122\n" +
 	"\amapping\x18\x02 \x01(\v2\x18.ledger.v1.ImportMappingR\amapping\x12+\n" +
@@ -1930,13 +2210,30 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"\x0eimported_count\x18\x01 \x01(\x03R\rimportedCount\"\x1a\n" +
 	"\x18ListCategoryRulesRequest\"J\n" +
 	"\x19ListCategoryRulesResponse\x12-\n" +
-	"\x05rules\x18\x01 \x03(\v2\x17.ledger.v1.CategoryRuleR\x05rules\"V\n" +
+	"\x05rules\x18\x01 \x03(\v2\x17.ledger.v1.CategoryRuleR\x05rules\"n\n" +
 	"\x19CreateCategoryRuleRequest\x12\x18\n" +
 	"\apattern\x18\x01 \x01(\tR\apattern\x12\x1f\n" +
 	"\vcategory_id\x18\x02 \x01(\tR\n" +
-	"categoryId\"I\n" +
+	"categoryId\x12\x16\n" +
+	"\x06rename\x18\x03 \x01(\tR\x06rename\"\x90\x01\n" +
 	"\x1aCreateCategoryRuleResponse\x12+\n" +
-	"\x04rule\x18\x01 \x01(\v2\x17.ledger.v1.CategoryRuleR\x04rule\"+\n" +
+	"\x04rule\x18\x01 \x01(\v2\x17.ledger.v1.CategoryRuleR\x04rule\x12\x1c\n" +
+	"\trenamable\x18\x02 \x01(\x05R\trenamable\x12'\n" +
+	"\x0fprevious_rename\x18\x03 \x01(\tR\x0epreviousRename\"~\n" +
+	"\x19UpdateCategoryRuleRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"\apattern\x18\x02 \x01(\tR\apattern\x12\x1f\n" +
+	"\vcategory_id\x18\x03 \x01(\tR\n" +
+	"categoryId\x12\x16\n" +
+	"\x06rename\x18\x04 \x01(\tR\x06rename\"g\n" +
+	"\x1aUpdateCategoryRuleResponse\x12+\n" +
+	"\x04rule\x18\x01 \x01(\v2\x17.ledger.v1.CategoryRuleR\x04rule\x12\x1c\n" +
+	"\trenamable\x18\x02 \x01(\x05R\trenamable\"a\n" +
+	"\x1dRenameRuleTransactionsRequest\x12\x17\n" +
+	"\arule_id\x18\x01 \x01(\tR\x06ruleId\x12'\n" +
+	"\x0fprevious_rename\x18\x02 \x01(\tR\x0epreviousRename\"E\n" +
+	"\x1eRenameRuleTransactionsResponse\x12#\n" +
+	"\rrenamed_count\x18\x01 \x01(\x03R\frenamedCount\"+\n" +
 	"\x19DeleteCategoryRuleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1c\n" +
 	"\x1aDeleteCategoryRuleResponse*s\n" +
@@ -1954,14 +2251,16 @@ const file_ledger_v1_import_proto_rawDesc = "" +
 	"\x19IMPORT_DUPLICATE_IMPORTED\x10\x01\x12\x19\n" +
 	"\x15IMPORT_DUPLICATE_SAME\x10\x02\x12\x1c\n" +
 	"\x18IMPORT_DUPLICATE_SIMILAR\x10\x03\x12\x19\n" +
-	"\x15IMPORT_DUPLICATE_FILE\x10\x042\xb7\x04\n" +
+	"\x15IMPORT_DUPLICATE_FILE\x10\x042\x89\x06\n" +
 	"\rImportService\x12[\n" +
 	"\x10UploadImportFile\x12\".ledger.v1.UploadImportFileRequest\x1a#.ledger.v1.UploadImportFileResponse\x12R\n" +
 	"\rPreviewImport\x12\x1f.ledger.v1.PreviewImportRequest\x1a .ledger.v1.PreviewImportResponse\x12O\n" +
 	"\fCommitImport\x12\x1e.ledger.v1.CommitImportRequest\x1a\x1f.ledger.v1.CommitImportResponse\x12^\n" +
 	"\x11ListCategoryRules\x12#.ledger.v1.ListCategoryRulesRequest\x1a$.ledger.v1.ListCategoryRulesResponse\x12a\n" +
 	"\x12CreateCategoryRule\x12$.ledger.v1.CreateCategoryRuleRequest\x1a%.ledger.v1.CreateCategoryRuleResponse\x12a\n" +
-	"\x12DeleteCategoryRule\x12$.ledger.v1.DeleteCategoryRuleRequest\x1a%.ledger.v1.DeleteCategoryRuleResponseB\xa3\x01\n" +
+	"\x12UpdateCategoryRule\x12$.ledger.v1.UpdateCategoryRuleRequest\x1a%.ledger.v1.UpdateCategoryRuleResponse\x12a\n" +
+	"\x12DeleteCategoryRule\x12$.ledger.v1.DeleteCategoryRuleRequest\x1a%.ledger.v1.DeleteCategoryRuleResponse\x12m\n" +
+	"\x16RenameRuleTransactions\x12(.ledger.v1.RenameRuleTransactionsRequest\x1a).ledger.v1.RenameRuleTransactionsResponseB\xa3\x01\n" +
 	"\rcom.ledger.v1B\vImportProtoP\x01Z@github.com/franco-roura/ledger-01/backend/gen/ledger/v1;ledgerv1\xa2\x02\x03LXX\xaa\x02\tLedger.V1\xca\x02\tLedger\\V1\xe2\x02\x15Ledger\\V1\\GPBMetadata\xea\x02\n" +
 	"Ledger::V1b\x06proto3"
 
@@ -1978,41 +2277,45 @@ func file_ledger_v1_import_proto_rawDescGZIP() []byte {
 }
 
 var file_ledger_v1_import_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_ledger_v1_import_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_ledger_v1_import_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_ledger_v1_import_proto_goTypes = []any{
-	(ImportSign)(0),                    // 0: ledger.v1.ImportSign
-	(DecimalSeparator)(0),              // 1: ledger.v1.DecimalSeparator
-	(ImportDuplicate)(0),               // 2: ledger.v1.ImportDuplicate
-	(*ImportMapping)(nil),              // 3: ledger.v1.ImportMapping
-	(*ImportStatement)(nil),            // 4: ledger.v1.ImportStatement
-	(*ImportStatementCurrency)(nil),    // 5: ledger.v1.ImportStatementCurrency
-	(*ImportCardDebit)(nil),            // 6: ledger.v1.ImportCardDebit
-	(*ImportBank)(nil),                 // 7: ledger.v1.ImportBank
-	(*ImportCells)(nil),                // 8: ledger.v1.ImportCells
-	(*ImportRow)(nil),                  // 9: ledger.v1.ImportRow
-	(*CategoryRule)(nil),               // 10: ledger.v1.CategoryRule
-	(*UploadImportFileRequest)(nil),    // 11: ledger.v1.UploadImportFileRequest
-	(*UploadImportFileResponse)(nil),   // 12: ledger.v1.UploadImportFileResponse
-	(*PreviewImportRequest)(nil),       // 13: ledger.v1.PreviewImportRequest
-	(*PreviewImportResponse)(nil),      // 14: ledger.v1.PreviewImportResponse
-	(*ImportChoice)(nil),               // 15: ledger.v1.ImportChoice
-	(*CommitImportRequest)(nil),        // 16: ledger.v1.CommitImportRequest
-	(*CommitImportResponse)(nil),       // 17: ledger.v1.CommitImportResponse
-	(*ListCategoryRulesRequest)(nil),   // 18: ledger.v1.ListCategoryRulesRequest
-	(*ListCategoryRulesResponse)(nil),  // 19: ledger.v1.ListCategoryRulesResponse
-	(*CreateCategoryRuleRequest)(nil),  // 20: ledger.v1.CreateCategoryRuleRequest
-	(*CreateCategoryRuleResponse)(nil), // 21: ledger.v1.CreateCategoryRuleResponse
-	(*DeleteCategoryRuleRequest)(nil),  // 22: ledger.v1.DeleteCategoryRuleRequest
-	(*DeleteCategoryRuleResponse)(nil), // 23: ledger.v1.DeleteCategoryRuleResponse
-	nil,                                // 24: ledger.v1.ImportMapping.CardWalletIdsEntry
-	(TransactionKind)(0),               // 25: ledger.v1.TransactionKind
+	(ImportSign)(0),                        // 0: ledger.v1.ImportSign
+	(DecimalSeparator)(0),                  // 1: ledger.v1.DecimalSeparator
+	(ImportDuplicate)(0),                   // 2: ledger.v1.ImportDuplicate
+	(*ImportMapping)(nil),                  // 3: ledger.v1.ImportMapping
+	(*ImportStatement)(nil),                // 4: ledger.v1.ImportStatement
+	(*ImportStatementCurrency)(nil),        // 5: ledger.v1.ImportStatementCurrency
+	(*ImportCardDebit)(nil),                // 6: ledger.v1.ImportCardDebit
+	(*ImportBank)(nil),                     // 7: ledger.v1.ImportBank
+	(*ImportCells)(nil),                    // 8: ledger.v1.ImportCells
+	(*ImportRow)(nil),                      // 9: ledger.v1.ImportRow
+	(*CategoryRule)(nil),                   // 10: ledger.v1.CategoryRule
+	(*UploadImportFileRequest)(nil),        // 11: ledger.v1.UploadImportFileRequest
+	(*UploadImportFileResponse)(nil),       // 12: ledger.v1.UploadImportFileResponse
+	(*PreviewImportRequest)(nil),           // 13: ledger.v1.PreviewImportRequest
+	(*PreviewImportResponse)(nil),          // 14: ledger.v1.PreviewImportResponse
+	(*ImportChoice)(nil),                   // 15: ledger.v1.ImportChoice
+	(*CommitImportRequest)(nil),            // 16: ledger.v1.CommitImportRequest
+	(*CommitImportResponse)(nil),           // 17: ledger.v1.CommitImportResponse
+	(*ListCategoryRulesRequest)(nil),       // 18: ledger.v1.ListCategoryRulesRequest
+	(*ListCategoryRulesResponse)(nil),      // 19: ledger.v1.ListCategoryRulesResponse
+	(*CreateCategoryRuleRequest)(nil),      // 20: ledger.v1.CreateCategoryRuleRequest
+	(*CreateCategoryRuleResponse)(nil),     // 21: ledger.v1.CreateCategoryRuleResponse
+	(*UpdateCategoryRuleRequest)(nil),      // 22: ledger.v1.UpdateCategoryRuleRequest
+	(*UpdateCategoryRuleResponse)(nil),     // 23: ledger.v1.UpdateCategoryRuleResponse
+	(*RenameRuleTransactionsRequest)(nil),  // 24: ledger.v1.RenameRuleTransactionsRequest
+	(*RenameRuleTransactionsResponse)(nil), // 25: ledger.v1.RenameRuleTransactionsResponse
+	(*DeleteCategoryRuleRequest)(nil),      // 26: ledger.v1.DeleteCategoryRuleRequest
+	(*DeleteCategoryRuleResponse)(nil),     // 27: ledger.v1.DeleteCategoryRuleResponse
+	nil,                                    // 28: ledger.v1.ImportMapping.CardWalletIdsEntry
+	(TransactionKind)(0),                   // 29: ledger.v1.TransactionKind
 }
 var file_ledger_v1_import_proto_depIdxs = []int32{
 	0,  // 0: ledger.v1.ImportMapping.sign:type_name -> ledger.v1.ImportSign
 	1,  // 1: ledger.v1.ImportMapping.decimal_separator:type_name -> ledger.v1.DecimalSeparator
-	24, // 2: ledger.v1.ImportMapping.card_wallet_ids:type_name -> ledger.v1.ImportMapping.CardWalletIdsEntry
+	28, // 2: ledger.v1.ImportMapping.card_wallet_ids:type_name -> ledger.v1.ImportMapping.CardWalletIdsEntry
 	5,  // 3: ledger.v1.ImportStatement.currencies:type_name -> ledger.v1.ImportStatementCurrency
-	25, // 4: ledger.v1.ImportRow.kind:type_name -> ledger.v1.TransactionKind
+	29, // 4: ledger.v1.ImportRow.kind:type_name -> ledger.v1.TransactionKind
 	2,  // 5: ledger.v1.ImportRow.duplicate_reason:type_name -> ledger.v1.ImportDuplicate
 	6,  // 6: ledger.v1.ImportRow.payments:type_name -> ledger.v1.ImportCardDebit
 	8,  // 7: ledger.v1.UploadImportFileResponse.sample:type_name -> ledger.v1.ImportCells
@@ -2025,23 +2328,28 @@ var file_ledger_v1_import_proto_depIdxs = []int32{
 	15, // 14: ledger.v1.CommitImportRequest.rows:type_name -> ledger.v1.ImportChoice
 	10, // 15: ledger.v1.ListCategoryRulesResponse.rules:type_name -> ledger.v1.CategoryRule
 	10, // 16: ledger.v1.CreateCategoryRuleResponse.rule:type_name -> ledger.v1.CategoryRule
-	11, // 17: ledger.v1.ImportService.UploadImportFile:input_type -> ledger.v1.UploadImportFileRequest
-	13, // 18: ledger.v1.ImportService.PreviewImport:input_type -> ledger.v1.PreviewImportRequest
-	16, // 19: ledger.v1.ImportService.CommitImport:input_type -> ledger.v1.CommitImportRequest
-	18, // 20: ledger.v1.ImportService.ListCategoryRules:input_type -> ledger.v1.ListCategoryRulesRequest
-	20, // 21: ledger.v1.ImportService.CreateCategoryRule:input_type -> ledger.v1.CreateCategoryRuleRequest
-	22, // 22: ledger.v1.ImportService.DeleteCategoryRule:input_type -> ledger.v1.DeleteCategoryRuleRequest
-	12, // 23: ledger.v1.ImportService.UploadImportFile:output_type -> ledger.v1.UploadImportFileResponse
-	14, // 24: ledger.v1.ImportService.PreviewImport:output_type -> ledger.v1.PreviewImportResponse
-	17, // 25: ledger.v1.ImportService.CommitImport:output_type -> ledger.v1.CommitImportResponse
-	19, // 26: ledger.v1.ImportService.ListCategoryRules:output_type -> ledger.v1.ListCategoryRulesResponse
-	21, // 27: ledger.v1.ImportService.CreateCategoryRule:output_type -> ledger.v1.CreateCategoryRuleResponse
-	23, // 28: ledger.v1.ImportService.DeleteCategoryRule:output_type -> ledger.v1.DeleteCategoryRuleResponse
-	23, // [23:29] is the sub-list for method output_type
-	17, // [17:23] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	10, // 17: ledger.v1.UpdateCategoryRuleResponse.rule:type_name -> ledger.v1.CategoryRule
+	11, // 18: ledger.v1.ImportService.UploadImportFile:input_type -> ledger.v1.UploadImportFileRequest
+	13, // 19: ledger.v1.ImportService.PreviewImport:input_type -> ledger.v1.PreviewImportRequest
+	16, // 20: ledger.v1.ImportService.CommitImport:input_type -> ledger.v1.CommitImportRequest
+	18, // 21: ledger.v1.ImportService.ListCategoryRules:input_type -> ledger.v1.ListCategoryRulesRequest
+	20, // 22: ledger.v1.ImportService.CreateCategoryRule:input_type -> ledger.v1.CreateCategoryRuleRequest
+	22, // 23: ledger.v1.ImportService.UpdateCategoryRule:input_type -> ledger.v1.UpdateCategoryRuleRequest
+	26, // 24: ledger.v1.ImportService.DeleteCategoryRule:input_type -> ledger.v1.DeleteCategoryRuleRequest
+	24, // 25: ledger.v1.ImportService.RenameRuleTransactions:input_type -> ledger.v1.RenameRuleTransactionsRequest
+	12, // 26: ledger.v1.ImportService.UploadImportFile:output_type -> ledger.v1.UploadImportFileResponse
+	14, // 27: ledger.v1.ImportService.PreviewImport:output_type -> ledger.v1.PreviewImportResponse
+	17, // 28: ledger.v1.ImportService.CommitImport:output_type -> ledger.v1.CommitImportResponse
+	19, // 29: ledger.v1.ImportService.ListCategoryRules:output_type -> ledger.v1.ListCategoryRulesResponse
+	21, // 30: ledger.v1.ImportService.CreateCategoryRule:output_type -> ledger.v1.CreateCategoryRuleResponse
+	23, // 31: ledger.v1.ImportService.UpdateCategoryRule:output_type -> ledger.v1.UpdateCategoryRuleResponse
+	27, // 32: ledger.v1.ImportService.DeleteCategoryRule:output_type -> ledger.v1.DeleteCategoryRuleResponse
+	25, // 33: ledger.v1.ImportService.RenameRuleTransactions:output_type -> ledger.v1.RenameRuleTransactionsResponse
+	26, // [26:34] is the sub-list for method output_type
+	18, // [18:26] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_ledger_v1_import_proto_init() }
@@ -2052,13 +2360,14 @@ func file_ledger_v1_import_proto_init() {
 	file_ledger_v1_transaction_proto_init()
 	file_ledger_v1_import_proto_msgTypes[0].OneofWrappers = []any{}
 	file_ledger_v1_import_proto_msgTypes[6].OneofWrappers = []any{}
+	file_ledger_v1_import_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ledger_v1_import_proto_rawDesc), len(file_ledger_v1_import_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   22,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

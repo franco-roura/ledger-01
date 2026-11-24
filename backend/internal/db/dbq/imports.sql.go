@@ -133,37 +133,6 @@ func (q *Queries) CreateImportBatch(ctx context.Context, arg CreateImportBatchPa
 	return err
 }
 
-const createImportCategoryRule = `-- name: CreateImportCategoryRule :one
-INSERT INTO import_category_rules (id, household_id, pattern, category_id)
-VALUES ($1, $2, $3, $4)
-RETURNING id, pattern, category_id
-`
-
-type CreateImportCategoryRuleParams struct {
-	ID          uuid.UUID
-	HouseholdID uuid.UUID
-	Pattern     string
-	CategoryID  uuid.UUID
-}
-
-type CreateImportCategoryRuleRow struct {
-	ID         uuid.UUID
-	Pattern    string
-	CategoryID uuid.UUID
-}
-
-func (q *Queries) CreateImportCategoryRule(ctx context.Context, arg CreateImportCategoryRuleParams) (CreateImportCategoryRuleRow, error) {
-	row := q.db.QueryRow(ctx, createImportCategoryRule,
-		arg.ID,
-		arg.HouseholdID,
-		arg.Pattern,
-		arg.CategoryID,
-	)
-	var i CreateImportCategoryRuleRow
-	err := row.Scan(&i.ID, &i.Pattern, &i.CategoryID)
-	return i, err
-}
-
 const deleteExpiredImportBatches = `-- name: DeleteExpiredImportBatches :execrows
 DELETE FROM import_batches WHERE expires_at <= $1
 `
@@ -232,6 +201,35 @@ func (q *Queries) GetImportBatch(ctx context.Context, arg GetImportBatchParams) 
 		&i.WalletID,
 		&i.FileName,
 		&i.Rows,
+	)
+	return i, err
+}
+
+const getImportCategoryRule = `-- name: GetImportCategoryRule :one
+SELECT id, pattern, category_id, rename FROM import_category_rules
+WHERE id = $1 AND household_id = $2
+`
+
+type GetImportCategoryRuleParams struct {
+	ID          uuid.UUID
+	HouseholdID uuid.UUID
+}
+
+type GetImportCategoryRuleRow struct {
+	ID         uuid.UUID
+	Pattern    string
+	CategoryID uuid.UUID
+	Rename     string
+}
+
+func (q *Queries) GetImportCategoryRule(ctx context.Context, arg GetImportCategoryRuleParams) (GetImportCategoryRuleRow, error) {
+	row := q.db.QueryRow(ctx, getImportCategoryRule, arg.ID, arg.HouseholdID)
+	var i GetImportCategoryRuleRow
+	err := row.Scan(
+		&i.ID,
+		&i.Pattern,
+		&i.CategoryID,
+		&i.Rename,
 	)
 	return i, err
 }
@@ -437,7 +435,7 @@ func (q *Queries) InsertImportedTransactions(ctx context.Context, arg InsertImpo
 }
 
 const listImportCategoryRules = `-- name: ListImportCategoryRules :many
-SELECT id, pattern, category_id FROM import_category_rules
+SELECT id, pattern, category_id, rename FROM import_category_rules
 WHERE household_id = $1
 ORDER BY lower(pattern)
 `
@@ -446,6 +444,7 @@ type ListImportCategoryRulesRow struct {
 	ID         uuid.UUID
 	Pattern    string
 	CategoryID uuid.UUID
+	Rename     string
 }
 
 func (q *Queries) ListImportCategoryRules(ctx context.Context, householdID uuid.UUID) ([]ListImportCategoryRulesRow, error) {
@@ -457,7 +456,12 @@ func (q *Queries) ListImportCategoryRules(ctx context.Context, householdID uuid.
 	items := []ListImportCategoryRulesRow{}
 	for rows.Next() {
 		var i ListImportCategoryRulesRow
-		if err := rows.Scan(&i.ID, &i.Pattern, &i.CategoryID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Pattern,
+			&i.CategoryID,
+			&i.Rename,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -536,6 +540,73 @@ func (q *Queries) ReassignImportRuleCategories(ctx context.Context, arg Reassign
 	return err
 }
 
+const renameTransactions = `-- name: RenameTransactions :execrows
+UPDATE transactions SET note = $1, updated_at = now()
+WHERE household_id = $2 AND id = ANY($3::uuid[])
+`
+
+type RenameTransactionsParams struct {
+	Note        string
+	HouseholdID uuid.UUID
+	Ids         []uuid.UUID
+}
+
+func (q *Queries) RenameTransactions(ctx context.Context, arg RenameTransactionsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, renameTransactions, arg.Note, arg.HouseholdID, arg.Ids)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const ruleRenameCandidates = `-- name: RuleRenameCandidates :many
+SELECT t.id, t.kind, t.note, r.note AS source_note
+FROM transactions t
+JOIN import_refs r ON r.transaction_id = t.id
+WHERE t.household_id = $1 AND t.kind IN ('expense', 'income')
+  AND strpos(lower(r.note), lower($2::text)) > 0
+ORDER BY t.id, r.created_at
+`
+
+type RuleRenameCandidatesParams struct {
+	HouseholdID uuid.UUID
+	Pattern     string
+}
+
+type RuleRenameCandidatesRow struct {
+	ID         uuid.UUID
+	Kind       TransactionKind
+	Note       string
+	SourceNote string
+}
+
+// Imported expenses and income whose bank text contains a rule's pattern: the transaction's
+// current note and the bank text of each row it was imported from.
+func (q *Queries) RuleRenameCandidates(ctx context.Context, arg RuleRenameCandidatesParams) ([]RuleRenameCandidatesRow, error) {
+	rows, err := q.db.Query(ctx, ruleRenameCandidates, arg.HouseholdID, arg.Pattern)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RuleRenameCandidatesRow{}
+	for rows.Next() {
+		var i RuleRenameCandidatesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Kind,
+			&i.Note,
+			&i.SourceNote,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const saveImportProfile = `-- name: SaveImportProfile :exec
 INSERT INTO import_profiles (wallet_id, household_id, mapping, headers)
 VALUES ($1, $2, $3, $4)
@@ -574,4 +645,93 @@ func (q *Queries) TransferLeg(ctx context.Context, arg TransferLegParams) (uuid.
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
+}
+
+const updateImportCategoryRule = `-- name: UpdateImportCategoryRule :one
+UPDATE import_category_rules
+SET pattern = $1, category_id = $2, rename = $3
+WHERE id = $4 AND household_id = $5
+RETURNING id, pattern, category_id, rename
+`
+
+type UpdateImportCategoryRuleParams struct {
+	Pattern     string
+	CategoryID  uuid.UUID
+	Rename      string
+	ID          uuid.UUID
+	HouseholdID uuid.UUID
+}
+
+type UpdateImportCategoryRuleRow struct {
+	ID         uuid.UUID
+	Pattern    string
+	CategoryID uuid.UUID
+	Rename     string
+}
+
+func (q *Queries) UpdateImportCategoryRule(ctx context.Context, arg UpdateImportCategoryRuleParams) (UpdateImportCategoryRuleRow, error) {
+	row := q.db.QueryRow(ctx, updateImportCategoryRule,
+		arg.Pattern,
+		arg.CategoryID,
+		arg.Rename,
+		arg.ID,
+		arg.HouseholdID,
+	)
+	var i UpdateImportCategoryRuleRow
+	err := row.Scan(
+		&i.ID,
+		&i.Pattern,
+		&i.CategoryID,
+		&i.Rename,
+	)
+	return i, err
+}
+
+const upsertImportCategoryRule = `-- name: UpsertImportCategoryRule :one
+WITH old AS (
+    SELECT rename FROM import_category_rules
+    WHERE household_id = $2 AND lower(pattern) = lower($3::text)
+)
+INSERT INTO import_category_rules (id, household_id, pattern, category_id, rename)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (household_id, lower(pattern)) DO UPDATE
+SET pattern = EXCLUDED.pattern, category_id = EXCLUDED.category_id, rename = EXCLUDED.rename
+RETURNING id, pattern, category_id, rename, coalesce((SELECT rename FROM old), '')::text AS previous_rename
+`
+
+type UpsertImportCategoryRuleParams struct {
+	ID          uuid.UUID
+	HouseholdID uuid.UUID
+	Pattern     string
+	CategoryID  uuid.UUID
+	Rename      string
+}
+
+type UpsertImportCategoryRuleRow struct {
+	ID             uuid.UUID
+	Pattern        string
+	CategoryID     uuid.UUID
+	Rename         string
+	PreviousRename string
+}
+
+// Creates a rule, or updates the one for the same text (case-insensitive), returning the rename
+// it had before (empty for a new rule).
+func (q *Queries) UpsertImportCategoryRule(ctx context.Context, arg UpsertImportCategoryRuleParams) (UpsertImportCategoryRuleRow, error) {
+	row := q.db.QueryRow(ctx, upsertImportCategoryRule,
+		arg.ID,
+		arg.HouseholdID,
+		arg.Pattern,
+		arg.CategoryID,
+		arg.Rename,
+	)
+	var i UpsertImportCategoryRuleRow
+	err := row.Scan(
+		&i.ID,
+		&i.Pattern,
+		&i.CategoryID,
+		&i.Rename,
+		&i.PreviousRename,
+	)
+	return i, err
 }
