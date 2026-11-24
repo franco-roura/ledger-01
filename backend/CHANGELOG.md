@@ -1,5 +1,17 @@
 # @ledger-01/backend
 
+## 1.3.0
+
+### Minor Changes
+
+- [#46](https://github.com/franco-roura/ledger-01/pull/46) [`74fc821`](https://github.com/franco-roura/ledger-01/commit/74fc821e4f7b8a54f3a5135b4191f58eaed87ee9) Thanks [@franco-roura](https://github.com/franco-roura)! - Import rules can rename the rows they match (say, a card's merchant code to "Uber"), and offer to rename the transactions imported before. Rules can be edited, and a single row can get its own name while reviewing an import.
+
+- [#48](https://github.com/franco-roura/ledger-01/pull/48) [`eaa1805`](https://github.com/franco-roura/ledger-01/commit/eaa1805f3ef1a6c0e20293d8804afc7a8f2ea239) Thanks [@franco-roura](https://github.com/franco-roura)! - Statement imports recognise Santander Uruguay: card-benefit discounts merge into their purchase, and the card's payments pair with the account debits that paid them.
+
+### Patch Changes
+
+- [#46](https://github.com/franco-roura/ledger-01/pull/46) [`74fc821`](https://github.com/franco-roura/ledger-01/commit/74fc821e4f7b8a54f3a5135b4191f58eaed87ee9) Thanks [@franco-roura](https://github.com/franco-roura)! - `task dev:api` rebuilds and restarts the local API when backend code changes, always from the same executable.
+
 ## 1.2.0
 
 ### Minor Changes
