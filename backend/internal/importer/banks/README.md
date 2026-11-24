@@ -9,6 +9,7 @@ file per bank, so discounts and refunds get matched to their purchase:
 |---|---|---|
 | Itaú | Uruguay | [`uy/itau.go`](uy/itau.go) |
 | Itaú Visa (card statement PDF) | Uruguay | [`uy/itau_visa.go`](uy/itau_visa.go) |
+| Santander (CSV exports) | Uruguay | [`uy/santander.go`](uy/santander.go) |
 
 Any other bank imports as "Other bank". Fingerprints, duplicate detection and the column mapping
 still work, but discount and refund rows stay as their own rows.

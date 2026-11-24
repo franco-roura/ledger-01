@@ -13,6 +13,7 @@ func All() []importer.Bank {
 		importer.Generic,
 		uy.Itau,
 		uy.ItauVisa,
+		uy.Santander,
 	}
 }
 
