@@ -75,7 +75,13 @@ tasks:
     deps: [dev:api, dev:web]
 
   dev:api:
-    desc: Run the Go API locally
+    desc: Run the Go API locally, rebuilt and restarted whenever backend code changes
+    dir: backend
+    cmds:
+      - go run ./cmd/dev
+
+  dev:api:once:
+    desc: Run the Go API locally without watching for changes
     dir: backend
     cmds:
       - go run ./cmd/api

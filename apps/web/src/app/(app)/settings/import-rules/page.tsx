@@ -15,14 +15,23 @@ import {
   Skeleton,
 } from "@franco_roura/module-01";
 import { CategoryIcon } from "@franco_roura/module-01/finance";
-import { CategoryKind, ImportService } from "@ledger-01/api";
-import { Plus, Trash2 } from "lucide-react";
+import { CategoryKind, type CategoryRule, ImportService } from "@ledger-01/api";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { CategoryPicker } from "@/components/category-picker";
+import {
+  RenameEarlierDialog,
+  type RenameOffer,
+  RuleDialog,
+  sameRule,
+} from "@/components/rule-dialog";
 import { useCategories } from "@/lib/api/hooks";
 
-/** "Note contains … → category" rules that fill in categories when importing bank files. */
+/**
+ * "Note contains … → category (and name)" rules that fill in categories and rename rows when
+ * importing bank files.
+ */
 export default function ImportRulesPage() {
   const id = useId();
   const { categories, byId } = useCategories();
@@ -33,7 +42,12 @@ export default function ImportRulesPage() {
   const [pattern, setPattern] = useState("");
   const [kind, setKind] = useState<CategoryKind>(CategoryKind.EXPENSE);
   const [categoryId, setCategoryId] = useState("");
+  const [renameTo, setRenameTo] = useState("");
   const [errors, setErrors] = useState<{ pattern?: string; cat?: string }>({});
+  const [offer, setOffer] = useState<RenameOffer | null>(null);
+  const [editing, setEditing] = useState<CategoryRule | null>(null);
+  // The server upserts by text, so adding a rule for text that has one updates that rule.
+  const existing = sameRule(rules, pattern);
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -45,14 +59,19 @@ export default function ImportRulesPage() {
       setErrors({ cat: "Choose a category" });
       return fault(`${id}-cat`);
     }
+    let res: Awaited<ReturnType<typeof create.mutateAsync>>;
     try {
-      await create.mutateAsync({ pattern, categoryId });
+      res = await create.mutateAsync({ pattern, categoryId, rename: renameTo });
     } catch {
       return; // toasted
     }
-    toast.success("Rule saved");
+    toast.success(existing ? "Rule updated" : "Rule saved");
     setPattern("");
     setCategoryId("");
+    setRenameTo("");
+    if (res.rule && res.renamable > 0) {
+      setOffer({ rule: res.rule, count: res.renamable, previousRename: res.previousRename });
+    }
   }
 
   return (
@@ -60,11 +79,18 @@ export default function ImportRulesPage() {
       <Panel serial="IMP-01 · NEW">
         <form onSubmit={add} className="flex flex-col gap-4">
           <p className="text-body-sm text-ink-soft">
-            When an imported row's note contains the text, it gets the category. The longest
-            matching text wins.
+            When an imported row's note contains the text, it gets the category, and the name if you
+            give one. The longest matching text wins.
           </p>
-          <div className="grid gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,2fr)]">
-            <Field label="When the note contains" htmlFor={`${id}-pattern`} error={errors.pattern}>
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,2fr)_minmax(0,2fr)]">
+            <Field
+              label="When the note contains"
+              htmlFor={`${id}-pattern`}
+              error={errors.pattern}
+              help={
+                existing ? "There's a rule for this text already; adding updates it." : undefined
+              }
+            >
               <Input
                 id={`${id}-pattern`}
                 value={pattern}
@@ -105,6 +131,15 @@ export default function ImportRulesPage() {
                 }}
               />
             </Field>
+            <Field label="Rename to (optional)" htmlFor={`${id}-rename`}>
+              <Input
+                id={`${id}-rename`}
+                value={renameTo}
+                maxLength={100}
+                placeholder="Keep the bank's text"
+                onChange={(e) => setRenameTo(e.target.value)}
+              />
+            </Field>
           </div>
           <div>
             <Button type="submit" disabled={create.isPending}>
@@ -134,13 +169,26 @@ export default function ImportRulesPage() {
                   key={r.id}
                   className="flex items-center gap-3 border-b border-seam/60 py-3 last:border-b-0"
                 >
-                  <span className="min-w-0 flex-1 truncate text-body-sm text-ink">
-                    Contains “{r.pattern}”
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-body-sm text-ink">Contains “{r.pattern}”</span>
+                    {r.rename && (
+                      <span className="truncate text-body-sm text-ink-soft">
+                        Renamed to “{r.rename}”
+                      </span>
+                    )}
                   </span>
                   <span className="flex min-w-0 items-center gap-2 text-label text-ink">
                     {c && <CategoryIcon icon={c.icon} color={c.color} size="sm" />}
                     <span className="truncate">{c?.name ?? "Unknown category"}</span>
                   </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Edit the rule for “${r.pattern}”`}
+                    onClick={() => setEditing(r)}
+                  >
+                    <Pencil strokeWidth={1.25} />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -156,6 +204,16 @@ export default function ImportRulesPage() {
           </ul>
         )}
       </Panel>
+
+      {editing && (
+        <RuleDialog
+          rule={editing}
+          walletId=""
+          categories={categories.filter((c) => c.kind === byId.get(editing.categoryId)?.kind)}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      <RenameEarlierDialog offer={offer} onClose={() => setOffer(null)} />
     </div>
   );
 }

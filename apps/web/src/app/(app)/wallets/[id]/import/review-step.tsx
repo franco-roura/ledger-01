@@ -6,13 +6,6 @@ import {
   Badge,
   Button,
   Checkbox,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Field,
   FieldError,
   fault,
   Input,
@@ -32,11 +25,12 @@ import {
   TransactionKind,
   type Wallet,
 } from "@ledger-01/api";
-import { WandSparkles } from "lucide-react";
+import { Pencil, WandSparkles } from "lucide-react";
 import Link from "next/link";
-import { Fragment, useEffect, useId, useState } from "react";
+import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CategoryPicker } from "@/components/category-picker";
+import { RuleDialog } from "@/components/rule-dialog";
 import { useCategories, useCurrencies, useWallets } from "@/lib/api/hooks";
 import {
   applyRule,
@@ -106,6 +100,8 @@ export function ReviewStep({
   const rows = q.data?.rows ?? [];
   const [selected, setSelected] = useState<Set<number> | null>(null);
   const [picks, setPicks] = useState<Map<number, string>>(new Map());
+  // Names given to single rows (a one-off transfer to a friend, say), over rules and bank text.
+  const [names, setNames] = useState<Map<number, string>>(new Map());
   const [shown, setShown] = useState(PAGE);
   const [view, setView] = useState<ReviewView>("all");
   const [showSettled, setShowSettled] = useState(false);
@@ -193,7 +189,11 @@ export function ReviewStep({
       const res = await commit.mutateAsync({
         batchId,
         mapping,
-        rows: chosen.map((r) => ({ index: r.index, categoryId: picks.get(r.index) ?? "" })),
+        rows: chosen.map((r) => ({
+          index: r.index,
+          categoryId: picks.get(r.index) ?? "",
+          note: needsCategory(r) ? names.get(r.index) : undefined,
+        })),
         saveMapping: remember,
       });
       onDone(res.importedCount);
@@ -353,9 +353,21 @@ export function ReviewStep({
                     className="mt-0.5 shrink-0"
                   />
                   <span className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span className="truncate text-body-sm text-ink">
-                      {r.error ? r.cells.join(" · ") : r.note || "—"}
-                    </span>
+                    {r.error ? (
+                      <span className="truncate text-body-sm text-ink">{r.cells.join(" · ")}</span>
+                    ) : (
+                      <RowName
+                        row={r}
+                        name={names.get(r.index)}
+                        editable={needsCategory(r)}
+                        onChange={(v) => {
+                          const next = new Map(names);
+                          if (v === undefined) next.delete(r.index);
+                          else next.set(r.index, v);
+                          setNames(next);
+                        }}
+                      />
+                    )}
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="hud-sm text-ink-soft">
                         Row {r.index + 1}
@@ -483,7 +495,7 @@ export function ReviewStep({
         </Button>
       </div>
       <p className="text-body-sm text-ink-soft">
-        Rules fill in categories from the note on every import.{" "}
+        Rules fill in categories and names from the note on every import.{" "}
         <Link
           href="/settings/import-rules"
           className="text-signal-ink underline-offset-4 hover:underline"
@@ -494,18 +506,20 @@ export function ReviewStep({
 
       {ruleFor && (
         <RuleDialog
-          row={ruleFor}
+          initialPattern={ruleFor.note}
           walletId={wallet.id}
           categories={kindCategories(ruleFor.kind)}
           initialCategory={picks.get(ruleFor.index) ?? ""}
           onClose={() => setRuleFor(null)}
-          onCreated={(pattern, categoryId) =>
+          // Saving refreshes the preview, which brings the rule's rename; categories picked here
+          // are kept, so fill in the rows the new rule matches.
+          onSaved={(rule) =>
             setPicks(
               applyRule(
                 rows,
-                new Map(picks).set(ruleFor.index, categoryId),
-                pattern,
-                categoryId,
+                new Map(picks).set(ruleFor.index, rule.categoryId),
+                rule.pattern,
+                rule.categoryId,
                 ruleFor.kind,
               ),
             )
@@ -516,91 +530,78 @@ export function ReviewStep({
   );
 }
 
-/** "When the note contains … use …", prefilled from a row. */
-function RuleDialog({
+/**
+ * A row's name: its own (given here), else its rule's rename, else the bank's text, which shows
+ * underneath when it isn't the name. Rows that import as new transactions can be renamed in
+ * place: Enter or leaving the field keeps it, Escape cancels, and clearing it goes back.
+ */
+function RowName({
   row,
-  walletId,
-  categories,
-  initialCategory,
-  onClose,
-  onCreated,
+  name,
+  editable,
+  onChange,
 }: {
   row: ImportRow;
-  walletId: string;
-  categories: ReturnType<typeof useCategories>["categories"];
-  initialCategory: string;
-  onClose: () => void;
-  onCreated: (pattern: string, categoryId: string) => void;
+  name: string | undefined;
+  editable: boolean;
+  onChange: (name: string | undefined) => void;
 }) {
-  const id = useId();
-  const [pattern, setPattern] = useState(row.note);
-  const [categoryId, setCategoryId] = useState(initialCategory);
-  const [errors, setErrors] = useState<{ pattern?: string; cat?: string }>({});
-  const create = useMutation(ImportService.method.createCategoryRule);
+  const [draft, setDraft] = useState<string | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const editing = draft !== null;
+  useEffect(() => {
+    if (editing) input.current?.focus();
+  }, [editing]);
+  const shown = name ?? (row.rename || row.note);
 
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (!pattern.trim()) {
-      setErrors({ pattern: "Enter the text to look for" });
-      return fault(`${id}-pattern`);
-    }
-    if (!categoryId) {
-      setErrors({ cat: "Choose a category" });
-      return fault(`${id}-cat`);
-    }
-    try {
-      await create.mutateAsync({ pattern, categoryId });
-    } catch {
-      return; // toasted
-    }
-    toast.success("Rule saved");
-    onCreated(pattern, categoryId);
-    onClose();
+  if (draft !== null) {
+    const done = () => {
+      const v = draft.trim();
+      onChange(v && v !== (row.rename || row.note) ? v : undefined);
+      setDraft(null);
+    };
+    return (
+      <Input
+        ref={input}
+        value={draft}
+        maxLength={500}
+        aria-label={`Name for row ${row.index + 1}`}
+        className="h-8"
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={done}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            done();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            setDraft(null);
+          }
+        }}
+      />
+    );
   }
-
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Make a rule</DialogTitle>
-          <DialogDescription>
-            Rows whose note contains this text get this category, now and on later imports.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={save} className="flex flex-col gap-4">
-          <Field label="When the note contains" htmlFor={`${id}-pattern`} error={errors.pattern}>
-            <Input
-              id={`${id}-pattern`}
-              value={pattern}
-              maxLength={100}
-              onChange={(e) => {
-                setPattern(e.target.value);
-                setErrors({});
-              }}
-            />
-          </Field>
-          <Field label="Use the category" htmlFor={`${id}-cat`} error={errors.cat}>
-            <CategoryPicker
-              id={`${id}-cat`}
-              categories={categories}
-              walletId={walletId}
-              value={categoryId}
-              onChange={(v) => {
-                setCategoryId(v);
-                setErrors({});
-              }}
-            />
-          </Field>
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={create.isPending}>
-              Save rule
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      <span className="flex min-w-0 items-center gap-1">
+        <span className="truncate text-body-sm text-ink">{shown || "—"}</span>
+        {editable && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="shrink-0"
+            aria-label={`Rename row ${row.index + 1}`}
+            title="Rename this row"
+            onClick={() => setDraft(shown)}
+          >
+            <Pencil strokeWidth={1.25} />
+          </Button>
+        )}
+      </span>
+      {shown !== row.note && row.note && (
+        <span className="truncate text-body-sm text-ink-soft">{row.note}</span>
+      )}
+    </>
   );
 }

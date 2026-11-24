@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ledger/v1/import.proto.
  */
 export const file_ledger_v1_import: GenFile = /*@__PURE__*/
-  fileDesc("ChZsZWRnZXIvdjEvaW1wb3J0LnByb3RvEglsZWRnZXIudjEi5wQKDUltcG9ydE1hcHBpbmcSEQoJc2tpcF9yb3dzGAsgASgFEhIKCmhhc19oZWFkZXIYASABKAgSEwoLZGF0ZV9jb2x1bW4YAiABKAUSEwoLZGF0ZV9mb3JtYXQYAyABKAkSGgoNYW1vdW50X2NvbHVtbhgEIAEoBUgAiAEBEhkKDGRlYml0X2NvbHVtbhgFIAEoBUgBiAEBEhoKDWNyZWRpdF9jb2x1bW4YBiABKAVIAogBARIjCgRzaWduGAcgASgOMhUubGVkZ2VyLnYxLkltcG9ydFNpZ24SNgoRZGVjaW1hbF9zZXBhcmF0b3IYCCABKA4yGy5sZWRnZXIudjEuRGVjaW1hbFNlcGFyYXRvchIYCgtub3RlX2NvbHVtbhgJIAEoBUgDiAEBEhwKD2NhdGVnb3J5X2NvbHVtbhgKIAEoBUgEiAEBEgwKBGJhbmsYDCABKAkSRAoPY2FyZF93YWxsZXRfaWRzGA4gAygLMisubGVkZ2VyLnYxLkltcG9ydE1hcHBpbmcuQ2FyZFdhbGxldElkc0VudHJ5EhkKEXBheWluZ193YWxsZXRfaWRzGA8gAygJEh8KE3BhaWRfZnJvbV93YWxsZXRfaWQYDSABKAlCAhgBGjQKEkNhcmRXYWxsZXRJZHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBQhAKDl9hbW91bnRfY29sdW1uQg8KDV9kZWJpdF9jb2x1bW5CEAoOX2NyZWRpdF9jb2x1bW5CDgoMX25vdGVfY29sdW1uQhIKEF9jYXRlZ29yeV9jb2x1bW4ihQEKD0ltcG9ydFN0YXRlbWVudBIRCgliYW5rX25hbWUYASABKAkSEQoJaXNzdWVkX29uGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRI2CgpjdXJyZW5jaWVzGAUgAygLMiIubGVkZ2VyLnYxLkltcG9ydFN0YXRlbWVudEN1cnJlbmN5SgQIBBAFIk8KF0ltcG9ydFN0YXRlbWVudEN1cnJlbmN5EhAKCGN1cnJlbmN5GAEgASgJEg0KBWxpbmVzGAIgASgFEhMKC3NwZW50X21pbm9yGAMgASgDIsgBCg9JbXBvcnRDYXJkRGViaXQSFgoOdHJhbnNhY3Rpb25faWQYASABKAkSEQoJd2FsbGV0X2lkGAIgASgJEhMKC3dhbGxldF9uYW1lGAMgASgJEhAKCGN1cnJlbmN5GAQgASgJEhQKDGFtb3VudF9taW5vchgFIAEoAxITCgtvY2N1cnJlZF9vbhgGIAEoCRIMCgRub3RlGAcgASgJEhIKCnBhcnRfbWlub3IYCCABKAMSFgoOcmF0ZV91bmNoZWNrZWQYCSABKAgiNwoKSW1wb3J0QmFuaxIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEg8KB2NvdW50cnkYAyABKAkiHAoLSW1wb3J0Q2VsbHMSDQoFY2VsbHMYASADKAkiuwUKCUltcG9ydFJvdxINCgVpbmRleBgBIAEoBRINCgVjZWxscxgCIAMoCRINCgVlcnJvchgDIAEoCRITCgtvY2N1cnJlZF9vbhgEIAEoCRIUCgxhbW91bnRfbWlub3IYBSABKAMSKAoEa2luZBgGIAEoDjIaLmxlZGdlci52MS5UcmFuc2FjdGlvbktpbmQSDAoEbm90ZRgHIAEoCRITCgtjYXRlZ29yeV9pZBgIIAEoCRIXCg9jYXRlZ29yeV9zb3VyY2UYCSABKAkSEQoJZHVwbGljYXRlGAogASgIEjQKEGR1cGxpY2F0ZV9yZWFzb24YCyABKA4yGi5sZWRnZXIudjEuSW1wb3J0RHVwbGljYXRlEhIKCm1hdGNoX25vdGUYDCABKAkSEgoKbWF0Y2hfZGF0ZRgNIAEoCRIWCg5kaXNjb3VudF9taW5vchgOIAEoAxIWCg5kaXNjb3VudF9ub3RlcxgPIAMoCRIYCgttZXJnZWRfaW50bxgQIAEoBUgAiAEBEiAKGGRpc2NvdW50c190cmFuc2FjdGlvbl9pZBgRIAEoCRIWCg5kaXNjb3VudHNfbm90ZRgSIAEoCRIWCg5kaXNjb3VudHNfZGF0ZRgTIAEoCRIYCgtyZWZ1bmRlZF9ieRgUIAEoBUgBiAEBEhYKCXJlZnVuZF9vZhgVIAEoBUgCiAEBEhQKDHJlZnVuZHNfbm90ZRgWIAEoCRIUCgxyZWZ1bmRzX2RhdGUYFyABKAkSEQoJd2FsbGV0X2lkGBkgASgJEhAKCGN1cnJlbmN5GBogASgJEiwKCHBheW1lbnRzGBsgAygLMhoubGVkZ2VyLnYxLkltcG9ydENhcmREZWJpdEIOCgxfbWVyZ2VkX2ludG9CDgoMX3JlZnVuZGVkX2J5QgwKCl9yZWZ1bmRfb2ZKBAgYEBkiQAoMQ2F0ZWdvcnlSdWxlEgoKAmlkGAEgASgJEg8KB3BhdHRlcm4YAiABKAkSEwoLY2F0ZWdvcnlfaWQYAyABKAkiUAoXVXBsb2FkSW1wb3J0RmlsZVJlcXVlc3QSEQoJd2FsbGV0X2lkGAEgASgJEhEKCWZpbGVfbmFtZRgCIAEoCRIPCgdjb250ZW50GAMgASgMIt8CChhVcGxvYWRJbXBvcnRGaWxlUmVzcG9uc2USEAoIYmF0Y2hfaWQYASABKAkSFAoMY29sdW1uX2NvdW50GAIgASgFEhEKCXJvd19jb3VudBgDIAEoBRImCgZzYW1wbGUYBCADKAsyFi5sZWRnZXIudjEuSW1wb3J0Q2VsbHMSKQoHbWFwcGluZxgFIAEoCzIYLmxlZGdlci52MS5JbXBvcnRNYXBwaW5nEhUKDXNhdmVkX21hcHBpbmcYBiABKAgSDgoGZm9ybWF0GAcgASgJEhAKCGVuY29kaW5nGAggASgJEhEKCWRlbGltaXRlchgJIAEoCRIUCgxkYXRlX2Zvcm1hdHMYCiADKAkSJAoFYmFua3MYCyADKAsyFS5sZWRnZXIudjEuSW1wb3J0QmFuaxItCglzdGF0ZW1lbnQYDCABKAsyGi5sZWRnZXIudjEuSW1wb3J0U3RhdGVtZW50ImIKFFByZXZpZXdJbXBvcnRSZXF1ZXN0EhAKCGJhdGNoX2lkGAEgASgJEikKB21hcHBpbmcYAiABKAsyGC5sZWRnZXIudjEuSW1wb3J0TWFwcGluZxINCgVsaW1pdBgDIAEoBSJKChVQcmV2aWV3SW1wb3J0UmVzcG9uc2USIgoEcm93cxgBIAMoCzIULmxlZGdlci52MS5JbXBvcnRSb3cSDQoFdG90YWwYAiABKAUiMgoMSW1wb3J0Q2hvaWNlEg0KBWluZGV4GAEgASgFEhMKC2NhdGVnb3J5X2lkGAIgASgJIo8BChNDb21taXRJbXBvcnRSZXF1ZXN0EhAKCGJhdGNoX2lkGAEgASgJEikKB21hcHBpbmcYAiABKAsyGC5sZWRnZXIudjEuSW1wb3J0TWFwcGluZxIlCgRyb3dzGAMgAygLMhcubGVkZ2VyLnYxLkltcG9ydENob2ljZRIUCgxzYXZlX21hcHBpbmcYBCABKAgiLgoUQ29tbWl0SW1wb3J0UmVzcG9uc2USFgoOaW1wb3J0ZWRfY291bnQYASABKAMiGgoYTGlzdENhdGVnb3J5UnVsZXNSZXF1ZXN0IkMKGUxpc3RDYXRlZ29yeVJ1bGVzUmVzcG9uc2USJgoFcnVsZXMYASADKAsyFy5sZWRnZXIudjEuQ2F0ZWdvcnlSdWxlIkEKGUNyZWF0ZUNhdGVnb3J5UnVsZVJlcXVlc3QSDwoHcGF0dGVybhgBIAEoCRITCgtjYXRlZ29yeV9pZBgCIAEoCSJDChpDcmVhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRIlCgRydWxlGAEgASgLMhcubGVkZ2VyLnYxLkNhdGVnb3J5UnVsZSInChlEZWxldGVDYXRlZ29yeVJ1bGVSZXF1ZXN0EgoKAmlkGAEgASgJIhwKGkRlbGV0ZUNhdGVnb3J5UnVsZVJlc3BvbnNlKnMKCkltcG9ydFNpZ24SGwoXSU1QT1JUX1NJR05fVU5TUEVDSUZJRUQQABIjCh9JTVBPUlRfU0lHTl9ORUdBVElWRV9JU19FWFBFTlNFEAESIwofSU1QT1JUX1NJR05fUE9TSVRJVkVfSVNfRVhQRU5TRRACKm0KEERlY2ltYWxTZXBhcmF0b3ISIQodREVDSU1BTF9TRVBBUkFUT1JfVU5TUEVDSUZJRUQQABIZChVERUNJTUFMX1NFUEFSQVRPUl9ET1QQARIbChdERUNJTUFMX1NFUEFSQVRPUl9DT01NQRACKqYBCg9JbXBvcnREdXBsaWNhdGUSIAocSU1QT1JUX0RVUExJQ0FURV9VTlNQRUNJRklFRBAAEh0KGUlNUE9SVF9EVVBMSUNBVEVfSU1QT1JURUQQARIZChVJTVBPUlRfRFVQTElDQVRFX1NBTUUQAhIcChhJTVBPUlRfRFVQTElDQVRFX1NJTUlMQVIQAxIZChVJTVBPUlRfRFVQTElDQVRFX0ZJTEUQBDK3BAoNSW1wb3J0U2VydmljZRJbChBVcGxvYWRJbXBvcnRGaWxlEiIubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXF1ZXN0GiMubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXNwb25zZRJSCg1QcmV2aWV3SW1wb3J0Eh8ubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXF1ZXN0GiAubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXNwb25zZRJPCgxDb21taXRJbXBvcnQSHi5sZWRnZXIudjEuQ29tbWl0SW1wb3J0UmVxdWVzdBofLmxlZGdlci52MS5Db21taXRJbXBvcnRSZXNwb25zZRJeChFMaXN0Q2F0ZWdvcnlSdWxlcxIjLmxlZGdlci52MS5MaXN0Q2F0ZWdvcnlSdWxlc1JlcXVlc3QaJC5sZWRnZXIudjEuTGlzdENhdGVnb3J5UnVsZXNSZXNwb25zZRJhChJDcmVhdGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuQ3JlYXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5DcmVhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRJhChJEZWxldGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuRGVsZXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5EZWxldGVDYXRlZ29yeVJ1bGVSZXNwb25zZUKjAQoNY29tLmxlZGdlci52MUILSW1wb3J0UHJvdG9QAVpAZ2l0aHViLmNvbS9mcmFuY28tcm91cmEvbGVkZ2VyLTAxL2JhY2tlbmQvZ2VuL2xlZGdlci92MTtsZWRnZXJ2MaICA0xYWKoCCUxlZGdlci5WMcoCCUxlZGdlclxWMeICFUxlZGdlclxWMVxHUEJNZXRhZGF0YeoCCkxlZGdlcjo6VjFiBnByb3RvMw", [file_ledger_v1_transaction]);
+  fileDesc("ChZsZWRnZXIvdjEvaW1wb3J0LnByb3RvEglsZWRnZXIudjEi5wQKDUltcG9ydE1hcHBpbmcSEQoJc2tpcF9yb3dzGAsgASgFEhIKCmhhc19oZWFkZXIYASABKAgSEwoLZGF0ZV9jb2x1bW4YAiABKAUSEwoLZGF0ZV9mb3JtYXQYAyABKAkSGgoNYW1vdW50X2NvbHVtbhgEIAEoBUgAiAEBEhkKDGRlYml0X2NvbHVtbhgFIAEoBUgBiAEBEhoKDWNyZWRpdF9jb2x1bW4YBiABKAVIAogBARIjCgRzaWduGAcgASgOMhUubGVkZ2VyLnYxLkltcG9ydFNpZ24SNgoRZGVjaW1hbF9zZXBhcmF0b3IYCCABKA4yGy5sZWRnZXIudjEuRGVjaW1hbFNlcGFyYXRvchIYCgtub3RlX2NvbHVtbhgJIAEoBUgDiAEBEhwKD2NhdGVnb3J5X2NvbHVtbhgKIAEoBUgEiAEBEgwKBGJhbmsYDCABKAkSRAoPY2FyZF93YWxsZXRfaWRzGA4gAygLMisubGVkZ2VyLnYxLkltcG9ydE1hcHBpbmcuQ2FyZFdhbGxldElkc0VudHJ5EhkKEXBheWluZ193YWxsZXRfaWRzGA8gAygJEh8KE3BhaWRfZnJvbV93YWxsZXRfaWQYDSABKAlCAhgBGjQKEkNhcmRXYWxsZXRJZHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBQhAKDl9hbW91bnRfY29sdW1uQg8KDV9kZWJpdF9jb2x1bW5CEAoOX2NyZWRpdF9jb2x1bW5CDgoMX25vdGVfY29sdW1uQhIKEF9jYXRlZ29yeV9jb2x1bW4ihQEKD0ltcG9ydFN0YXRlbWVudBIRCgliYW5rX25hbWUYASABKAkSEQoJaXNzdWVkX29uGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRI2CgpjdXJyZW5jaWVzGAUgAygLMiIubGVkZ2VyLnYxLkltcG9ydFN0YXRlbWVudEN1cnJlbmN5SgQIBBAFIk8KF0ltcG9ydFN0YXRlbWVudEN1cnJlbmN5EhAKCGN1cnJlbmN5GAEgASgJEg0KBWxpbmVzGAIgASgFEhMKC3NwZW50X21pbm9yGAMgASgDIsgBCg9JbXBvcnRDYXJkRGViaXQSFgoOdHJhbnNhY3Rpb25faWQYASABKAkSEQoJd2FsbGV0X2lkGAIgASgJEhMKC3dhbGxldF9uYW1lGAMgASgJEhAKCGN1cnJlbmN5GAQgASgJEhQKDGFtb3VudF9taW5vchgFIAEoAxITCgtvY2N1cnJlZF9vbhgGIAEoCRIMCgRub3RlGAcgASgJEhIKCnBhcnRfbWlub3IYCCABKAMSFgoOcmF0ZV91bmNoZWNrZWQYCSABKAgiNwoKSW1wb3J0QmFuaxIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEg8KB2NvdW50cnkYAyABKAkiHAoLSW1wb3J0Q2VsbHMSDQoFY2VsbHMYASADKAkiywUKCUltcG9ydFJvdxINCgVpbmRleBgBIAEoBRINCgVjZWxscxgCIAMoCRINCgVlcnJvchgDIAEoCRITCgtvY2N1cnJlZF9vbhgEIAEoCRIUCgxhbW91bnRfbWlub3IYBSABKAMSKAoEa2luZBgGIAEoDjIaLmxlZGdlci52MS5UcmFuc2FjdGlvbktpbmQSDAoEbm90ZRgHIAEoCRITCgtjYXRlZ29yeV9pZBgIIAEoCRIXCg9jYXRlZ29yeV9zb3VyY2UYCSABKAkSEQoJZHVwbGljYXRlGAogASgIEjQKEGR1cGxpY2F0ZV9yZWFzb24YCyABKA4yGi5sZWRnZXIudjEuSW1wb3J0RHVwbGljYXRlEhIKCm1hdGNoX25vdGUYDCABKAkSEgoKbWF0Y2hfZGF0ZRgNIAEoCRIWCg5kaXNjb3VudF9taW5vchgOIAEoAxIWCg5kaXNjb3VudF9ub3RlcxgPIAMoCRIYCgttZXJnZWRfaW50bxgQIAEoBUgAiAEBEiAKGGRpc2NvdW50c190cmFuc2FjdGlvbl9pZBgRIAEoCRIWCg5kaXNjb3VudHNfbm90ZRgSIAEoCRIWCg5kaXNjb3VudHNfZGF0ZRgTIAEoCRIYCgtyZWZ1bmRlZF9ieRgUIAEoBUgBiAEBEhYKCXJlZnVuZF9vZhgVIAEoBUgCiAEBEhQKDHJlZnVuZHNfbm90ZRgWIAEoCRIUCgxyZWZ1bmRzX2RhdGUYFyABKAkSEQoJd2FsbGV0X2lkGBkgASgJEhAKCGN1cnJlbmN5GBogASgJEiwKCHBheW1lbnRzGBsgAygLMhoubGVkZ2VyLnYxLkltcG9ydENhcmREZWJpdBIOCgZyZW5hbWUYHCABKAlCDgoMX21lcmdlZF9pbnRvQg4KDF9yZWZ1bmRlZF9ieUIMCgpfcmVmdW5kX29mSgQIGBAZIlAKDENhdGVnb3J5UnVsZRIKCgJpZBgBIAEoCRIPCgdwYXR0ZXJuGAIgASgJEhMKC2NhdGVnb3J5X2lkGAMgASgJEg4KBnJlbmFtZRgEIAEoCSJQChdVcGxvYWRJbXBvcnRGaWxlUmVxdWVzdBIRCgl3YWxsZXRfaWQYASABKAkSEQoJZmlsZV9uYW1lGAIgASgJEg8KB2NvbnRlbnQYAyABKAwi3wIKGFVwbG9hZEltcG9ydEZpbGVSZXNwb25zZRIQCghiYXRjaF9pZBgBIAEoCRIUCgxjb2x1bW5fY291bnQYAiABKAUSEQoJcm93X2NvdW50GAMgASgFEiYKBnNhbXBsZRgEIAMoCzIWLmxlZGdlci52MS5JbXBvcnRDZWxscxIpCgdtYXBwaW5nGAUgASgLMhgubGVkZ2VyLnYxLkltcG9ydE1hcHBpbmcSFQoNc2F2ZWRfbWFwcGluZxgGIAEoCBIOCgZmb3JtYXQYByABKAkSEAoIZW5jb2RpbmcYCCABKAkSEQoJZGVsaW1pdGVyGAkgASgJEhQKDGRhdGVfZm9ybWF0cxgKIAMoCRIkCgViYW5rcxgLIAMoCzIVLmxlZGdlci52MS5JbXBvcnRCYW5rEi0KCXN0YXRlbWVudBgMIAEoCzIaLmxlZGdlci52MS5JbXBvcnRTdGF0ZW1lbnQiYgoUUHJldmlld0ltcG9ydFJlcXVlc3QSEAoIYmF0Y2hfaWQYASABKAkSKQoHbWFwcGluZxgCIAEoCzIYLmxlZGdlci52MS5JbXBvcnRNYXBwaW5nEg0KBWxpbWl0GAMgASgFIkoKFVByZXZpZXdJbXBvcnRSZXNwb25zZRIiCgRyb3dzGAEgAygLMhQubGVkZ2VyLnYxLkltcG9ydFJvdxINCgV0b3RhbBgCIAEoBSJOCgxJbXBvcnRDaG9pY2USDQoFaW5kZXgYASABKAUSEwoLY2F0ZWdvcnlfaWQYAiABKAkSEQoEbm90ZRgDIAEoCUgAiAEBQgcKBV9ub3RlIo8BChNDb21taXRJbXBvcnRSZXF1ZXN0EhAKCGJhdGNoX2lkGAEgASgJEikKB21hcHBpbmcYAiABKAsyGC5sZWRnZXIudjEuSW1wb3J0TWFwcGluZxIlCgRyb3dzGAMgAygLMhcubGVkZ2VyLnYxLkltcG9ydENob2ljZRIUCgxzYXZlX21hcHBpbmcYBCABKAgiLgoUQ29tbWl0SW1wb3J0UmVzcG9uc2USFgoOaW1wb3J0ZWRfY291bnQYASABKAMiGgoYTGlzdENhdGVnb3J5UnVsZXNSZXF1ZXN0IkMKGUxpc3RDYXRlZ29yeVJ1bGVzUmVzcG9uc2USJgoFcnVsZXMYASADKAsyFy5sZWRnZXIudjEuQ2F0ZWdvcnlSdWxlIlEKGUNyZWF0ZUNhdGVnb3J5UnVsZVJlcXVlc3QSDwoHcGF0dGVybhgBIAEoCRITCgtjYXRlZ29yeV9pZBgCIAEoCRIOCgZyZW5hbWUYAyABKAkibwoaQ3JlYXRlQ2F0ZWdvcnlSdWxlUmVzcG9uc2USJQoEcnVsZRgBIAEoCzIXLmxlZGdlci52MS5DYXRlZ29yeVJ1bGUSEQoJcmVuYW1hYmxlGAIgASgFEhcKD3ByZXZpb3VzX3JlbmFtZRgDIAEoCSJdChlVcGRhdGVDYXRlZ29yeVJ1bGVSZXF1ZXN0EgoKAmlkGAEgASgJEg8KB3BhdHRlcm4YAiABKAkSEwoLY2F0ZWdvcnlfaWQYAyABKAkSDgoGcmVuYW1lGAQgASgJIlYKGlVwZGF0ZUNhdGVnb3J5UnVsZVJlc3BvbnNlEiUKBHJ1bGUYASABKAsyFy5sZWRnZXIudjEuQ2F0ZWdvcnlSdWxlEhEKCXJlbmFtYWJsZRgCIAEoBSJJCh1SZW5hbWVSdWxlVHJhbnNhY3Rpb25zUmVxdWVzdBIPCgdydWxlX2lkGAEgASgJEhcKD3ByZXZpb3VzX3JlbmFtZRgCIAEoCSI3Ch5SZW5hbWVSdWxlVHJhbnNhY3Rpb25zUmVzcG9uc2USFQoNcmVuYW1lZF9jb3VudBgBIAEoAyInChlEZWxldGVDYXRlZ29yeVJ1bGVSZXF1ZXN0EgoKAmlkGAEgASgJIhwKGkRlbGV0ZUNhdGVnb3J5UnVsZVJlc3BvbnNlKnMKCkltcG9ydFNpZ24SGwoXSU1QT1JUX1NJR05fVU5TUEVDSUZJRUQQABIjCh9JTVBPUlRfU0lHTl9ORUdBVElWRV9JU19FWFBFTlNFEAESIwofSU1QT1JUX1NJR05fUE9TSVRJVkVfSVNfRVhQRU5TRRACKm0KEERlY2ltYWxTZXBhcmF0b3ISIQodREVDSU1BTF9TRVBBUkFUT1JfVU5TUEVDSUZJRUQQABIZChVERUNJTUFMX1NFUEFSQVRPUl9ET1QQARIbChdERUNJTUFMX1NFUEFSQVRPUl9DT01NQRACKqYBCg9JbXBvcnREdXBsaWNhdGUSIAocSU1QT1JUX0RVUExJQ0FURV9VTlNQRUNJRklFRBAAEh0KGUlNUE9SVF9EVVBMSUNBVEVfSU1QT1JURUQQARIZChVJTVBPUlRfRFVQTElDQVRFX1NBTUUQAhIcChhJTVBPUlRfRFVQTElDQVRFX1NJTUlMQVIQAxIZChVJTVBPUlRfRFVQTElDQVRFX0ZJTEUQBDKJBgoNSW1wb3J0U2VydmljZRJbChBVcGxvYWRJbXBvcnRGaWxlEiIubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXF1ZXN0GiMubGVkZ2VyLnYxLlVwbG9hZEltcG9ydEZpbGVSZXNwb25zZRJSCg1QcmV2aWV3SW1wb3J0Eh8ubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXF1ZXN0GiAubGVkZ2VyLnYxLlByZXZpZXdJbXBvcnRSZXNwb25zZRJPCgxDb21taXRJbXBvcnQSHi5sZWRnZXIudjEuQ29tbWl0SW1wb3J0UmVxdWVzdBofLmxlZGdlci52MS5Db21taXRJbXBvcnRSZXNwb25zZRJeChFMaXN0Q2F0ZWdvcnlSdWxlcxIjLmxlZGdlci52MS5MaXN0Q2F0ZWdvcnlSdWxlc1JlcXVlc3QaJC5sZWRnZXIudjEuTGlzdENhdGVnb3J5UnVsZXNSZXNwb25zZRJhChJDcmVhdGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuQ3JlYXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5DcmVhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRJhChJVcGRhdGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuVXBkYXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5VcGRhdGVDYXRlZ29yeVJ1bGVSZXNwb25zZRJhChJEZWxldGVDYXRlZ29yeVJ1bGUSJC5sZWRnZXIudjEuRGVsZXRlQ2F0ZWdvcnlSdWxlUmVxdWVzdBolLmxlZGdlci52MS5EZWxldGVDYXRlZ29yeVJ1bGVSZXNwb25zZRJtChZSZW5hbWVSdWxlVHJhbnNhY3Rpb25zEigubGVkZ2VyLnYxLlJlbmFtZVJ1bGVUcmFuc2FjdGlvbnNSZXF1ZXN0GikubGVkZ2VyLnYxLlJlbmFtZVJ1bGVUcmFuc2FjdGlvbnNSZXNwb25zZUKjAQoNY29tLmxlZGdlci52MUILSW1wb3J0UHJvdG9QAVpAZ2l0aHViLmNvbS9mcmFuY28tcm91cmEvbGVkZ2VyLTAxL2JhY2tlbmQvZ2VuL2xlZGdlci92MTtsZWRnZXJ2MaICA0xYWKoCCUxlZGdlci5WMcoCCUxlZGdlclxWMeICFUxlZGdlclxWMVxHUEJNZXRhZGF0YeoCCkxlZGdlcjo6VjFiBnByb3RvMw", [file_ledger_v1_transaction]);
 
 /**
  * Which file columns hold what. Columns are 0-based; an unset optional column isn't mapped.
@@ -485,6 +485,14 @@ export type ImportRow = Message<"ledger.v1.ImportRow"> & {
    * @generated from field: repeated ledger.v1.ImportCardDebit payments = 27;
    */
   payments: ImportCardDebit[];
+
+  /**
+   * The note the row imports with when a rule renames it (the longest matching rule of the row's
+   * kind, even when the category column set the category); empty keeps note, the bank's text.
+   *
+   * @generated from field: string rename = 28;
+   */
+  rename: string;
 };
 
 /**
@@ -497,6 +505,8 @@ export const ImportRowSchema: GenMessage<ImportRow> = /*@__PURE__*/
 /**
  * "Note contains pattern → category", applied to imported rows the category column didn't
  * settle. The longest matching pattern wins; a rule only applies to rows of its category's kind.
+ * A rule may also rename the rows it matches: they import with rename as their note, while the
+ * bank's text is still what later imports match against.
  *
  * @generated from message ledger.v1.CategoryRule
  */
@@ -515,6 +525,13 @@ export type CategoryRule = Message<"ledger.v1.CategoryRule"> & {
    * @generated from field: string category_id = 3;
    */
   categoryId: string;
+
+  /**
+   * Empty keeps the bank's text.
+   *
+   * @generated from field: string rename = 4;
+   */
+  rename: string;
 };
 
 /**
@@ -708,6 +725,13 @@ export type ImportChoice = Message<"ledger.v1.ImportChoice"> & {
    * @generated from field: string category_id = 2;
    */
   categoryId: string;
+
+  /**
+   * A note for this row only, over the row's rename and bank text (at most 500 characters).
+   *
+   * @generated from field: optional string note = 3;
+   */
+  note?: string | undefined;
 };
 
 /**
@@ -813,6 +837,11 @@ export type CreateCategoryRuleRequest = Message<"ledger.v1.CreateCategoryRuleReq
    * @generated from field: string category_id = 2;
    */
   categoryId: string;
+
+  /**
+   * @generated from field: string rename = 3;
+   */
+  rename: string;
 };
 
 /**
@@ -830,6 +859,22 @@ export type CreateCategoryRuleResponse = Message<"ledger.v1.CreateCategoryRuleRe
    * @generated from field: ledger.v1.CategoryRule rule = 1;
    */
   rule?: CategoryRule | undefined;
+
+  /**
+   * Transactions imported earlier that RenameRuleTransactions would rename (0 without a rename),
+   * counting, for an updated rule, notes still equal to its earlier rename.
+   *
+   * @generated from field: int32 renamable = 2;
+   */
+  renamable: number;
+
+  /**
+   * The rule's rename before, when a rule for the same text existed (pass it to
+   * RenameRuleTransactions); empty for a new rule.
+   *
+   * @generated from field: string previous_rename = 3;
+   */
+  previousRename: string;
 };
 
 /**
@@ -838,6 +883,103 @@ export type CreateCategoryRuleResponse = Message<"ledger.v1.CreateCategoryRuleRe
  */
 export const CreateCategoryRuleResponseSchema: GenMessage<CreateCategoryRuleResponse> = /*@__PURE__*/
   messageDesc(file_ledger_v1_import, 18);
+
+/**
+ * @generated from message ledger.v1.UpdateCategoryRuleRequest
+ */
+export type UpdateCategoryRuleRequest = Message<"ledger.v1.UpdateCategoryRuleRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string pattern = 2;
+   */
+  pattern: string;
+
+  /**
+   * @generated from field: string category_id = 3;
+   */
+  categoryId: string;
+
+  /**
+   * @generated from field: string rename = 4;
+   */
+  rename: string;
+};
+
+/**
+ * Describes the message ledger.v1.UpdateCategoryRuleRequest.
+ * Use `create(UpdateCategoryRuleRequestSchema)` to create a new message.
+ */
+export const UpdateCategoryRuleRequestSchema: GenMessage<UpdateCategoryRuleRequest> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_import, 19);
+
+/**
+ * @generated from message ledger.v1.UpdateCategoryRuleResponse
+ */
+export type UpdateCategoryRuleResponse = Message<"ledger.v1.UpdateCategoryRuleResponse"> & {
+  /**
+   * @generated from field: ledger.v1.CategoryRule rule = 1;
+   */
+  rule?: CategoryRule | undefined;
+
+  /**
+   * As in CreateCategoryRuleResponse, counting notes still equal to the rule's earlier rename.
+   *
+   * @generated from field: int32 renamable = 2;
+   */
+  renamable: number;
+};
+
+/**
+ * Describes the message ledger.v1.UpdateCategoryRuleResponse.
+ * Use `create(UpdateCategoryRuleResponseSchema)` to create a new message.
+ */
+export const UpdateCategoryRuleResponseSchema: GenMessage<UpdateCategoryRuleResponse> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_import, 20);
+
+/**
+ * @generated from message ledger.v1.RenameRuleTransactionsRequest
+ */
+export type RenameRuleTransactionsRequest = Message<"ledger.v1.RenameRuleTransactionsRequest"> & {
+  /**
+   * @generated from field: string rule_id = 1;
+   */
+  ruleId: string;
+
+  /**
+   * The rule's rename before an update: notes still equal to it are renamed too.
+   *
+   * @generated from field: string previous_rename = 2;
+   */
+  previousRename: string;
+};
+
+/**
+ * Describes the message ledger.v1.RenameRuleTransactionsRequest.
+ * Use `create(RenameRuleTransactionsRequestSchema)` to create a new message.
+ */
+export const RenameRuleTransactionsRequestSchema: GenMessage<RenameRuleTransactionsRequest> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_import, 21);
+
+/**
+ * @generated from message ledger.v1.RenameRuleTransactionsResponse
+ */
+export type RenameRuleTransactionsResponse = Message<"ledger.v1.RenameRuleTransactionsResponse"> & {
+  /**
+   * @generated from field: int64 renamed_count = 1;
+   */
+  renamedCount: bigint;
+};
+
+/**
+ * Describes the message ledger.v1.RenameRuleTransactionsResponse.
+ * Use `create(RenameRuleTransactionsResponseSchema)` to create a new message.
+ */
+export const RenameRuleTransactionsResponseSchema: GenMessage<RenameRuleTransactionsResponse> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_import, 22);
 
 /**
  * @generated from message ledger.v1.DeleteCategoryRuleRequest
@@ -854,7 +996,7 @@ export type DeleteCategoryRuleRequest = Message<"ledger.v1.DeleteCategoryRuleReq
  * Use `create(DeleteCategoryRuleRequestSchema)` to create a new message.
  */
 export const DeleteCategoryRuleRequestSchema: GenMessage<DeleteCategoryRuleRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 19);
+  messageDesc(file_ledger_v1_import, 23);
 
 /**
  * @generated from message ledger.v1.DeleteCategoryRuleResponse
@@ -867,7 +1009,7 @@ export type DeleteCategoryRuleResponse = Message<"ledger.v1.DeleteCategoryRuleRe
  * Use `create(DeleteCategoryRuleResponseSchema)` to create a new message.
  */
 export const DeleteCategoryRuleResponseSchema: GenMessage<DeleteCategoryRuleResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_import, 20);
+  messageDesc(file_ledger_v1_import, 24);
 
 /**
  * Which amounts are money going out.
@@ -1021,6 +1163,8 @@ export const ImportService: GenService<{
     output: typeof ListCategoryRulesResponseSchema;
   },
   /**
+   * Creates a rule, or updates the one for the same text (case-insensitive).
+   *
    * @generated from rpc ledger.v1.ImportService.CreateCategoryRule
    */
   createCategoryRule: {
@@ -1029,12 +1173,32 @@ export const ImportService: GenService<{
     output: typeof CreateCategoryRuleResponseSchema;
   },
   /**
+   * @generated from rpc ledger.v1.ImportService.UpdateCategoryRule
+   */
+  updateCategoryRule: {
+    methodKind: "unary";
+    input: typeof UpdateCategoryRuleRequestSchema;
+    output: typeof UpdateCategoryRuleResponseSchema;
+  },
+  /**
    * @generated from rpc ledger.v1.ImportService.DeleteCategoryRule
    */
   deleteCategoryRule: {
     methodKind: "unary";
     input: typeof DeleteCategoryRuleRequestSchema;
     output: typeof DeleteCategoryRuleResponseSchema;
+  },
+  /**
+   * Renames the transactions imported earlier that the rule would rename now: those whose bank
+   * text it is the longest matching rule for, of its category's kind, and whose note is still
+   * the bank's text or the rule's earlier rename (notes edited by hand are kept).
+   *
+   * @generated from rpc ledger.v1.ImportService.RenameRuleTransactions
+   */
+  renameRuleTransactions: {
+    methodKind: "unary";
+    input: typeof RenameRuleTransactionsRequestSchema;
+    output: typeof RenameRuleTransactionsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_ledger_v1_import, 0);

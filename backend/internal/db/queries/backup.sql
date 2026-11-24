@@ -62,7 +62,7 @@ WHERE r.household_id = @household_id ORDER BY rl.rule_id, rl.label_id;
 SELECT wallet_id, mapping, headers FROM import_profiles WHERE household_id = @household_id ORDER BY wallet_id;
 
 -- name: BackupImportCategoryRules :many
-SELECT id, pattern, category_id FROM import_category_rules WHERE household_id = @household_id
+SELECT id, pattern, category_id, rename FROM import_category_rules WHERE household_id = @household_id
 ORDER BY created_at, id;
 
 -- name: BackupImportRefs :many
@@ -154,8 +154,8 @@ INSERT INTO import_profiles (wallet_id, household_id, mapping, headers)
 VALUES (@wallet_id, @household_id, @mapping, @headers);
 
 -- name: RestoreImportCategoryRule :exec
-INSERT INTO import_category_rules (id, household_id, pattern, category_id)
-VALUES (@id, @household_id, @pattern, @category_id);
+INSERT INTO import_category_rules (id, household_id, pattern, category_id, rename)
+VALUES (@id, @household_id, @pattern, @category_id, @rename);
 
 -- name: RestoreImportRefs :copyfrom
 INSERT INTO import_refs (wallet_id, household_id, fingerprint, transaction_id, occurred_on, amount_minor, note)

@@ -165,6 +165,7 @@ type BackupImportRule struct {
 	ID         uuid.UUID `json:"id"`
 	Pattern    string    `json:"pattern"`
 	CategoryID uuid.UUID `json:"category_id"`
+	Rename     string    `json:"rename,omitempty"`
 }
 
 type BackupImportRef struct {
@@ -350,7 +351,7 @@ func (s *Service) ExportBackup(ctx context.Context, a Actor) (*Backup, error) {
 		return nil, err
 	}
 	for _, r := range importRules {
-		b.ImportRules = append(b.ImportRules, BackupImportRule{ID: r.ID, Pattern: r.Pattern, CategoryID: r.CategoryID})
+		b.ImportRules = append(b.ImportRules, BackupImportRule{ID: r.ID, Pattern: r.Pattern, CategoryID: r.CategoryID, Rename: r.Rename})
 	}
 	refs, err := q.BackupImportRefs(ctx, h)
 	if err != nil {
@@ -819,7 +820,7 @@ func restoreBackup(ctx context.Context, q *dbq.Queries, a Actor, b *Backup, curr
 			return err
 		}
 		if err := q.RestoreImportCategoryRule(ctx, dbq.RestoreImportCategoryRuleParams{ID: newID(), HouseholdID: h,
-			Pattern: r.Pattern, CategoryID: c}); err != nil {
+			Pattern: r.Pattern, CategoryID: c, Rename: r.Rename}); err != nil {
 			return err
 		}
 	}

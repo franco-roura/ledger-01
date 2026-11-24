@@ -26,6 +26,7 @@ const (
 	importTTL     = 24 * time.Hour
 	importSample  = 30
 	maxRulePatLen = 100
+	maxRenameLen  = 100
 )
 
 type ImportUpload struct {
@@ -49,6 +50,8 @@ type ImportRow struct {
 	Kind           TransactionKind
 	CategoryID     *uuid.UUID
 	CategorySource string // "column", "rule" or ""
+	// The note the row imports with when a rule renames it; Note stays the bank's text.
+	Rename string
 	// Why the row looks like a duplicate (DupImported, DupSame, DupSimilar, DupFile), or "".
 	DupReason string
 	// The wallet transaction it matches, as it is now.
@@ -107,12 +110,16 @@ const (
 type ImportChoice struct {
 	Index      int
 	CategoryID uuid.UUID
+	// A note for this row only, over its rename and bank text.
+	Note *string
 }
 
 type CategoryRule struct {
 	ID         uuid.UUID
 	Pattern    string
 	CategoryID uuid.UUID
+	// What matched rows import as; empty keeps the bank's text.
+	Rename string
 }
 
 func mappingErr(err error) error {
@@ -328,7 +335,8 @@ func (s *Service) matchImport(ctx context.Context, q *dbq.Queries, a Actor, w Wa
 		}
 		r := &rows[i]
 		for _, c := range cands {
-			if !used[c.ID] && c.OccurredOn.Equal(r.Date) && amountMatches(*r, c) && normNote(c.Note) == normNote(r.Note) {
+			same := normNote(c.Note) == normNote(r.Note) || (r.Rename != "" && normNote(c.Note) == normNote(r.Rename))
+			if !used[c.ID] && c.OccurredOn.Equal(r.Date) && amountMatches(*r, c) && same {
 				match(r, DupSame, c)
 				break
 			}
@@ -395,7 +403,7 @@ func (rd importRead) target(r ImportRow) Wallet {
 }
 
 // rowClassifier suggests a category for a row: from the category column, else the longest
-// "note contains" rule of the row's kind.
+// "note contains" rule of the row's kind. That rule's rename applies either way.
 type rowClassifier struct {
 	byName map[TransactionKind]map[string]uuid.UUID
 	kindOf map[uuid.UUID]TransactionKind
@@ -425,21 +433,32 @@ func (s *Service) classifier(ctx context.Context, q *dbq.Queries, a Actor) (rowC
 }
 
 func (c rowClassifier) classify(row *ImportRow) {
+	rule := c.match(row.Note, row.Kind)
+	if rule != nil {
+		row.Rename = rule.Rename
+	}
 	if id, ok := c.byName[row.Kind][strings.ToLower(strings.TrimSpace(row.Category))]; ok && row.Category != "" {
 		row.CategoryID, row.CategorySource = &id, "column"
 		return
 	}
-	note := strings.ToLower(row.Note)
-	if note == "" {
-		return
+	if rule != nil {
+		id := rule.CategoryID
+		row.CategoryID, row.CategorySource = &id, "rule"
 	}
-	for _, rule := range c.rules {
-		if c.kindOf[rule.CategoryID] == row.Kind && strings.Contains(note, strings.ToLower(rule.Pattern)) {
-			id := rule.CategoryID
-			row.CategoryID, row.CategorySource = &id, "rule"
-			return
+}
+
+// match is the longest rule of the kind whose pattern the note contains, or nil.
+func (c rowClassifier) match(note string, kind TransactionKind) *dbq.ListImportCategoryRulesRow {
+	note = strings.ToLower(note)
+	if note == "" {
+		return nil
+	}
+	for i, rule := range c.rules {
+		if c.kindOf[rule.CategoryID] == kind && strings.Contains(note, strings.ToLower(rule.Pattern)) {
+			return &c.rules[i]
 		}
 	}
+	return nil
 }
 
 // walletRows reads mapped rows that import into one wallet: kinds, suggested categories and
@@ -664,6 +683,15 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 			if r.MergedInto >= 0 {
 				return invalid(field+".index", "row %d is a discount already counted in row %d", c.Index+1, r.MergedInto+1)
 			}
+			note := r.Note
+			if r.Rename != "" {
+				note = r.Rename
+			}
+			if c.Note != nil {
+				if note, err = checkNote(*c.Note); err != nil {
+					return invalid(field+".note", "row %d: must be at most 500 characters", c.Index+1)
+				}
+			}
 			p, ref := forWallet(r.WalletID)
 			if r.DiscountTarget != nil {
 				n, err := q.ApplyImportDiscount(ctx, dbq.ApplyImportDiscountParams{
@@ -699,7 +727,7 @@ func (s *Service) CommitImport(ctx context.Context, a Actor, batchID uuid.UUID, 
 			p.CategoryIds = append(p.CategoryIds, c.CategoryID)
 			p.Amounts = append(p.Amounts, abs(r.Amount))
 			p.Dates = append(p.Dates, r.Date)
-			p.Notes = append(p.Notes, r.Note)
+			p.Notes = append(p.Notes, note)
 		}
 		for _, id := range order {
 			if len(inserts[id].Ids) == 0 {
@@ -802,6 +830,10 @@ func (s *Service) PurgeExpiredImports(ctx context.Context, now time.Time) (int64
 
 // --- category rules ----------------------------------------------------------------------------
 
+func ruleOf(id uuid.UUID, pattern string, categoryID uuid.UUID, rename string) CategoryRule {
+	return CategoryRule{ID: id, Pattern: pattern, CategoryID: categoryID, Rename: rename}
+}
+
 func (s *Service) ListCategoryRules(ctx context.Context, a Actor) ([]CategoryRule, error) {
 	rows, err := s.q.ListImportCategoryRules(ctx, a.HouseholdID)
 	if err != nil {
@@ -809,26 +841,131 @@ func (s *Service) ListCategoryRules(ctx context.Context, a Actor) ([]CategoryRul
 	}
 	out := make([]CategoryRule, len(rows))
 	for i, r := range rows {
-		out[i] = CategoryRule{ID: r.ID, Pattern: r.Pattern, CategoryID: r.CategoryID}
+		out[i] = ruleOf(r.ID, r.Pattern, r.CategoryID, r.Rename)
 	}
 	return out, nil
 }
 
-func (s *Service) CreateCategoryRule(ctx context.Context, a Actor, pattern string, categoryID uuid.UUID) (CategoryRule, error) {
-	pattern = strings.Join(strings.Fields(pattern), " ")
-	if pattern == "" || utf8.RuneCountInString(pattern) > maxRulePatLen {
-		return CategoryRule{}, invalid("pattern", "must be 1-%d characters", maxRulePatLen)
+// checkRule cleans and validates a rule's fields.
+func (s *Service) checkRule(ctx context.Context, a Actor, r CategoryRule) (CategoryRule, error) {
+	r.Pattern = strings.Join(strings.Fields(r.Pattern), " ")
+	if r.Pattern == "" || utf8.RuneCountInString(r.Pattern) > maxRulePatLen {
+		return r, invalid("pattern", "must be 1-%d characters", maxRulePatLen)
 	}
-	if _, err := s.getCategory(ctx, a, categoryID); err != nil {
-		return CategoryRule{}, invalid("category_id", "category doesn't exist")
+	r.Rename = strings.TrimSpace(r.Rename)
+	if utf8.RuneCountInString(r.Rename) > maxRenameLen {
+		return r, invalid("rename", "must be at most %d characters", maxRenameLen)
 	}
-	r, err := s.q.CreateImportCategoryRule(ctx, dbq.CreateImportCategoryRuleParams{
-		ID: newID(), HouseholdID: a.HouseholdID, Pattern: pattern, CategoryID: categoryID,
+	if _, err := s.getCategory(ctx, a, r.CategoryID); err != nil {
+		return r, invalid("category_id", "category doesn't exist")
+	}
+	return r, nil
+}
+
+// CreateCategoryRule saves a rule, or updates the one for the same text (case-insensitive), and
+// counts the transactions imported earlier that RenameRuleTransactions would rename (the ones
+// still named as an updated rule's earlier rename included). It also returns that earlier
+// rename, for RenameRuleTransactions.
+func (s *Service) CreateCategoryRule(ctx context.Context, a Actor, in CategoryRule) (CategoryRule, int, string, error) {
+	in, err := s.checkRule(ctx, a, in)
+	if err != nil {
+		return CategoryRule{}, 0, "", err
+	}
+	r, err := s.q.UpsertImportCategoryRule(ctx, dbq.UpsertImportCategoryRuleParams{
+		ID: newID(), HouseholdID: a.HouseholdID, Pattern: in.Pattern, CategoryID: in.CategoryID, Rename: in.Rename,
 	})
 	if err != nil {
-		return CategoryRule{}, dbErr(err, "a rule for that text")
+		return CategoryRule{}, 0, "", dbErr(err, "a rule for that text")
 	}
-	return CategoryRule{ID: r.ID, Pattern: r.Pattern, CategoryID: r.CategoryID}, nil
+	rule := ruleOf(r.ID, r.Pattern, r.CategoryID, r.Rename)
+	ids, err := s.ruleRenameTargets(ctx, s.q, a, rule, r.PreviousRename)
+	return rule, len(ids), r.PreviousRename, err
+}
+
+// UpdateCategoryRule changes a rule and counts the transactions RenameRuleTransactions would
+// rename, the ones still named as the rule's earlier rename included.
+func (s *Service) UpdateCategoryRule(ctx context.Context, a Actor, in CategoryRule) (CategoryRule, int, error) {
+	old, err := s.q.GetImportCategoryRule(ctx, dbq.GetImportCategoryRuleParams{ID: in.ID, HouseholdID: a.HouseholdID})
+	if err != nil {
+		return CategoryRule{}, 0, dbErr(err, "rule")
+	}
+	if in, err = s.checkRule(ctx, a, in); err != nil {
+		return CategoryRule{}, 0, err
+	}
+	r, err := s.q.UpdateImportCategoryRule(ctx, dbq.UpdateImportCategoryRuleParams{
+		ID: in.ID, HouseholdID: a.HouseholdID, Pattern: in.Pattern, CategoryID: in.CategoryID, Rename: in.Rename,
+	})
+	if err != nil {
+		return CategoryRule{}, 0, dbErr(err, "a rule for that text")
+	}
+	rule := ruleOf(r.ID, r.Pattern, r.CategoryID, r.Rename)
+	ids, err := s.ruleRenameTargets(ctx, s.q, a, rule, old.Rename)
+	return rule, len(ids), err
+}
+
+// RenameRuleTransactions renames the transactions imported earlier that the rule renames now
+// (see ruleRenameTargets); previous is the rule's rename before an update.
+func (s *Service) RenameRuleTransactions(ctx context.Context, a Actor, id uuid.UUID, previous string) (int64, error) {
+	var n int64
+	err := s.inTx(ctx, func(q *dbq.Queries) error {
+		r, err := q.GetImportCategoryRule(ctx, dbq.GetImportCategoryRuleParams{ID: id, HouseholdID: a.HouseholdID})
+		if err != nil {
+			return dbErr(err, "rule")
+		}
+		rule := ruleOf(r.ID, r.Pattern, r.CategoryID, r.Rename)
+		ids, err := s.ruleRenameTargets(ctx, q, a, rule, strings.TrimSpace(previous))
+		if err != nil || len(ids) == 0 {
+			return err
+		}
+		n, err = q.RenameTransactions(ctx, dbq.RenameTransactionsParams{Note: rule.Rename, HouseholdID: a.HouseholdID, Ids: ids})
+		return err
+	})
+	return n, err
+}
+
+// ruleRenameTargets lists the imported expenses and income a rule would rename now: one of their
+// bank rows has the rule as its longest matching rule of the transaction's kind, and their note
+// is still a bank row's text or previous (the rule's earlier rename), so notes edited by hand
+// are kept.
+func (s *Service) ruleRenameTargets(ctx context.Context, q *dbq.Queries, a Actor, rule CategoryRule, previous string) ([]uuid.UUID, error) {
+	if rule.Rename == "" {
+		return nil, nil
+	}
+	cl, err := s.classifier(ctx, q, a)
+	if err != nil {
+		return nil, err
+	}
+	cands, err := q.RuleRenameCandidates(ctx, dbq.RuleRenameCandidatesParams{HouseholdID: a.HouseholdID, Pattern: rule.Pattern})
+	if err != nil {
+		return nil, err
+	}
+	type target struct {
+		note            string
+		owned, unedited bool
+	}
+	byID := map[uuid.UUID]*target{}
+	var order []uuid.UUID
+	for _, c := range cands {
+		t := byID[c.ID]
+		if t == nil {
+			t = &target{note: c.Note, unedited: previous != "" && c.Note == previous}
+			byID[c.ID] = t
+			order = append(order, c.ID)
+		}
+		if m := cl.match(c.SourceNote, c.Kind); m != nil && m.ID == rule.ID {
+			t.owned = true
+		}
+		if c.Note == c.SourceNote {
+			t.unedited = true
+		}
+	}
+	var ids []uuid.UUID
+	for _, id := range order {
+		if t := byID[id]; t.owned && t.unedited && t.note != rule.Rename {
+			ids = append(ids, id)
+		}
+	}
+	return ids, nil
 }
 
 func (s *Service) DeleteCategoryRule(ctx context.Context, a Actor, id uuid.UUID) error {

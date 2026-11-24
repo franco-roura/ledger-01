@@ -42,13 +42,13 @@ func TestImportReviewAndCommit(t *testing.T) {
 	}
 	// Rules settle the transit row (the longest matching pattern wins); a rule pointing at an
 	// income category doesn't touch expenses.
-	if _, err := svc.CreateCategoryRule(ctx, a, " Transit ", transport.ID); err != nil {
+	if _, _, _, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: " Transit ", CategoryID: transport.ID}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.CreateCategoryRule(ctx, a, "transit card", home.ID); err != nil {
+	if _, _, _, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: "transit card", CategoryID: home.ID}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.CreateCategoryRule(ctx, a, "Riverside", salary.ID); err != nil {
+	if _, _, _, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: "Riverside", CategoryID: salary.ID}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -220,19 +220,26 @@ func TestCategoryRules(t *testing.T) {
 	food := categoryNamed(t, svc, a, ledger.CategoryExpense, "Food & Drink")
 	groceries := categoryNamed(t, svc, a, ledger.CategoryExpense, "Groceries")
 
-	r, err := svc.CreateCategoryRule(ctx, a, "  Sunrise   Bakery ", food.ID)
+	r, _, _, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: "  Sunrise   Bakery ", CategoryID: food.ID})
 	if err != nil || r.Pattern != "Sunrise Bakery" {
 		t.Fatalf("create = %+v, %v", r, err)
 	}
-	var conf *ledger.ConflictError
-	if _, err := svc.CreateCategoryRule(ctx, a, "sunrise bakery", groceries.ID); !errors.As(err, &conf) {
-		t.Fatalf("duplicate pattern: %v", err)
+	// The same text again updates that rule.
+	up, _, prev, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: "sunrise bakery", CategoryID: groceries.ID, Rename: "Bakery"})
+	if err != nil || up.ID != r.ID || up.CategoryID != groceries.ID || up.Rename != "Bakery" || up.Pattern != "sunrise bakery" || prev != "" {
+		t.Fatalf("upsert = %+v %q, %v", up, prev, err)
+	}
+	if _, _, prev, _ := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: "Sunrise Bakery", CategoryID: food.ID, Rename: "Sunrise"}); prev != "Bakery" {
+		t.Fatalf("previous rename = %q", prev)
+	}
+	if rules, _ := svc.ListCategoryRules(ctx, a); len(rules) != 1 {
+		t.Fatalf("rules after upserts = %+v", rules)
 	}
 	var inv *ledger.InvalidError
-	if _, err := svc.CreateCategoryRule(ctx, a, " ", food.ID); !errors.As(err, &inv) {
+	if _, _, _, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: " ", CategoryID: food.ID}); !errors.As(err, &inv) {
 		t.Fatalf("empty pattern: %v", err)
 	}
-	if _, err := svc.CreateCategoryRule(ctx, a, "x", uuid.New()); !errors.As(err, &inv) {
+	if _, _, _, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: "x", CategoryID: uuid.New()}); !errors.As(err, &inv) {
 		t.Fatalf("unknown category: %v", err)
 	}
 

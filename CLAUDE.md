@@ -7,7 +7,7 @@ app, shared UI kit, protobuf contract. See README.md for setup.
 
 - `proto/ledger/v1/*.proto` — the API contract. Change it first, then `task gen`.
 - `backend/` — Go module `github.com/franco-roura/ledger-01/backend`
-  - `cmd/api` local server, `cmd/lambda` AWS Lambda entrypoint, `cmd/migrate` goose runner, `cmd/jobs`
+  - `cmd/api` local server (`cmd/dev` rebuilds and restarts it on changes: `task dev:api`), `cmd/lambda` AWS Lambda entrypoint, `cmd/migrate` goose runner, `cmd/jobs`
     scheduled work (recurring top-up; `task jobs`, an EventBridge cron on AWS)
   - `internal/server` builds the single `http.Handler` both entrypoints serve
   - `internal/rpc` Connect handlers (thin), `internal/ledger` domain services, `internal/auth` Google sign-in + sessions

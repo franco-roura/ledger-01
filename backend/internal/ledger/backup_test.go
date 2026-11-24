@@ -97,7 +97,7 @@ func seedEverything(t *testing.T, svc *ledger.Service, a ledger.Actor) {
 	if err := svc.SetCategoryHidden(ctx, a, pesos.ID, groceries.ID, true); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.CreateCategoryRule(ctx, a, "transit", transport.ID); err != nil {
+	if _, _, _, err := svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: "transit", CategoryID: transport.ID, Rename: "City transit"}); err != nil {
 		t.Fatal(err)
 	}
 	// A statement import leaves a saved mapping and import refs behind.
@@ -122,7 +122,7 @@ func TestBackupRoundTrip(t *testing.T) {
 
 	before := export(t, svc, a)
 	if len(before.Wallets) != 2 || len(before.Transfers) != 1 || len(before.RecurringRules) != 1 ||
-		len(before.Budgets) != 1 || len(before.HiddenCategories) != 1 || len(before.ImportRules) != 1 ||
+		len(before.Budgets) != 1 || len(before.HiddenCategories) != 1 || len(before.ImportRules) != 1 || before.ImportRules[0].Rename != "City transit" ||
 		len(before.ImportProfiles) != 1 || len(before.ImportRefs) == 0 || len(before.Labels) != 1 {
 		t.Fatalf("seeded backup is missing rows: %+v", before.Counts())
 	}

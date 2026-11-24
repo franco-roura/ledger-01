@@ -95,6 +95,7 @@ func importRowToProto(r ledger.ImportRow) *v1.ImportRow {
 		out.CategoryId = r.CategoryID.String()
 	}
 	out.CategorySource = r.CategorySource
+	out.Rename = r.Rename
 	out.Duplicate = r.Duplicate()
 	out.DuplicateReason = map[string]v1.ImportDuplicate{
 		ledger.DupImported: v1.ImportDuplicate_IMPORT_DUPLICATE_IMPORTED,
@@ -210,6 +211,7 @@ func (s *Server) CommitImport(ctx context.Context, req *connect.Request[v1.Commi
 	choices := make([]ledger.ImportChoice, len(m.Rows))
 	for i, r := range m.Rows {
 		choices[i].Index = int(r.Index)
+		choices[i].Note = r.Note
 		// Empty only for discounts of earlier purchases and card payments; the service checks the rest.
 		if r.CategoryId == "" {
 			continue
@@ -226,7 +228,7 @@ func (s *Server) CommitImport(ctx context.Context, req *connect.Request[v1.Commi
 }
 
 func ruleToProto(r ledger.CategoryRule) *v1.CategoryRule {
-	return &v1.CategoryRule{Id: r.ID.String(), Pattern: r.Pattern, CategoryId: r.CategoryID.String()}
+	return &v1.CategoryRule{Id: r.ID.String(), Pattern: r.Pattern, CategoryId: r.CategoryID.String(), Rename: r.Rename}
 }
 
 func (s *Server) ListCategoryRules(ctx context.Context, _ *connect.Request[v1.ListCategoryRulesRequest]) (*connect.Response[v1.ListCategoryRulesResponse], error) {
@@ -254,11 +256,47 @@ func (s *Server) CreateCategoryRule(ctx context.Context, req *connect.Request[v1
 	if err != nil {
 		return nil, s.fail(ctx, err)
 	}
-	r, err := s.svc.CreateCategoryRule(ctx, a, req.Msg.Pattern, cat)
+	r, n, prev, err := s.svc.CreateCategoryRule(ctx, a, ledger.CategoryRule{Pattern: req.Msg.Pattern, CategoryID: cat, Rename: req.Msg.Rename})
 	if err != nil {
 		return nil, s.fail(ctx, err)
 	}
-	return connect.NewResponse(&v1.CreateCategoryRuleResponse{Rule: ruleToProto(r)}), nil
+	return connect.NewResponse(&v1.CreateCategoryRuleResponse{Rule: ruleToProto(r), Renamable: int32(n), PreviousRename: prev}), nil
+}
+
+func (s *Server) UpdateCategoryRule(ctx context.Context, req *connect.Request[v1.UpdateCategoryRuleRequest]) (*connect.Response[v1.UpdateCategoryRuleResponse], error) {
+	a, err := s.actor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseID("id", req.Msg.Id)
+	if err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	cat, err := parseID("category_id", req.Msg.CategoryId)
+	if err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	r, n, err := s.svc.UpdateCategoryRule(ctx, a, ledger.CategoryRule{ID: id, Pattern: req.Msg.Pattern, CategoryID: cat, Rename: req.Msg.Rename})
+	if err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	return connect.NewResponse(&v1.UpdateCategoryRuleResponse{Rule: ruleToProto(r), Renamable: int32(n)}), nil
+}
+
+func (s *Server) RenameRuleTransactions(ctx context.Context, req *connect.Request[v1.RenameRuleTransactionsRequest]) (*connect.Response[v1.RenameRuleTransactionsResponse], error) {
+	a, err := s.actor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseID("rule_id", req.Msg.RuleId)
+	if err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	n, err := s.svc.RenameRuleTransactions(ctx, a, id, req.Msg.PreviousRename)
+	if err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	return connect.NewResponse(&v1.RenameRuleTransactionsResponse{RenamedCount: n}), nil
 }
 
 func (s *Server) DeleteCategoryRule(ctx context.Context, req *connect.Request[v1.DeleteCategoryRuleRequest]) (*connect.Response[v1.DeleteCategoryRuleResponse], error) {

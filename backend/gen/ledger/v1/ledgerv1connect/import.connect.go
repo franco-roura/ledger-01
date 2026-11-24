@@ -48,9 +48,15 @@ const (
 	// ImportServiceCreateCategoryRuleProcedure is the fully-qualified name of the ImportService's
 	// CreateCategoryRule RPC.
 	ImportServiceCreateCategoryRuleProcedure = "/ledger.v1.ImportService/CreateCategoryRule"
+	// ImportServiceUpdateCategoryRuleProcedure is the fully-qualified name of the ImportService's
+	// UpdateCategoryRule RPC.
+	ImportServiceUpdateCategoryRuleProcedure = "/ledger.v1.ImportService/UpdateCategoryRule"
 	// ImportServiceDeleteCategoryRuleProcedure is the fully-qualified name of the ImportService's
 	// DeleteCategoryRule RPC.
 	ImportServiceDeleteCategoryRuleProcedure = "/ledger.v1.ImportService/DeleteCategoryRule"
+	// ImportServiceRenameRuleTransactionsProcedure is the fully-qualified name of the ImportService's
+	// RenameRuleTransactions RPC.
+	ImportServiceRenameRuleTransactionsProcedure = "/ledger.v1.ImportService/RenameRuleTransactions"
 )
 
 // ImportServiceClient is a client for the ledger.v1.ImportService service.
@@ -64,8 +70,14 @@ type ImportServiceClient interface {
 	// Imports the chosen rows in one database transaction and forgets the upload.
 	CommitImport(context.Context, *connect.Request[v1.CommitImportRequest]) (*connect.Response[v1.CommitImportResponse], error)
 	ListCategoryRules(context.Context, *connect.Request[v1.ListCategoryRulesRequest]) (*connect.Response[v1.ListCategoryRulesResponse], error)
+	// Creates a rule, or updates the one for the same text (case-insensitive).
 	CreateCategoryRule(context.Context, *connect.Request[v1.CreateCategoryRuleRequest]) (*connect.Response[v1.CreateCategoryRuleResponse], error)
+	UpdateCategoryRule(context.Context, *connect.Request[v1.UpdateCategoryRuleRequest]) (*connect.Response[v1.UpdateCategoryRuleResponse], error)
 	DeleteCategoryRule(context.Context, *connect.Request[v1.DeleteCategoryRuleRequest]) (*connect.Response[v1.DeleteCategoryRuleResponse], error)
+	// Renames the transactions imported earlier that the rule would rename now: those whose bank
+	// text it is the longest matching rule for, of its category's kind, and whose note is still
+	// the bank's text or the rule's earlier rename (notes edited by hand are kept).
+	RenameRuleTransactions(context.Context, *connect.Request[v1.RenameRuleTransactionsRequest]) (*connect.Response[v1.RenameRuleTransactionsResponse], error)
 }
 
 // NewImportServiceClient constructs a client for the ledger.v1.ImportService service. By default,
@@ -109,10 +121,22 @@ func NewImportServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(importServiceMethods.ByName("CreateCategoryRule")),
 			connect.WithClientOptions(opts...),
 		),
+		updateCategoryRule: connect.NewClient[v1.UpdateCategoryRuleRequest, v1.UpdateCategoryRuleResponse](
+			httpClient,
+			baseURL+ImportServiceUpdateCategoryRuleProcedure,
+			connect.WithSchema(importServiceMethods.ByName("UpdateCategoryRule")),
+			connect.WithClientOptions(opts...),
+		),
 		deleteCategoryRule: connect.NewClient[v1.DeleteCategoryRuleRequest, v1.DeleteCategoryRuleResponse](
 			httpClient,
 			baseURL+ImportServiceDeleteCategoryRuleProcedure,
 			connect.WithSchema(importServiceMethods.ByName("DeleteCategoryRule")),
+			connect.WithClientOptions(opts...),
+		),
+		renameRuleTransactions: connect.NewClient[v1.RenameRuleTransactionsRequest, v1.RenameRuleTransactionsResponse](
+			httpClient,
+			baseURL+ImportServiceRenameRuleTransactionsProcedure,
+			connect.WithSchema(importServiceMethods.ByName("RenameRuleTransactions")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -120,12 +144,14 @@ func NewImportServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // importServiceClient implements ImportServiceClient.
 type importServiceClient struct {
-	uploadImportFile   *connect.Client[v1.UploadImportFileRequest, v1.UploadImportFileResponse]
-	previewImport      *connect.Client[v1.PreviewImportRequest, v1.PreviewImportResponse]
-	commitImport       *connect.Client[v1.CommitImportRequest, v1.CommitImportResponse]
-	listCategoryRules  *connect.Client[v1.ListCategoryRulesRequest, v1.ListCategoryRulesResponse]
-	createCategoryRule *connect.Client[v1.CreateCategoryRuleRequest, v1.CreateCategoryRuleResponse]
-	deleteCategoryRule *connect.Client[v1.DeleteCategoryRuleRequest, v1.DeleteCategoryRuleResponse]
+	uploadImportFile       *connect.Client[v1.UploadImportFileRequest, v1.UploadImportFileResponse]
+	previewImport          *connect.Client[v1.PreviewImportRequest, v1.PreviewImportResponse]
+	commitImport           *connect.Client[v1.CommitImportRequest, v1.CommitImportResponse]
+	listCategoryRules      *connect.Client[v1.ListCategoryRulesRequest, v1.ListCategoryRulesResponse]
+	createCategoryRule     *connect.Client[v1.CreateCategoryRuleRequest, v1.CreateCategoryRuleResponse]
+	updateCategoryRule     *connect.Client[v1.UpdateCategoryRuleRequest, v1.UpdateCategoryRuleResponse]
+	deleteCategoryRule     *connect.Client[v1.DeleteCategoryRuleRequest, v1.DeleteCategoryRuleResponse]
+	renameRuleTransactions *connect.Client[v1.RenameRuleTransactionsRequest, v1.RenameRuleTransactionsResponse]
 }
 
 // UploadImportFile calls ledger.v1.ImportService.UploadImportFile.
@@ -153,9 +179,19 @@ func (c *importServiceClient) CreateCategoryRule(ctx context.Context, req *conne
 	return c.createCategoryRule.CallUnary(ctx, req)
 }
 
+// UpdateCategoryRule calls ledger.v1.ImportService.UpdateCategoryRule.
+func (c *importServiceClient) UpdateCategoryRule(ctx context.Context, req *connect.Request[v1.UpdateCategoryRuleRequest]) (*connect.Response[v1.UpdateCategoryRuleResponse], error) {
+	return c.updateCategoryRule.CallUnary(ctx, req)
+}
+
 // DeleteCategoryRule calls ledger.v1.ImportService.DeleteCategoryRule.
 func (c *importServiceClient) DeleteCategoryRule(ctx context.Context, req *connect.Request[v1.DeleteCategoryRuleRequest]) (*connect.Response[v1.DeleteCategoryRuleResponse], error) {
 	return c.deleteCategoryRule.CallUnary(ctx, req)
+}
+
+// RenameRuleTransactions calls ledger.v1.ImportService.RenameRuleTransactions.
+func (c *importServiceClient) RenameRuleTransactions(ctx context.Context, req *connect.Request[v1.RenameRuleTransactionsRequest]) (*connect.Response[v1.RenameRuleTransactionsResponse], error) {
+	return c.renameRuleTransactions.CallUnary(ctx, req)
 }
 
 // ImportServiceHandler is an implementation of the ledger.v1.ImportService service.
@@ -169,8 +205,14 @@ type ImportServiceHandler interface {
 	// Imports the chosen rows in one database transaction and forgets the upload.
 	CommitImport(context.Context, *connect.Request[v1.CommitImportRequest]) (*connect.Response[v1.CommitImportResponse], error)
 	ListCategoryRules(context.Context, *connect.Request[v1.ListCategoryRulesRequest]) (*connect.Response[v1.ListCategoryRulesResponse], error)
+	// Creates a rule, or updates the one for the same text (case-insensitive).
 	CreateCategoryRule(context.Context, *connect.Request[v1.CreateCategoryRuleRequest]) (*connect.Response[v1.CreateCategoryRuleResponse], error)
+	UpdateCategoryRule(context.Context, *connect.Request[v1.UpdateCategoryRuleRequest]) (*connect.Response[v1.UpdateCategoryRuleResponse], error)
 	DeleteCategoryRule(context.Context, *connect.Request[v1.DeleteCategoryRuleRequest]) (*connect.Response[v1.DeleteCategoryRuleResponse], error)
+	// Renames the transactions imported earlier that the rule would rename now: those whose bank
+	// text it is the longest matching rule for, of its category's kind, and whose note is still
+	// the bank's text or the rule's earlier rename (notes edited by hand are kept).
+	RenameRuleTransactions(context.Context, *connect.Request[v1.RenameRuleTransactionsRequest]) (*connect.Response[v1.RenameRuleTransactionsResponse], error)
 }
 
 // NewImportServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -210,10 +252,22 @@ func NewImportServiceHandler(svc ImportServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(importServiceMethods.ByName("CreateCategoryRule")),
 		connect.WithHandlerOptions(opts...),
 	)
+	importServiceUpdateCategoryRuleHandler := connect.NewUnaryHandler(
+		ImportServiceUpdateCategoryRuleProcedure,
+		svc.UpdateCategoryRule,
+		connect.WithSchema(importServiceMethods.ByName("UpdateCategoryRule")),
+		connect.WithHandlerOptions(opts...),
+	)
 	importServiceDeleteCategoryRuleHandler := connect.NewUnaryHandler(
 		ImportServiceDeleteCategoryRuleProcedure,
 		svc.DeleteCategoryRule,
 		connect.WithSchema(importServiceMethods.ByName("DeleteCategoryRule")),
+		connect.WithHandlerOptions(opts...),
+	)
+	importServiceRenameRuleTransactionsHandler := connect.NewUnaryHandler(
+		ImportServiceRenameRuleTransactionsProcedure,
+		svc.RenameRuleTransactions,
+		connect.WithSchema(importServiceMethods.ByName("RenameRuleTransactions")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/ledger.v1.ImportService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -228,8 +282,12 @@ func NewImportServiceHandler(svc ImportServiceHandler, opts ...connect.HandlerOp
 			importServiceListCategoryRulesHandler.ServeHTTP(w, r)
 		case ImportServiceCreateCategoryRuleProcedure:
 			importServiceCreateCategoryRuleHandler.ServeHTTP(w, r)
+		case ImportServiceUpdateCategoryRuleProcedure:
+			importServiceUpdateCategoryRuleHandler.ServeHTTP(w, r)
 		case ImportServiceDeleteCategoryRuleProcedure:
 			importServiceDeleteCategoryRuleHandler.ServeHTTP(w, r)
+		case ImportServiceRenameRuleTransactionsProcedure:
+			importServiceRenameRuleTransactionsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -259,6 +317,14 @@ func (UnimplementedImportServiceHandler) CreateCategoryRule(context.Context, *co
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.ImportService.CreateCategoryRule is not implemented"))
 }
 
+func (UnimplementedImportServiceHandler) UpdateCategoryRule(context.Context, *connect.Request[v1.UpdateCategoryRuleRequest]) (*connect.Response[v1.UpdateCategoryRuleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.ImportService.UpdateCategoryRule is not implemented"))
+}
+
 func (UnimplementedImportServiceHandler) DeleteCategoryRule(context.Context, *connect.Request[v1.DeleteCategoryRuleRequest]) (*connect.Response[v1.DeleteCategoryRuleResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.ImportService.DeleteCategoryRule is not implemented"))
+}
+
+func (UnimplementedImportServiceHandler) RenameRuleTransactions(context.Context, *connect.Request[v1.RenameRuleTransactionsRequest]) (*connect.Response[v1.RenameRuleTransactionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.ImportService.RenameRuleTransactions is not implemented"))
 }
