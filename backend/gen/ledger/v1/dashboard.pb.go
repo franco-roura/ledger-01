@@ -688,11 +688,346 @@ func (x *GetCategoryReportResponse) GetUnconvertedCurrencies() []string {
 	return nil
 }
 
+type GetNetWorthRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Range of the history series; the totals are always as of today.
+	Period *DateRange `protobuf:"bytes,1,opt,name=period,proto3" json:"period,omitempty"`
+	Bucket Bucket     `protobuf:"varint,2,opt,name=bucket,proto3,enum=ledger.v1.Bucket" json:"bucket,omitempty"`
+	Today  string     `protobuf:"bytes,3,opt,name=today,proto3" json:"today,omitempty"`
+	// Same as GetDashboardRequest.currency.
+	Currency      string `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNetWorthRequest) Reset() {
+	*x = GetNetWorthRequest{}
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNetWorthRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNetWorthRequest) ProtoMessage() {}
+
+func (x *GetNetWorthRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNetWorthRequest.ProtoReflect.Descriptor instead.
+func (*GetNetWorthRequest) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_dashboard_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetNetWorthRequest) GetPeriod() *DateRange {
+	if x != nil {
+		return x.Period
+	}
+	return nil
+}
+
+func (x *GetNetWorthRequest) GetBucket() Bucket {
+	if x != nil {
+		return x.Bucket
+	}
+	return Bucket_BUCKET_UNSPECIFIED
+}
+
+func (x *GetNetWorthRequest) GetToday() string {
+	if x != nil {
+		return x.Today
+	}
+	return ""
+}
+
+func (x *GetNetWorthRequest) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+type NetWorthPoint struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// First day of the bucket, "YYYY-MM-DD"; values are at the end of the bucket.
+	Date        string `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	AssetsMinor int64  `protobuf:"varint,2,opt,name=assets_minor,json=assetsMinor,proto3" json:"assets_minor,omitempty"`
+	// What liabilities owe, as a positive number (negative when they hold credit).
+	LiabilitiesMinor int64 `protobuf:"varint,3,opt,name=liabilities_minor,json=liabilitiesMinor,proto3" json:"liabilities_minor,omitempty"`
+	// assets_minor - liabilities_minor.
+	NetWorthMinor int64 `protobuf:"varint,4,opt,name=net_worth_minor,json=netWorthMinor,proto3" json:"net_worth_minor,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NetWorthPoint) Reset() {
+	*x = NetWorthPoint{}
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NetWorthPoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NetWorthPoint) ProtoMessage() {}
+
+func (x *NetWorthPoint) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NetWorthPoint.ProtoReflect.Descriptor instead.
+func (*NetWorthPoint) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_dashboard_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *NetWorthPoint) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+func (x *NetWorthPoint) GetAssetsMinor() int64 {
+	if x != nil {
+		return x.AssetsMinor
+	}
+	return 0
+}
+
+func (x *NetWorthPoint) GetLiabilitiesMinor() int64 {
+	if x != nil {
+		return x.LiabilitiesMinor
+	}
+	return 0
+}
+
+func (x *NetWorthPoint) GetNetWorthMinor() int64 {
+	if x != nil {
+		return x.NetWorthMinor
+	}
+	return 0
+}
+
+type NetWorthWallet struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	WalletId string                 `protobuf:"bytes,1,opt,name=wallet_id,json=walletId,proto3" json:"wallet_id,omitempty"`
+	Type     WalletType             `protobuf:"varint,2,opt,name=type,proto3,enum=ledger.v1.WalletType" json:"type,omitempty"`
+	// In the wallet's currency: the value for assets, what is owed (positive) for liabilities.
+	AmountMinor int64 `protobuf:"varint,3,opt,name=amount_minor,json=amountMinor,proto3" json:"amount_minor,omitempty"`
+	// amount_minor in the report currency; 0 when its currency has no rate.
+	ConvertedMinor int64 `protobuf:"varint,4,opt,name=converted_minor,json=convertedMinor,proto3" json:"converted_minor,omitempty"`
+	// Liabilities only, in the wallet's currency: expenses minus income still to come (rows after
+	// today plus the not-yet-created occurrences of recurring rules that end).
+	UpcomingDebtMinor int64 `protobuf:"varint,5,opt,name=upcoming_debt_minor,json=upcomingDebtMinor,proto3" json:"upcoming_debt_minor,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *NetWorthWallet) Reset() {
+	*x = NetWorthWallet{}
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NetWorthWallet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NetWorthWallet) ProtoMessage() {}
+
+func (x *NetWorthWallet) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NetWorthWallet.ProtoReflect.Descriptor instead.
+func (*NetWorthWallet) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_dashboard_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *NetWorthWallet) GetWalletId() string {
+	if x != nil {
+		return x.WalletId
+	}
+	return ""
+}
+
+func (x *NetWorthWallet) GetType() WalletType {
+	if x != nil {
+		return x.Type
+	}
+	return WalletType_WALLET_TYPE_UNSPECIFIED
+}
+
+func (x *NetWorthWallet) GetAmountMinor() int64 {
+	if x != nil {
+		return x.AmountMinor
+	}
+	return 0
+}
+
+func (x *NetWorthWallet) GetConvertedMinor() int64 {
+	if x != nil {
+		return x.ConvertedMinor
+	}
+	return 0
+}
+
+func (x *NetWorthWallet) GetUpcomingDebtMinor() int64 {
+	if x != nil {
+		return x.UpcomingDebtMinor
+	}
+	return 0
+}
+
+// Net worth as of today. This is the one place upcoming rows count: on liabilities they are debt
+// still to come (e.g. the rest of an installment plan), shown apart and never as spending.
+type GetNetWorthResponse struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Currency    string                 `protobuf:"bytes,1,opt,name=currency,proto3" json:"currency,omitempty"`
+	AssetsMinor int64                  `protobuf:"varint,2,opt,name=assets_minor,json=assetsMinor,proto3" json:"assets_minor,omitempty"`
+	// Owed today, positive.
+	LiabilitiesMinor int64 `protobuf:"varint,3,opt,name=liabilities_minor,json=liabilitiesMinor,proto3" json:"liabilities_minor,omitempty"`
+	NetWorthMinor    int64 `protobuf:"varint,4,opt,name=net_worth_minor,json=netWorthMinor,proto3" json:"net_worth_minor,omitempty"`
+	// Liabilities' upcoming debt in the report currency, at today's rate.
+	UpcomingDebtMinor int64            `protobuf:"varint,5,opt,name=upcoming_debt_minor,json=upcomingDebtMinor,proto3" json:"upcoming_debt_minor,omitempty"`
+	Series            []*NetWorthPoint `protobuf:"bytes,6,rep,name=series,proto3" json:"series,omitempty"`
+	// Assets first, then liabilities, each in wallet order.
+	Wallets []*NetWorthWallet `protobuf:"bytes,7,rep,name=wallets,proto3" json:"wallets,omitempty"`
+	// Upcoming debt by category, largest first.
+	UpcomingDebtCategories []*CategoryTotal `protobuf:"bytes,8,rep,name=upcoming_debt_categories,json=upcomingDebtCategories,proto3" json:"upcoming_debt_categories,omitempty"`
+	UnconvertedCurrencies  []string         `protobuf:"bytes,9,rep,name=unconverted_currencies,json=unconvertedCurrencies,proto3" json:"unconverted_currencies,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *GetNetWorthResponse) Reset() {
+	*x = GetNetWorthResponse{}
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNetWorthResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNetWorthResponse) ProtoMessage() {}
+
+func (x *GetNetWorthResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_dashboard_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNetWorthResponse.ProtoReflect.Descriptor instead.
+func (*GetNetWorthResponse) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_dashboard_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetNetWorthResponse) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *GetNetWorthResponse) GetAssetsMinor() int64 {
+	if x != nil {
+		return x.AssetsMinor
+	}
+	return 0
+}
+
+func (x *GetNetWorthResponse) GetLiabilitiesMinor() int64 {
+	if x != nil {
+		return x.LiabilitiesMinor
+	}
+	return 0
+}
+
+func (x *GetNetWorthResponse) GetNetWorthMinor() int64 {
+	if x != nil {
+		return x.NetWorthMinor
+	}
+	return 0
+}
+
+func (x *GetNetWorthResponse) GetUpcomingDebtMinor() int64 {
+	if x != nil {
+		return x.UpcomingDebtMinor
+	}
+	return 0
+}
+
+func (x *GetNetWorthResponse) GetSeries() []*NetWorthPoint {
+	if x != nil {
+		return x.Series
+	}
+	return nil
+}
+
+func (x *GetNetWorthResponse) GetWallets() []*NetWorthWallet {
+	if x != nil {
+		return x.Wallets
+	}
+	return nil
+}
+
+func (x *GetNetWorthResponse) GetUpcomingDebtCategories() []*CategoryTotal {
+	if x != nil {
+		return x.UpcomingDebtCategories
+	}
+	return nil
+}
+
+func (x *GetNetWorthResponse) GetUnconvertedCurrencies() []string {
+	if x != nil {
+		return x.UnconvertedCurrencies
+	}
+	return nil
+}
+
 var File_ledger_v1_dashboard_proto protoreflect.FileDescriptor
 
 const file_ledger_v1_dashboard_proto_rawDesc = "" +
 	"\n" +
-	"\x19ledger/v1/dashboard.proto\x12\tledger.v1\x1a\x16ledger/v1/common.proto\x1a\x1bledger/v1/transaction.proto\"\xa8\x02\n" +
+	"\x19ledger/v1/dashboard.proto\x12\tledger.v1\x1a\x16ledger/v1/common.proto\x1a\x1bledger/v1/transaction.proto\x1a\x16ledger/v1/wallet.proto\"\xa8\x02\n" +
 	"\x0fDashboardFilter\x12,\n" +
 	"\x06period\x18\x01 \x01(\v2\x14.ledger.v1.DateRangeR\x06period\x12\x1d\n" +
 	"\n" +
@@ -750,16 +1085,43 @@ const file_ledger_v1_dashboard_proto_rawDesc = "" +
 	"\x0fbusiest_weekday\x18\x05 \x01(\x05R\x0ebusiestWeekday\x12.\n" +
 	"\x06series\x18\x06 \x03(\v2\x16.ledger.v1.SeriesPointR\x06series\x12:\n" +
 	"\ftransactions\x18\a \x03(\v2\x16.ledger.v1.TransactionR\ftransactions\x125\n" +
-	"\x16unconverted_currencies\x18\b \x03(\tR\x15unconvertedCurrencies*S\n" +
+	"\x16unconverted_currencies\x18\b \x03(\tR\x15unconvertedCurrencies\"\x9f\x01\n" +
+	"\x12GetNetWorthRequest\x12,\n" +
+	"\x06period\x18\x01 \x01(\v2\x14.ledger.v1.DateRangeR\x06period\x12)\n" +
+	"\x06bucket\x18\x02 \x01(\x0e2\x11.ledger.v1.BucketR\x06bucket\x12\x14\n" +
+	"\x05today\x18\x03 \x01(\tR\x05today\x12\x1a\n" +
+	"\bcurrency\x18\x04 \x01(\tR\bcurrency\"\x9b\x01\n" +
+	"\rNetWorthPoint\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\tR\x04date\x12!\n" +
+	"\fassets_minor\x18\x02 \x01(\x03R\vassetsMinor\x12+\n" +
+	"\x11liabilities_minor\x18\x03 \x01(\x03R\x10liabilitiesMinor\x12&\n" +
+	"\x0fnet_worth_minor\x18\x04 \x01(\x03R\rnetWorthMinor\"\xd4\x01\n" +
+	"\x0eNetWorthWallet\x12\x1b\n" +
+	"\twallet_id\x18\x01 \x01(\tR\bwalletId\x12)\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x15.ledger.v1.WalletTypeR\x04type\x12!\n" +
+	"\famount_minor\x18\x03 \x01(\x03R\vamountMinor\x12'\n" +
+	"\x0fconverted_minor\x18\x04 \x01(\x03R\x0econvertedMinor\x12.\n" +
+	"\x13upcoming_debt_minor\x18\x05 \x01(\x03R\x11upcomingDebtMinor\"\xcb\x03\n" +
+	"\x13GetNetWorthResponse\x12\x1a\n" +
+	"\bcurrency\x18\x01 \x01(\tR\bcurrency\x12!\n" +
+	"\fassets_minor\x18\x02 \x01(\x03R\vassetsMinor\x12+\n" +
+	"\x11liabilities_minor\x18\x03 \x01(\x03R\x10liabilitiesMinor\x12&\n" +
+	"\x0fnet_worth_minor\x18\x04 \x01(\x03R\rnetWorthMinor\x12.\n" +
+	"\x13upcoming_debt_minor\x18\x05 \x01(\x03R\x11upcomingDebtMinor\x120\n" +
+	"\x06series\x18\x06 \x03(\v2\x18.ledger.v1.NetWorthPointR\x06series\x123\n" +
+	"\awallets\x18\a \x03(\v2\x19.ledger.v1.NetWorthWalletR\awallets\x12R\n" +
+	"\x18upcoming_debt_categories\x18\b \x03(\v2\x18.ledger.v1.CategoryTotalR\x16upcomingDebtCategories\x125\n" +
+	"\x16unconverted_currencies\x18\t \x03(\tR\x15unconvertedCurrencies*S\n" +
 	"\x06Bucket\x12\x16\n" +
 	"\x12BUCKET_UNSPECIFIED\x10\x00\x12\x0e\n" +
 	"\n" +
 	"BUCKET_DAY\x10\x01\x12\x0f\n" +
 	"\vBUCKET_WEEK\x10\x02\x12\x10\n" +
-	"\fBUCKET_MONTH\x10\x032\xc3\x01\n" +
+	"\fBUCKET_MONTH\x10\x032\x91\x02\n" +
 	"\x10DashboardService\x12O\n" +
 	"\fGetDashboard\x12\x1e.ledger.v1.GetDashboardRequest\x1a\x1f.ledger.v1.GetDashboardResponse\x12^\n" +
-	"\x11GetCategoryReport\x12#.ledger.v1.GetCategoryReportRequest\x1a$.ledger.v1.GetCategoryReportResponseB\xa6\x01\n" +
+	"\x11GetCategoryReport\x12#.ledger.v1.GetCategoryReportRequest\x1a$.ledger.v1.GetCategoryReportResponse\x12L\n" +
+	"\vGetNetWorth\x12\x1d.ledger.v1.GetNetWorthRequest\x1a\x1e.ledger.v1.GetNetWorthResponseB\xa6\x01\n" +
 	"\rcom.ledger.v1B\x0eDashboardProtoP\x01Z@github.com/franco-roura/ledger-01/backend/gen/ledger/v1;ledgerv1\xa2\x02\x03LXX\xaa\x02\tLedger.V1\xca\x02\tLedger\\V1\xe2\x02\x15Ledger\\V1\\GPBMetadata\xea\x02\n" +
 	"Ledger::V1b\x06proto3"
 
@@ -776,7 +1138,7 @@ func file_ledger_v1_dashboard_proto_rawDescGZIP() []byte {
 }
 
 var file_ledger_v1_dashboard_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_ledger_v1_dashboard_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_ledger_v1_dashboard_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_ledger_v1_dashboard_proto_goTypes = []any{
 	(Bucket)(0),                       // 0: ledger.v1.Bucket
 	(*DashboardFilter)(nil),           // 1: ledger.v1.DashboardFilter
@@ -786,11 +1148,16 @@ var file_ledger_v1_dashboard_proto_goTypes = []any{
 	(*GetDashboardResponse)(nil),      // 5: ledger.v1.GetDashboardResponse
 	(*GetCategoryReportRequest)(nil),  // 6: ledger.v1.GetCategoryReportRequest
 	(*GetCategoryReportResponse)(nil), // 7: ledger.v1.GetCategoryReportResponse
-	(*DateRange)(nil),                 // 8: ledger.v1.DateRange
-	(*Transaction)(nil),               // 9: ledger.v1.Transaction
+	(*GetNetWorthRequest)(nil),        // 8: ledger.v1.GetNetWorthRequest
+	(*NetWorthPoint)(nil),             // 9: ledger.v1.NetWorthPoint
+	(*NetWorthWallet)(nil),            // 10: ledger.v1.NetWorthWallet
+	(*GetNetWorthResponse)(nil),       // 11: ledger.v1.GetNetWorthResponse
+	(*DateRange)(nil),                 // 12: ledger.v1.DateRange
+	(*Transaction)(nil),               // 13: ledger.v1.Transaction
+	(WalletType)(0),                   // 14: ledger.v1.WalletType
 }
 var file_ledger_v1_dashboard_proto_depIdxs = []int32{
-	8,  // 0: ledger.v1.DashboardFilter.period:type_name -> ledger.v1.DateRange
+	12, // 0: ledger.v1.DashboardFilter.period:type_name -> ledger.v1.DateRange
 	1,  // 1: ledger.v1.GetDashboardRequest.filter:type_name -> ledger.v1.DashboardFilter
 	0,  // 2: ledger.v1.GetDashboardRequest.bucket:type_name -> ledger.v1.Bucket
 	2,  // 3: ledger.v1.GetDashboardResponse.series:type_name -> ledger.v1.SeriesPoint
@@ -799,16 +1166,24 @@ var file_ledger_v1_dashboard_proto_depIdxs = []int32{
 	1,  // 6: ledger.v1.GetCategoryReportRequest.filter:type_name -> ledger.v1.DashboardFilter
 	0,  // 7: ledger.v1.GetCategoryReportRequest.bucket:type_name -> ledger.v1.Bucket
 	2,  // 8: ledger.v1.GetCategoryReportResponse.series:type_name -> ledger.v1.SeriesPoint
-	9,  // 9: ledger.v1.GetCategoryReportResponse.transactions:type_name -> ledger.v1.Transaction
-	4,  // 10: ledger.v1.DashboardService.GetDashboard:input_type -> ledger.v1.GetDashboardRequest
-	6,  // 11: ledger.v1.DashboardService.GetCategoryReport:input_type -> ledger.v1.GetCategoryReportRequest
-	5,  // 12: ledger.v1.DashboardService.GetDashboard:output_type -> ledger.v1.GetDashboardResponse
-	7,  // 13: ledger.v1.DashboardService.GetCategoryReport:output_type -> ledger.v1.GetCategoryReportResponse
-	12, // [12:14] is the sub-list for method output_type
-	10, // [10:12] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	13, // 9: ledger.v1.GetCategoryReportResponse.transactions:type_name -> ledger.v1.Transaction
+	12, // 10: ledger.v1.GetNetWorthRequest.period:type_name -> ledger.v1.DateRange
+	0,  // 11: ledger.v1.GetNetWorthRequest.bucket:type_name -> ledger.v1.Bucket
+	14, // 12: ledger.v1.NetWorthWallet.type:type_name -> ledger.v1.WalletType
+	9,  // 13: ledger.v1.GetNetWorthResponse.series:type_name -> ledger.v1.NetWorthPoint
+	10, // 14: ledger.v1.GetNetWorthResponse.wallets:type_name -> ledger.v1.NetWorthWallet
+	3,  // 15: ledger.v1.GetNetWorthResponse.upcoming_debt_categories:type_name -> ledger.v1.CategoryTotal
+	4,  // 16: ledger.v1.DashboardService.GetDashboard:input_type -> ledger.v1.GetDashboardRequest
+	6,  // 17: ledger.v1.DashboardService.GetCategoryReport:input_type -> ledger.v1.GetCategoryReportRequest
+	8,  // 18: ledger.v1.DashboardService.GetNetWorth:input_type -> ledger.v1.GetNetWorthRequest
+	5,  // 19: ledger.v1.DashboardService.GetDashboard:output_type -> ledger.v1.GetDashboardResponse
+	7,  // 20: ledger.v1.DashboardService.GetCategoryReport:output_type -> ledger.v1.GetCategoryReportResponse
+	11, // 21: ledger.v1.DashboardService.GetNetWorth:output_type -> ledger.v1.GetNetWorthResponse
+	19, // [19:22] is the sub-list for method output_type
+	16, // [16:19] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_ledger_v1_dashboard_proto_init() }
@@ -818,6 +1193,7 @@ func file_ledger_v1_dashboard_proto_init() {
 	}
 	file_ledger_v1_common_proto_init()
 	file_ledger_v1_transaction_proto_init()
+	file_ledger_v1_wallet_proto_init()
 	file_ledger_v1_dashboard_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -825,7 +1201,7 @@ func file_ledger_v1_dashboard_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ledger_v1_dashboard_proto_rawDesc), len(file_ledger_v1_dashboard_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   7,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

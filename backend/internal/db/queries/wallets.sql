@@ -34,8 +34,8 @@ WHERE w.id = @id AND w.household_id = @household_id;
 SELECT coalesce(max(position) + 1, 0)::int AS position FROM wallets WHERE household_id = $1;
 
 -- name: CreateWallet :one
-INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, position)
-VALUES (@id, @household_id, @name, @currency, @initial_balance_minor, @position)
+INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, position, type)
+VALUES (@id, @household_id, @name, @currency, @initial_balance_minor, @position, @type)
 RETURNING *;
 
 -- name: UpdateWallet :one
@@ -44,6 +44,7 @@ SET name                  = coalesce(sqlc.narg(name), name),
     hidden                = coalesce(sqlc.narg(hidden), hidden),
     position              = coalesce(sqlc.narg(position), position),
     initial_balance_minor = coalesce(sqlc.narg(initial_balance_minor), initial_balance_minor),
+    type                  = coalesce(sqlc.narg(type), type),
     updated_at            = now()
 WHERE id = @id AND household_id = @household_id
 RETURNING *;

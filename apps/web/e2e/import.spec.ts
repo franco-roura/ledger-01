@@ -175,7 +175,7 @@ test("a REDIVA discount merges into its purchase, and a renamed import is still 
   await page.goto("/wallets");
   await page.getByRole("button", { name: "Add wallet" }).first().click();
   await page.getByLabel("Name").fill(walletName);
-  await page.getByRole("combobox").click();
+  await page.getByLabel("Currency").click();
   await page.getByPlaceholder("Search currency…").fill("UYU");
   await page.getByRole("option", { name: /^UYU/ }).click();
   await page.getByRole("button", { name: "Create wallet" }).click();

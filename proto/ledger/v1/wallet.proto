@@ -18,6 +18,36 @@ message Wallet {
   bool archived = 8;
   int64 transaction_count = 9;
   google.protobuf.Timestamp created_at = 10;
+  WalletType type = 11;
+  // What the wallet is worth today. For investment and property wallets with a valuation on or
+  // before today: the latest valuation plus the wallet's movements after it. Otherwise the same
+  // as balance_minor.
+  int64 value_minor = 12;
+  // Date of the valuation value_minor comes from, "YYYY-MM-DD"; empty when none applies.
+  string valued_on = 13;
+}
+
+// What a wallet is. Cash, bank, investment and property are assets; credit cards and loans are
+// liabilities, whose (usually negative) balance is what is owed. Unspecified means bank.
+enum WalletType {
+  WALLET_TYPE_UNSPECIFIED = 0;
+  WALLET_TYPE_CASH = 1;
+  WALLET_TYPE_BANK = 2;
+  WALLET_TYPE_INVESTMENT = 3;
+  WALLET_TYPE_PROPERTY = 4;
+  WALLET_TYPE_CREDIT_CARD = 5;
+  WALLET_TYPE_LOAN = 6;
+}
+
+// What an investment or property wallet is worth on a date. Valuations are never income or
+// spending; they only change the wallet's value (and net worth).
+message WalletValuation {
+  string id = 1;
+  string wallet_id = 2;
+  // "YYYY-MM-DD".
+  string valued_on = 3;
+  // In the wallet's currency.
+  int64 value_minor = 4;
 }
 
 service WalletService {
@@ -29,6 +59,12 @@ service WalletService {
   rpc ArchiveWallet(ArchiveWalletRequest) returns (ArchiveWalletResponse);
   // Hard delete, only allowed while the wallet has no transactions.
   rpc DeleteWallet(DeleteWalletRequest) returns (DeleteWalletResponse);
+  // Newest first.
+  rpc ListValuations(ListValuationsRequest) returns (ListValuationsResponse);
+  // One valuation per wallet and date: saving a date again replaces its value. Only investment
+  // and property wallets take valuations.
+  rpc SaveValuation(SaveValuationRequest) returns (SaveValuationResponse);
+  rpc DeleteValuation(DeleteValuationRequest) returns (DeleteValuationResponse);
 }
 
 message ListWalletsRequest {
@@ -55,6 +91,7 @@ message CreateWalletRequest {
   string name = 1;
   string currency = 2;
   int64 initial_balance_minor = 3;
+  WalletType type = 4;
 }
 
 message CreateWalletResponse {
@@ -67,6 +104,7 @@ message UpdateWalletRequest {
   optional bool hidden = 3;
   optional int32 position = 4;
   optional int64 initial_balance_minor = 5;
+  optional WalletType type = 6;
 }
 
 message UpdateWalletResponse {
@@ -84,3 +122,27 @@ message DeleteWalletRequest {
 }
 
 message DeleteWalletResponse {}
+
+message ListValuationsRequest {
+  string wallet_id = 1;
+}
+
+message ListValuationsResponse {
+  repeated WalletValuation valuations = 1;
+}
+
+message SaveValuationRequest {
+  string wallet_id = 1;
+  string valued_on = 2;
+  int64 value_minor = 3;
+}
+
+message SaveValuationResponse {
+  WalletValuation valuation = 1;
+}
+
+message DeleteValuationRequest {
+  string id = 1;
+}
+
+message DeleteValuationResponse {}

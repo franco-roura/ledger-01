@@ -265,6 +265,46 @@ func MCPScenario(t *testing.T, do Driver) Result {
 	}
 	res.add("summary expenses %v", sum["expenses"].(map[string]any)["display"])
 
+	// A credit card with a charge still to come: a liability, its upcoming debt reported apart.
+	r = do(t, http.MethodPost, rpcPath("WalletService", "CreateWallet"), map[string]any{
+		"name": "MCP card", "currency": "USD", "type": "WALLET_TYPE_CREDIT_CARD", "initialBalanceMinor": "-2000",
+	}, session)
+	if r.Status != http.StatusOK {
+		t.Fatalf("CreateWallet card = %d %s", r.Status, r.Body)
+	}
+	card := r.JSON(t)["wallet"].(map[string]any)["id"].(string)
+	r = do(t, http.MethodPost, rpcPath("TransactionService", "CreateTransaction"), map[string]any{
+		"walletId": card, "kind": "TRANSACTION_KIND_EXPENSE", "categoryId": category, "amountMinor": "1200",
+		"occurredOn": "2026-11-15", "note": "Installment " + marker, "today": "2026-10-30",
+	}, session)
+	if r.Status != http.StatusOK {
+		t.Fatalf("CreateTransaction card = %d %s", r.Status, r.Body)
+	}
+	var cardType any
+	for _, w := range CallTool(t, do, access, "list_wallets", map[string]any{"today": "2026-10-30"})["wallets"].([]any) {
+		if w := w.(map[string]any); w["id"] == card {
+			cardType = w["type"]
+			if w["class"] != "liability" {
+				t.Fatalf("card wallet = %v", w)
+			}
+		}
+	}
+	if cardType != "credit_card" {
+		t.Fatalf("card type = %v", cardType)
+	}
+	nw := CallTool(t, do, access, "net_worth", map[string]any{"from": "2026-09-01", "to": "2026-10-31", "today": "2026-10-30"})
+	var cardOut map[string]any
+	for _, w := range nw["wallets"].([]any) {
+		if w := w.(map[string]any); w["wallet_id"] == card {
+			cardOut = w
+		}
+	}
+	if cardOut == nil || cardOut["amount"].(map[string]any)["minor"] != float64(2000) ||
+		cardOut["upcoming_debt"].(map[string]any)["minor"] != float64(1200) {
+		t.Fatalf("net_worth card = %v", cardOut)
+	}
+	res.add("net worth card %v owed, %v upcoming", cardOut["type"], cardOut["upcoming_debt"].(map[string]any)["display"])
+
 	// A budget with rollover turned on in September carries September's leftover into October.
 	r = do(t, http.MethodPost, rpcPath("BudgetService", "CreateBudget"), map[string]any{
 		"budget": map[string]any{

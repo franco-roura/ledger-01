@@ -239,6 +239,52 @@ func (ns NullTransactionKind) Value() (driver.Value, error) {
 	return string(ns.TransactionKind), nil
 }
 
+type WalletType string
+
+const (
+	WalletTypeCash       WalletType = "cash"
+	WalletTypeBank       WalletType = "bank"
+	WalletTypeInvestment WalletType = "investment"
+	WalletTypeProperty   WalletType = "property"
+	WalletTypeCreditCard WalletType = "credit_card"
+	WalletTypeLoan       WalletType = "loan"
+)
+
+func (e *WalletType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WalletType(s)
+	case string:
+		*e = WalletType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WalletType: %T", src)
+	}
+	return nil
+}
+
+type NullWalletType struct {
+	WalletType WalletType
+	Valid      bool // Valid is true if WalletType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWalletType) Scan(value interface{}) error {
+	if value == nil {
+		ns.WalletType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WalletType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWalletType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WalletType), nil
+}
+
 type Budget struct {
 	ID             uuid.UUID
 	HouseholdID    uuid.UUID
@@ -496,4 +542,15 @@ type Wallet struct {
 	ArchivedAt          *time.Time
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
+	Type                WalletType
+}
+
+type WalletValuation struct {
+	ID          uuid.UUID
+	HouseholdID uuid.UUID
+	WalletID    uuid.UUID
+	ValuedOn    time.Time
+	ValueMinor  int64
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }

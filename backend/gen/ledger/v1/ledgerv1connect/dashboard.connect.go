@@ -39,12 +39,17 @@ const (
 	// DashboardServiceGetCategoryReportProcedure is the fully-qualified name of the DashboardService's
 	// GetCategoryReport RPC.
 	DashboardServiceGetCategoryReportProcedure = "/ledger.v1.DashboardService/GetCategoryReport"
+	// DashboardServiceGetNetWorthProcedure is the fully-qualified name of the DashboardService's
+	// GetNetWorth RPC.
+	DashboardServiceGetNetWorthProcedure = "/ledger.v1.DashboardService/GetNetWorth"
 )
 
 // DashboardServiceClient is a client for the ledger.v1.DashboardService service.
 type DashboardServiceClient interface {
 	GetDashboard(context.Context, *connect.Request[v1.GetDashboardRequest]) (*connect.Response[v1.GetDashboardResponse], error)
 	GetCategoryReport(context.Context, *connect.Request[v1.GetCategoryReportRequest]) (*connect.Response[v1.GetCategoryReportResponse], error)
+	// Assets, liabilities and net worth over every visible wallet.
+	GetNetWorth(context.Context, *connect.Request[v1.GetNetWorthRequest]) (*connect.Response[v1.GetNetWorthResponse], error)
 }
 
 // NewDashboardServiceClient constructs a client for the ledger.v1.DashboardService service. By
@@ -70,6 +75,12 @@ func NewDashboardServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(dashboardServiceMethods.ByName("GetCategoryReport")),
 			connect.WithClientOptions(opts...),
 		),
+		getNetWorth: connect.NewClient[v1.GetNetWorthRequest, v1.GetNetWorthResponse](
+			httpClient,
+			baseURL+DashboardServiceGetNetWorthProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("GetNetWorth")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -77,6 +88,7 @@ func NewDashboardServiceClient(httpClient connect.HTTPClient, baseURL string, op
 type dashboardServiceClient struct {
 	getDashboard      *connect.Client[v1.GetDashboardRequest, v1.GetDashboardResponse]
 	getCategoryReport *connect.Client[v1.GetCategoryReportRequest, v1.GetCategoryReportResponse]
+	getNetWorth       *connect.Client[v1.GetNetWorthRequest, v1.GetNetWorthResponse]
 }
 
 // GetDashboard calls ledger.v1.DashboardService.GetDashboard.
@@ -89,10 +101,17 @@ func (c *dashboardServiceClient) GetCategoryReport(ctx context.Context, req *con
 	return c.getCategoryReport.CallUnary(ctx, req)
 }
 
+// GetNetWorth calls ledger.v1.DashboardService.GetNetWorth.
+func (c *dashboardServiceClient) GetNetWorth(ctx context.Context, req *connect.Request[v1.GetNetWorthRequest]) (*connect.Response[v1.GetNetWorthResponse], error) {
+	return c.getNetWorth.CallUnary(ctx, req)
+}
+
 // DashboardServiceHandler is an implementation of the ledger.v1.DashboardService service.
 type DashboardServiceHandler interface {
 	GetDashboard(context.Context, *connect.Request[v1.GetDashboardRequest]) (*connect.Response[v1.GetDashboardResponse], error)
 	GetCategoryReport(context.Context, *connect.Request[v1.GetCategoryReportRequest]) (*connect.Response[v1.GetCategoryReportResponse], error)
+	// Assets, liabilities and net worth over every visible wallet.
+	GetNetWorth(context.Context, *connect.Request[v1.GetNetWorthRequest]) (*connect.Response[v1.GetNetWorthResponse], error)
 }
 
 // NewDashboardServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -114,12 +133,20 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 		connect.WithSchema(dashboardServiceMethods.ByName("GetCategoryReport")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dashboardServiceGetNetWorthHandler := connect.NewUnaryHandler(
+		DashboardServiceGetNetWorthProcedure,
+		svc.GetNetWorth,
+		connect.WithSchema(dashboardServiceMethods.ByName("GetNetWorth")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ledger.v1.DashboardService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DashboardServiceGetDashboardProcedure:
 			dashboardServiceGetDashboardHandler.ServeHTTP(w, r)
 		case DashboardServiceGetCategoryReportProcedure:
 			dashboardServiceGetCategoryReportHandler.ServeHTTP(w, r)
+		case DashboardServiceGetNetWorthProcedure:
+			dashboardServiceGetNetWorthHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -135,4 +162,8 @@ func (UnimplementedDashboardServiceHandler) GetDashboard(context.Context, *conne
 
 func (UnimplementedDashboardServiceHandler) GetCategoryReport(context.Context, *connect.Request[v1.GetCategoryReportRequest]) (*connect.Response[v1.GetCategoryReportResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.DashboardService.GetCategoryReport is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) GetNetWorth(context.Context, *connect.Request[v1.GetNetWorthRequest]) (*connect.Response[v1.GetNetWorthResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.DashboardService.GetNetWorth is not implemented"))
 }

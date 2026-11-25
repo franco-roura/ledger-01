@@ -69,6 +69,10 @@ func seedEverything(t *testing.T, svc *ledger.Service, a ledger.Actor) {
 	ctx := context.Background()
 	checking := mustWallet(t, svc, a, "Checking", "USD", 1000_00)
 	pesos := mustWallet(t, svc, a, "Pesos", "UYU", 0)
+	broker := mustTypedWallet(t, svc, a, "Brokerage", "USD", ledger.WalletInvestment, 0)
+	if _, err := svc.SaveValuation(ctx, a, broker.ID, on("2026-10-01"), 1234_00); err != nil {
+		t.Fatal(err)
+	}
 	groceries := categoryNamed(t, svc, a, ledger.CategoryExpense, "Groceries")
 	transport := categoryNamed(t, svc, a, ledger.CategoryExpense, "Transport")
 	trip, err := svc.CreateLabel(ctx, a, "Trip", "cat-teal")
@@ -122,7 +126,7 @@ func TestBackupRoundTrip(t *testing.T) {
 	mustWallet(t, svc, b, "Replaced", "USD", 5_00)
 
 	before := export(t, svc, a)
-	if len(before.Wallets) != 2 || len(before.Transfers) != 1 || len(before.RecurringRules) != 1 ||
+	if len(before.Wallets) != 3 || len(before.Valuations) != 1 || len(before.Transfers) != 1 || len(before.RecurringRules) != 1 ||
 		len(before.Budgets) != 1 || len(before.HiddenCategories) != 1 || len(before.ImportRules) != 1 || before.ImportRules[0].Rename != "City transit" ||
 		len(before.ImportProfiles) != 1 || len(before.ImportRefs) == 0 || len(before.Labels) != 1 {
 		t.Fatalf("seeded backup is missing rows: %+v", before.Counts())
@@ -171,6 +175,21 @@ func TestBackupRoundTrip(t *testing.T) {
 	}
 	if bu := export(t, svc, b).Budgets[0]; !bu.CarryLeftover || bu.RolloverFrom != bu.StartDate {
 		t.Fatalf("restored rollover without a start: %+v", bu)
+	}
+
+	// Files from before version 3 have no wallet types or valuations: their wallets are bank wallets.
+	decoded.Version = 2
+	decoded.Valuations = nil
+	for i := range decoded.Wallets {
+		decoded.Wallets[i].Type = ""
+	}
+	if _, err := svc.RestoreBackup(ctx, b, decoded); err != nil {
+		t.Fatal(err)
+	}
+	for _, w := range export(t, svc, b).Wallets {
+		if w.Type != "bank" {
+			t.Fatalf("v2 wallet %s restored as %q", w.Name, w.Type)
+		}
 	}
 
 	// The restored import refs still flag the statement's rows as duplicates.
@@ -252,7 +271,7 @@ func TestRestoreRejectsBadBackups(t *testing.T) {
 	for name, content := range map[string][]byte{
 		"not json":      []byte("hello"),
 		"other format":  []byte(`{"format":"something-else","version":1}`),
-		"newer version": []byte(`{"format":"ledger-01-backup","version":3}`),
+		"newer version": []byte(`{"format":"ledger-01-backup","version":99}`),
 		"broken gzip":   {0x1f, 0x8b, 0x00},
 	} {
 		if _, err := ledger.DecodeBackup(content); !errors.As(err, &inv) {

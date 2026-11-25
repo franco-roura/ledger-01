@@ -19,7 +19,9 @@ func (s *Server) addTools(srv *sdk.Server) {
 	sdk.AddTool(srv, readOnly("get_profile", "Profile",
 		"The user's name, base currency (reports are converted to it) and household."), tool(s, s.getProfile))
 	sdk.AddTool(srv, readOnly("list_wallets", "Wallets",
-		"Wallets (accounts) with their currency and balance as of today."), tool(s, s.listWallets))
+		"Wallets (accounts) with their type, currency, balance and value as of today. Cash, bank, investment and "+
+			"property wallets are assets; credit_card and loan wallets are liabilities, whose negative balance is "+
+			"what is owed."), tool(s, s.listWallets))
 	sdk.AddTool(srv, readOnly("list_categories", "Categories",
 		"Expense and income categories with their ids, to use in other tools' category filters."), tool(s, s.listCategories))
 	sdk.AddTool(srv, readOnly("list_labels", "Labels",
@@ -41,6 +43,11 @@ func (s *Server) addTools(srv *sdk.Server) {
 			"is the amount plus what it carried in, and remaining is measured against that limit."), tool(s, s.budgetStatus))
 	sdk.AddTool(srv, readOnly("list_upcoming", "Upcoming transactions",
 		"Scheduled (recurring) transactions dated after today, soonest first."), tool(s, s.listUpcoming))
+	sdk.AddTool(srv, readOnly("net_worth", "Net worth",
+		"Net worth as of today: asset values minus what liabilities (credit cards, loans) owe, in the base currency "+
+			"(or another), with each wallet and a history series over from..to. Liabilities also report upcoming "+
+			"debt: charges dated after today plus the rest of installment plans (recurring rules that end), split by "+
+			"category. Upcoming debt is owed later, not spending: spending_summary and budgets never count it."), tool(s, s.netWorth))
 }
 
 // --- get_profile -------------------------------------------------------------
@@ -91,7 +98,11 @@ type WalletOut struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`
 	Currency         string `json:"currency"`
+	Type             string `json:"type" jsonschema:"cash, bank, investment, property, credit_card or loan"`
+	Class            string `json:"class" jsonschema:"asset or liability"`
 	Balance          Money  `json:"balance"`
+	Value            Money  `json:"value" jsonschema:"what the wallet is worth: the balance, or for investments and property the latest valuation plus movements since"`
+	ValuedOn         string `json:"valued_on,omitempty" jsonschema:"date of the valuation behind value, if any"`
 	Hidden           bool   `json:"hidden"`
 	Archived         bool   `json:"archived"`
 	TransactionCount int64  `json:"transaction_count"`
@@ -116,8 +127,12 @@ func (s *Server) listWallets(ctx context.Context, a ledger.Actor, in WalletsInpu
 	}
 	out := WalletsOut{Wallets: make([]WalletOut, len(ws))}
 	for i, w := range ws {
-		out.Wallets[i] = WalletOut{ID: w.ID.String(), Name: w.Name, Currency: w.Currency, Balance: m.of(w.Balance, w.Currency),
+		out.Wallets[i] = WalletOut{ID: w.ID.String(), Name: w.Name, Currency: w.Currency, Type: string(w.Type),
+			Class: walletClass(w.Type), Balance: m.of(w.Balance, w.Currency), Value: m.of(w.Value, w.Currency),
 			Hidden: w.Hidden, Archived: w.Archived, TransactionCount: w.TransactionCount}
+		if w.ValuedOn != nil {
+			out.Wallets[i].ValuedOn = date(*w.ValuedOn)
+		}
 	}
 	return out, nil
 }
@@ -646,6 +661,92 @@ func (s *Server) budgetStatus(ctx context.Context, a ledger.Actor, in BudgetInpu
 			break
 		}
 		out.History = append(out.History, period(m, cur, p))
+	}
+	return out, nil
+}
+
+// --- net_worth ---------------------------------------------------------------
+
+func walletClass(t ledger.WalletType) string {
+	if ledger.IsLiability(t) {
+		return "liability"
+	}
+	return "asset"
+}
+
+type NetWorthInput struct {
+	From     string `json:"from" jsonschema:"first day of the history series, YYYY-MM-DD"`
+	To       string `json:"to" jsonschema:"last day of the history series, YYYY-MM-DD (inclusive)"`
+	Today    string `json:"today,omitempty" jsonschema:"the user's local date, YYYY-MM-DD; totals are as of this day"`
+	Bucket   string `json:"bucket,omitempty" jsonschema:"day, week or month (default month)"`
+	Currency string `json:"currency,omitempty" jsonschema:"report currency (ISO 4217); default is the base currency"`
+}
+
+type NetWorthPointOut struct {
+	Start       string `json:"start" jsonschema:"first day of the bucket; values are at its end"`
+	Assets      Money  `json:"assets"`
+	Liabilities Money  `json:"liabilities" jsonschema:"owed, positive"`
+	NetWorth    Money  `json:"net_worth"`
+}
+
+type NetWorthWalletOut struct {
+	WalletID     string `json:"wallet_id"`
+	Name         string `json:"name"`
+	Type         string `json:"type"`
+	Class        string `json:"class"`
+	Amount       Money  `json:"amount" jsonschema:"in the wallet's currency: an asset's value, or what a liability owes (positive)"`
+	Converted    Money  `json:"converted" jsonschema:"amount in the report currency"`
+	UpcomingDebt *Money `json:"upcoming_debt,omitempty" jsonschema:"liabilities: charges still to come, in the wallet's currency"`
+}
+
+type NetWorthOut struct {
+	Currency               string              `json:"currency"`
+	Assets                 Money               `json:"assets"`
+	Liabilities            Money               `json:"liabilities" jsonschema:"owed today, positive"`
+	NetWorth               Money               `json:"net_worth"`
+	UpcomingDebt           Money               `json:"upcoming_debt" jsonschema:"liabilities' charges still to come (not spending)"`
+	Wallets                []NetWorthWalletOut `json:"wallets"`
+	UpcomingDebtCategories []CategoryTotalOut  `json:"upcoming_debt_categories"`
+	Series                 []NetWorthPointOut  `json:"series"`
+	Unconverted            []string            `json:"unconverted_currencies,omitempty" jsonschema:"currencies left out for lack of a transfer rate"`
+}
+
+func (s *Server) netWorth(ctx context.Context, a ledger.Actor, in NetWorthInput) (NetWorthOut, error) {
+	f, b, err := ReportInput{From: in.From, To: in.To, Today: in.Today, Bucket: in.Bucket, Currency: in.Currency}.filter()
+	if err != nil {
+		return NetWorthOut{}, err
+	}
+	nw, err := s.svc.NetWorthFor(ctx, a, f, b)
+	if err != nil {
+		return NetWorthOut{}, err
+	}
+	m, err := s.moneyFmt(ctx)
+	if err != nil {
+		return NetWorthOut{}, err
+	}
+	n, err := s.names(ctx, a)
+	if err != nil {
+		return NetWorthOut{}, err
+	}
+	c := nw.Currency
+	out := NetWorthOut{
+		Currency: c, Assets: m.of(nw.Assets, c), Liabilities: m.of(nw.Liabilities, c), NetWorth: m.of(nw.NetWorth, c),
+		UpcomingDebt: m.of(nw.UpcomingDebt, c), Wallets: make([]NetWorthWalletOut, len(nw.Wallets)),
+		UpcomingDebtCategories: categoryTotals(m, n, c, nw.UpcomingDebtCategories),
+		Series:                 make([]NetWorthPointOut, len(nw.Series)), Unconverted: nw.Unconverted,
+	}
+	for i, w := range nw.Wallets {
+		o := NetWorthWalletOut{WalletID: w.WalletID.String(), Name: n.wallets[w.WalletID], Type: string(w.Type),
+			Class: walletClass(w.Type), Amount: m.of(w.Amount, w.Currency), Converted: m.of(w.Converted, c)}
+		if ledger.IsLiability(w.Type) {
+			d := m.of(w.UpcomingDebt, w.Currency)
+			o.UpcomingDebt = &d
+		}
+		out.Wallets[i] = o
+	}
+	for i, p := range nw.Series {
+		out.Series[i] = NetWorthPointOut{Start: date(p.Date), Assets: m.of(p.Assets, c), Liabilities: m.of(p.Liabilities, c),
+			NetWorth: m.of(p.NetWorth, c)}
 	}
 	return out, nil
 }

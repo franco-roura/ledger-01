@@ -556,9 +556,40 @@ func (q *Queries) BackupTransfers(ctx context.Context, householdID uuid.UUID) ([
 	return items, nil
 }
 
+const backupValuations = `-- name: BackupValuations :many
+SELECT wallet_id, valued_on, value_minor FROM wallet_valuations
+WHERE household_id = $1 ORDER BY wallet_id, valued_on
+`
+
+type BackupValuationsRow struct {
+	WalletID   uuid.UUID
+	ValuedOn   time.Time
+	ValueMinor int64
+}
+
+func (q *Queries) BackupValuations(ctx context.Context, householdID uuid.UUID) ([]BackupValuationsRow, error) {
+	rows, err := q.db.Query(ctx, backupValuations, householdID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []BackupValuationsRow{}
+	for rows.Next() {
+		var i BackupValuationsRow
+		if err := rows.Scan(&i.WalletID, &i.ValuedOn, &i.ValueMinor); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const backupWallets = `-- name: BackupWallets :many
 
-SELECT id, name, currency, initial_balance_minor, hidden, position, archived_at FROM wallets
+SELECT id, name, currency, initial_balance_minor, hidden, position, archived_at, type FROM wallets
 WHERE household_id = $1 ORDER BY position, created_at, id
 `
 
@@ -570,6 +601,7 @@ type BackupWalletsRow struct {
 	Hidden              bool
 	Position            int32
 	ArchivedAt          *time.Time
+	Type                WalletType
 }
 
 // Household backups (ledger.ExportBackup / RestoreBackup): every household-scoped ledger row,
@@ -592,6 +624,7 @@ func (q *Queries) BackupWallets(ctx context.Context, householdID uuid.UUID) ([]B
 			&i.Hidden,
 			&i.Position,
 			&i.ArchivedAt,
+			&i.Type,
 		); err != nil {
 			return nil, err
 		}
@@ -1055,9 +1088,33 @@ func (q *Queries) RestoreTransfer(ctx context.Context, arg RestoreTransferParams
 	return err
 }
 
+const restoreValuation = `-- name: RestoreValuation :exec
+INSERT INTO wallet_valuations (id, household_id, wallet_id, valued_on, value_minor)
+VALUES ($1, $2, $3, $4, $5)
+`
+
+type RestoreValuationParams struct {
+	ID          uuid.UUID
+	HouseholdID uuid.UUID
+	WalletID    uuid.UUID
+	ValuedOn    time.Time
+	ValueMinor  int64
+}
+
+func (q *Queries) RestoreValuation(ctx context.Context, arg RestoreValuationParams) error {
+	_, err := q.db.Exec(ctx, restoreValuation,
+		arg.ID,
+		arg.HouseholdID,
+		arg.WalletID,
+		arg.ValuedOn,
+		arg.ValueMinor,
+	)
+	return err
+}
+
 const restoreWallet = `-- name: RestoreWallet :exec
-INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at, type)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 type RestoreWalletParams struct {
@@ -1069,6 +1126,7 @@ type RestoreWalletParams struct {
 	Hidden              bool
 	Position            int32
 	ArchivedAt          *time.Time
+	Type                WalletType
 }
 
 func (q *Queries) RestoreWallet(ctx context.Context, arg RestoreWalletParams) error {
@@ -1081,6 +1139,7 @@ func (q *Queries) RestoreWallet(ctx context.Context, arg RestoreWalletParams) er
 		arg.Hidden,
 		arg.Position,
 		arg.ArchivedAt,
+		arg.Type,
 	)
 	return err
 }

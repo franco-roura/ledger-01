@@ -64,6 +64,7 @@ export function ReportFilters({
   currency,
   showWallets = true,
   showCategories = true,
+  showFlowFilters = true,
 }: {
   state: ReportState;
   set: (next: Partial<ReportState>) => void;
@@ -71,6 +72,8 @@ export function ReportFilters({
   currency: string;
   showWallets?: boolean;
   showCategories?: boolean;
+  /** Note search and amount bounds, which only narrow flows. */
+  showFlowFilters?: boolean;
 }) {
   const { wallets } = useWallets();
   const { categories } = useCategories();
@@ -98,34 +101,36 @@ export function ReportFilters({
         </Button>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <NoteSearch value={state.note} onChange={(note) => set({ note })} />
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="secondary" size="sm">
-              <SlidersHorizontal strokeWidth={1.25} /> Amount
-              {state.min || state.max ? " · set" : ""}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="flex w-80 flex-col gap-3">
-            <AmountRange
-              currency={currency}
-              min={state.min}
-              max={state.max}
-              onChange={(r) => set(r)}
-            />
-            <p className="text-body-sm text-ink-soft">
-              Amounts in {currency}; other currencies are converted first.
-            </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="self-start"
-              onClick={() => set({ min: "", max: "" })}
-            >
-              Clear amounts
-            </Button>
-          </PopoverContent>
-        </Popover>
+        {showFlowFilters && <NoteSearch value={state.note} onChange={(note) => set({ note })} />}
+        {showFlowFilters && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="secondary" size="sm">
+                <SlidersHorizontal strokeWidth={1.25} /> Amount
+                {state.min || state.max ? " · set" : ""}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="flex w-80 flex-col gap-3">
+              <AmountRange
+                currency={currency}
+                min={state.min}
+                max={state.max}
+                onChange={(r) => set(r)}
+              />
+              <p className="text-body-sm text-ink-soft">
+                Amounts in {currency}; other currencies are converted first.
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="self-start"
+                onClick={() => set({ min: "", max: "" })}
+              >
+                Clear amounts
+              </Button>
+            </PopoverContent>
+          </Popover>
+        )}
         {showWallets && (
           <MultiPicker
             allLabel="All wallets"

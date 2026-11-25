@@ -31,9 +31,9 @@ func (q *Queries) ArchiveWallet(ctx context.Context, arg ArchiveWalletParams) (i
 }
 
 const createWallet = `-- name: CreateWallet :one
-INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, position)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at, created_at, updated_at
+INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, position, type)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at, created_at, updated_at, type
 `
 
 type CreateWalletParams struct {
@@ -43,6 +43,7 @@ type CreateWalletParams struct {
 	Currency            string
 	InitialBalanceMinor int64
 	Position            int32
+	Type                WalletType
 }
 
 func (q *Queries) CreateWallet(ctx context.Context, arg CreateWalletParams) (Wallet, error) {
@@ -53,6 +54,7 @@ func (q *Queries) CreateWallet(ctx context.Context, arg CreateWalletParams) (Wal
 		arg.Currency,
 		arg.InitialBalanceMinor,
 		arg.Position,
+		arg.Type,
 	)
 	var i Wallet
 	err := row.Scan(
@@ -66,6 +68,7 @@ func (q *Queries) CreateWallet(ctx context.Context, arg CreateWalletParams) (Wal
 		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Type,
 	)
 	return i, err
 }
@@ -91,7 +94,7 @@ func (q *Queries) DeleteEmptyWallet(ctx context.Context, arg DeleteEmptyWalletPa
 }
 
 const getWallet = `-- name: GetWallet :one
-SELECT w.id, w.household_id, w.name, w.currency, w.initial_balance_minor, w.hidden, w.position, w.archived_at, w.created_at, w.updated_at,
+SELECT w.id, w.household_id, w.name, w.currency, w.initial_balance_minor, w.hidden, w.position, w.archived_at, w.created_at, w.updated_at, w.type,
        c.minor_units,
        coalesce((SELECT sum(CASE WHEN t.kind IN ('income', 'transfer_in') THEN t.amount_minor ELSE -t.amount_minor END)
                  FROM transactions t WHERE t.wallet_id = w.id AND t.occurred_on <= $1), 0)::bigint AS movement_minor,
@@ -118,6 +121,7 @@ type GetWalletRow struct {
 	ArchivedAt          *time.Time
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
+	Type                WalletType
 	MinorUnits          int16
 	MovementMinor       int64
 	TransactionCount    int64
@@ -137,6 +141,7 @@ func (q *Queries) GetWallet(ctx context.Context, arg GetWalletParams) (GetWallet
 		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Type,
 		&i.MinorUnits,
 		&i.MovementMinor,
 		&i.TransactionCount,
@@ -191,7 +196,7 @@ func (q *Queries) GetWalletsByIDs(ctx context.Context, arg GetWalletsByIDsParams
 }
 
 const listWallets = `-- name: ListWallets :many
-SELECT w.id, w.household_id, w.name, w.currency, w.initial_balance_minor, w.hidden, w.position, w.archived_at, w.created_at, w.updated_at,
+SELECT w.id, w.household_id, w.name, w.currency, w.initial_balance_minor, w.hidden, w.position, w.archived_at, w.created_at, w.updated_at, w.type,
        c.minor_units,
        coalesce(m.movement, 0)::bigint AS movement_minor,
        coalesce(m.cnt, 0)::bigint      AS transaction_count
@@ -231,6 +236,7 @@ type ListWalletsRow struct {
 	ArchivedAt          *time.Time
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
+	Type                WalletType
 	MinorUnits          int16
 	MovementMinor       int64
 	TransactionCount    int64
@@ -261,6 +267,7 @@ func (q *Queries) ListWallets(ctx context.Context, arg ListWalletsParams) ([]Lis
 			&i.ArchivedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Type,
 			&i.MinorUnits,
 			&i.MovementMinor,
 			&i.TransactionCount,
@@ -292,9 +299,10 @@ SET name                  = coalesce($1, name),
     hidden                = coalesce($2, hidden),
     position              = coalesce($3, position),
     initial_balance_minor = coalesce($4, initial_balance_minor),
+    type                  = coalesce($5, type),
     updated_at            = now()
-WHERE id = $5 AND household_id = $6
-RETURNING id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at, created_at, updated_at
+WHERE id = $6 AND household_id = $7
+RETURNING id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at, created_at, updated_at, type
 `
 
 type UpdateWalletParams struct {
@@ -302,6 +310,7 @@ type UpdateWalletParams struct {
 	Hidden              *bool
 	Position            *int32
 	InitialBalanceMinor *int64
+	Type                *WalletType
 	ID                  uuid.UUID
 	HouseholdID         uuid.UUID
 }
@@ -312,6 +321,7 @@ func (q *Queries) UpdateWallet(ctx context.Context, arg UpdateWalletParams) (Wal
 		arg.Hidden,
 		arg.Position,
 		arg.InitialBalanceMinor,
+		arg.Type,
 		arg.ID,
 		arg.HouseholdID,
 	)
@@ -327,6 +337,7 @@ func (q *Queries) UpdateWallet(ctx context.Context, arg UpdateWalletParams) (Wal
 		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Type,
 	)
 	return i, err
 }

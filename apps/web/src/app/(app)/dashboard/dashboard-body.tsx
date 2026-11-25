@@ -1,12 +1,12 @@
 "use client";
 
 import { HudLabel, Panel, Skeleton } from "@franco_roura/module-01";
-import { BalanceChart, DonutChart, FlowChart } from "@franco_roura/module-01/charts";
+import { BalanceChart, FlowChart } from "@franco_roura/module-01/charts";
 import { Amount, CategoryIcon } from "@franco_roura/module-01/finance";
 import type { CategoryTotal, GetDashboardResponse } from "@ledger-01/api";
-import Link from "next/link";
-import { useCategories, useCurrencies } from "@/lib/api/hooks";
+import { useCurrencies } from "@/lib/api/hooks";
 import { type BucketName, bucketLabels } from "@/lib/buckets";
+import { CategoryBreakdown } from "./category-breakdown";
 
 /**
  * The report itself, shared by the household dashboard and a wallet's overview: totals, balance
@@ -27,7 +27,6 @@ export function DashboardBody({
   drillQuery: string;
 }) {
   const { minorUnits } = useCurrencies();
-  const { byId: categories } = useCategories();
   const money = { currency, minorUnits: minorUnits(currency) };
 
   const points = (data?.series ?? []).map((p) => ({
@@ -48,73 +47,18 @@ export function DashboardBody({
     { label: "Period income", value: data?.incomeMinor, sign: "always" as const },
   ];
 
-  const breakdown = (title: string, kind: "expense" | "income", totals: CategoryTotal[]) => {
-    const total = totals.reduce((s, t) => s + t.amountMinor, 0n);
-    return (
-      <Panel
-        serial={kind === "expense" ? "DSH-04 · EXPENSES" : "DSH-05 · INCOME"}
-        bodyClassName="p-5 pt-11 sm:p-6 sm:pt-11"
-      >
-        <div className="flex flex-col gap-5">
-          <h2 className="font-display text-display-sm text-ink">{title}</h2>
-          {totals.length === 0 ? (
-            <p className="text-body-sm text-ink-soft">
-              No {kind === "expense" ? "expenses" : "income"} in this period.
-            </p>
-          ) : (
-            <>
-              <DonutChart
-                money={money}
-                centerLabel={kind === "expense" ? "Spent" : "Earned"}
-                slices={totals.map((t) => {
-                  const c = categories.get(t.categoryId);
-                  return {
-                    key: t.categoryId,
-                    label: c?.name ?? "Category",
-                    color: c?.color ?? "cat-slate",
-                    icon: c?.icon ?? "circle-help",
-                    amount: t.amountMinor,
-                  };
-                })}
-              />
-              <ul className="flex flex-col">
-                {totals.map((t) => {
-                  const c = categories.get(t.categoryId);
-                  const share = total > 0n ? Number((t.amountMinor * 1000n) / total) / 10 : 0;
-                  return (
-                    <li key={t.categoryId} className="border-b border-seam/60 last:border-b-0">
-                      <Link
-                        href={`/dashboard/category/${t.categoryId}?${drillQuery}`}
-                        className="flex items-center gap-3 py-2.5 hover:bg-shell-recess/60"
-                      >
-                        <CategoryIcon
-                          icon={c?.icon ?? "circle-help"}
-                          color={c?.color ?? "cat-slate"}
-                          size="sm"
-                        />
-                        <span className="min-w-0 flex-1 truncate text-label text-ink">
-                          {c?.name ?? "Category"}
-                        </span>
-                        <span className="hud-sm hidden text-ink-soft sm:inline">
-                          {t.transactionCount.toString()} txn · {share.toFixed(1)}%
-                        </span>
-                        <Amount
-                          minor={kind === "expense" ? -t.amountMinor : t.amountMinor}
-                          currency={currency}
-                          minorUnits={money.minorUnits}
-                          code={false}
-                        />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          )}
-        </div>
-      </Panel>
-    );
-  };
+  const breakdown = (title: string, kind: "expense" | "income", totals: CategoryTotal[]) => (
+    <CategoryBreakdown
+      serial={kind === "expense" ? "DSH-04 · EXPENSES" : "DSH-05 · INCOME"}
+      title={title}
+      centerLabel={kind === "expense" ? "Spent" : "Earned"}
+      empty={`No ${kind === "expense" ? "expenses" : "income"} in this period.`}
+      totals={totals}
+      currency={currency}
+      negative={kind === "expense"}
+      href={(id) => `/dashboard/category/${id}?${drillQuery}`}
+    />
+  );
 
   return (
     <>

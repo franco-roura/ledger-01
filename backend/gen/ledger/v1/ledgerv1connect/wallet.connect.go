@@ -50,6 +50,15 @@ const (
 	// WalletServiceDeleteWalletProcedure is the fully-qualified name of the WalletService's
 	// DeleteWallet RPC.
 	WalletServiceDeleteWalletProcedure = "/ledger.v1.WalletService/DeleteWallet"
+	// WalletServiceListValuationsProcedure is the fully-qualified name of the WalletService's
+	// ListValuations RPC.
+	WalletServiceListValuationsProcedure = "/ledger.v1.WalletService/ListValuations"
+	// WalletServiceSaveValuationProcedure is the fully-qualified name of the WalletService's
+	// SaveValuation RPC.
+	WalletServiceSaveValuationProcedure = "/ledger.v1.WalletService/SaveValuation"
+	// WalletServiceDeleteValuationProcedure is the fully-qualified name of the WalletService's
+	// DeleteValuation RPC.
+	WalletServiceDeleteValuationProcedure = "/ledger.v1.WalletService/DeleteValuation"
 )
 
 // WalletServiceClient is a client for the ledger.v1.WalletService service.
@@ -62,6 +71,12 @@ type WalletServiceClient interface {
 	ArchiveWallet(context.Context, *connect.Request[v1.ArchiveWalletRequest]) (*connect.Response[v1.ArchiveWalletResponse], error)
 	// Hard delete, only allowed while the wallet has no transactions.
 	DeleteWallet(context.Context, *connect.Request[v1.DeleteWalletRequest]) (*connect.Response[v1.DeleteWalletResponse], error)
+	// Newest first.
+	ListValuations(context.Context, *connect.Request[v1.ListValuationsRequest]) (*connect.Response[v1.ListValuationsResponse], error)
+	// One valuation per wallet and date: saving a date again replaces its value. Only investment
+	// and property wallets take valuations.
+	SaveValuation(context.Context, *connect.Request[v1.SaveValuationRequest]) (*connect.Response[v1.SaveValuationResponse], error)
+	DeleteValuation(context.Context, *connect.Request[v1.DeleteValuationRequest]) (*connect.Response[v1.DeleteValuationResponse], error)
 }
 
 // NewWalletServiceClient constructs a client for the ledger.v1.WalletService service. By default,
@@ -111,17 +126,38 @@ func NewWalletServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(walletServiceMethods.ByName("DeleteWallet")),
 			connect.WithClientOptions(opts...),
 		),
+		listValuations: connect.NewClient[v1.ListValuationsRequest, v1.ListValuationsResponse](
+			httpClient,
+			baseURL+WalletServiceListValuationsProcedure,
+			connect.WithSchema(walletServiceMethods.ByName("ListValuations")),
+			connect.WithClientOptions(opts...),
+		),
+		saveValuation: connect.NewClient[v1.SaveValuationRequest, v1.SaveValuationResponse](
+			httpClient,
+			baseURL+WalletServiceSaveValuationProcedure,
+			connect.WithSchema(walletServiceMethods.ByName("SaveValuation")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteValuation: connect.NewClient[v1.DeleteValuationRequest, v1.DeleteValuationResponse](
+			httpClient,
+			baseURL+WalletServiceDeleteValuationProcedure,
+			connect.WithSchema(walletServiceMethods.ByName("DeleteValuation")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // walletServiceClient implements WalletServiceClient.
 type walletServiceClient struct {
-	listWallets   *connect.Client[v1.ListWalletsRequest, v1.ListWalletsResponse]
-	getWallet     *connect.Client[v1.GetWalletRequest, v1.GetWalletResponse]
-	createWallet  *connect.Client[v1.CreateWalletRequest, v1.CreateWalletResponse]
-	updateWallet  *connect.Client[v1.UpdateWalletRequest, v1.UpdateWalletResponse]
-	archiveWallet *connect.Client[v1.ArchiveWalletRequest, v1.ArchiveWalletResponse]
-	deleteWallet  *connect.Client[v1.DeleteWalletRequest, v1.DeleteWalletResponse]
+	listWallets     *connect.Client[v1.ListWalletsRequest, v1.ListWalletsResponse]
+	getWallet       *connect.Client[v1.GetWalletRequest, v1.GetWalletResponse]
+	createWallet    *connect.Client[v1.CreateWalletRequest, v1.CreateWalletResponse]
+	updateWallet    *connect.Client[v1.UpdateWalletRequest, v1.UpdateWalletResponse]
+	archiveWallet   *connect.Client[v1.ArchiveWalletRequest, v1.ArchiveWalletResponse]
+	deleteWallet    *connect.Client[v1.DeleteWalletRequest, v1.DeleteWalletResponse]
+	listValuations  *connect.Client[v1.ListValuationsRequest, v1.ListValuationsResponse]
+	saveValuation   *connect.Client[v1.SaveValuationRequest, v1.SaveValuationResponse]
+	deleteValuation *connect.Client[v1.DeleteValuationRequest, v1.DeleteValuationResponse]
 }
 
 // ListWallets calls ledger.v1.WalletService.ListWallets.
@@ -154,6 +190,21 @@ func (c *walletServiceClient) DeleteWallet(ctx context.Context, req *connect.Req
 	return c.deleteWallet.CallUnary(ctx, req)
 }
 
+// ListValuations calls ledger.v1.WalletService.ListValuations.
+func (c *walletServiceClient) ListValuations(ctx context.Context, req *connect.Request[v1.ListValuationsRequest]) (*connect.Response[v1.ListValuationsResponse], error) {
+	return c.listValuations.CallUnary(ctx, req)
+}
+
+// SaveValuation calls ledger.v1.WalletService.SaveValuation.
+func (c *walletServiceClient) SaveValuation(ctx context.Context, req *connect.Request[v1.SaveValuationRequest]) (*connect.Response[v1.SaveValuationResponse], error) {
+	return c.saveValuation.CallUnary(ctx, req)
+}
+
+// DeleteValuation calls ledger.v1.WalletService.DeleteValuation.
+func (c *walletServiceClient) DeleteValuation(ctx context.Context, req *connect.Request[v1.DeleteValuationRequest]) (*connect.Response[v1.DeleteValuationResponse], error) {
+	return c.deleteValuation.CallUnary(ctx, req)
+}
+
 // WalletServiceHandler is an implementation of the ledger.v1.WalletService service.
 type WalletServiceHandler interface {
 	ListWallets(context.Context, *connect.Request[v1.ListWalletsRequest]) (*connect.Response[v1.ListWalletsResponse], error)
@@ -164,6 +215,12 @@ type WalletServiceHandler interface {
 	ArchiveWallet(context.Context, *connect.Request[v1.ArchiveWalletRequest]) (*connect.Response[v1.ArchiveWalletResponse], error)
 	// Hard delete, only allowed while the wallet has no transactions.
 	DeleteWallet(context.Context, *connect.Request[v1.DeleteWalletRequest]) (*connect.Response[v1.DeleteWalletResponse], error)
+	// Newest first.
+	ListValuations(context.Context, *connect.Request[v1.ListValuationsRequest]) (*connect.Response[v1.ListValuationsResponse], error)
+	// One valuation per wallet and date: saving a date again replaces its value. Only investment
+	// and property wallets take valuations.
+	SaveValuation(context.Context, *connect.Request[v1.SaveValuationRequest]) (*connect.Response[v1.SaveValuationResponse], error)
+	DeleteValuation(context.Context, *connect.Request[v1.DeleteValuationRequest]) (*connect.Response[v1.DeleteValuationResponse], error)
 }
 
 // NewWalletServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -209,6 +266,24 @@ func NewWalletServiceHandler(svc WalletServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(walletServiceMethods.ByName("DeleteWallet")),
 		connect.WithHandlerOptions(opts...),
 	)
+	walletServiceListValuationsHandler := connect.NewUnaryHandler(
+		WalletServiceListValuationsProcedure,
+		svc.ListValuations,
+		connect.WithSchema(walletServiceMethods.ByName("ListValuations")),
+		connect.WithHandlerOptions(opts...),
+	)
+	walletServiceSaveValuationHandler := connect.NewUnaryHandler(
+		WalletServiceSaveValuationProcedure,
+		svc.SaveValuation,
+		connect.WithSchema(walletServiceMethods.ByName("SaveValuation")),
+		connect.WithHandlerOptions(opts...),
+	)
+	walletServiceDeleteValuationHandler := connect.NewUnaryHandler(
+		WalletServiceDeleteValuationProcedure,
+		svc.DeleteValuation,
+		connect.WithSchema(walletServiceMethods.ByName("DeleteValuation")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ledger.v1.WalletService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case WalletServiceListWalletsProcedure:
@@ -223,6 +298,12 @@ func NewWalletServiceHandler(svc WalletServiceHandler, opts ...connect.HandlerOp
 			walletServiceArchiveWalletHandler.ServeHTTP(w, r)
 		case WalletServiceDeleteWalletProcedure:
 			walletServiceDeleteWalletHandler.ServeHTTP(w, r)
+		case WalletServiceListValuationsProcedure:
+			walletServiceListValuationsHandler.ServeHTTP(w, r)
+		case WalletServiceSaveValuationProcedure:
+			walletServiceSaveValuationHandler.ServeHTTP(w, r)
+		case WalletServiceDeleteValuationProcedure:
+			walletServiceDeleteValuationHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -254,4 +335,16 @@ func (UnimplementedWalletServiceHandler) ArchiveWallet(context.Context, *connect
 
 func (UnimplementedWalletServiceHandler) DeleteWallet(context.Context, *connect.Request[v1.DeleteWalletRequest]) (*connect.Response[v1.DeleteWalletResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.WalletService.DeleteWallet is not implemented"))
+}
+
+func (UnimplementedWalletServiceHandler) ListValuations(context.Context, *connect.Request[v1.ListValuationsRequest]) (*connect.Response[v1.ListValuationsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.WalletService.ListValuations is not implemented"))
+}
+
+func (UnimplementedWalletServiceHandler) SaveValuation(context.Context, *connect.Request[v1.SaveValuationRequest]) (*connect.Response[v1.SaveValuationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.WalletService.SaveValuation is not implemented"))
+}
+
+func (UnimplementedWalletServiceHandler) DeleteValuation(context.Context, *connect.Request[v1.DeleteValuationRequest]) (*connect.Response[v1.DeleteValuationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ledger.v1.WalletService.DeleteValuation is not implemented"))
 }
