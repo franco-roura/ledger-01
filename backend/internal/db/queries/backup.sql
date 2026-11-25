@@ -3,8 +3,12 @@
 -- restoring household's members.
 
 -- name: BackupWallets :many
-SELECT id, name, currency, initial_balance_minor, hidden, position, archived_at FROM wallets
+SELECT id, name, currency, initial_balance_minor, hidden, position, archived_at, type FROM wallets
 WHERE household_id = @household_id ORDER BY position, created_at, id;
+
+-- name: BackupValuations :many
+SELECT wallet_id, valued_on, value_minor FROM wallet_valuations
+WHERE household_id = @household_id ORDER BY wallet_id, valued_on;
 
 -- name: BackupCategories :many
 SELECT id, kind, name, icon, color, position, archived_at FROM categories
@@ -102,8 +106,12 @@ DELETE FROM labels WHERE household_id = @household_id;
 DELETE FROM categories WHERE household_id = @household_id;
 
 -- name: RestoreWallet :exec
-INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at)
-VALUES (@id, @household_id, @name, @currency, @initial_balance_minor, @hidden, @position, @archived_at);
+INSERT INTO wallets (id, household_id, name, currency, initial_balance_minor, hidden, position, archived_at, type)
+VALUES (@id, @household_id, @name, @currency, @initial_balance_minor, @hidden, @position, @archived_at, @type);
+
+-- name: RestoreValuation :exec
+INSERT INTO wallet_valuations (id, household_id, wallet_id, valued_on, value_minor)
+VALUES (@id, @household_id, @wallet_id, @valued_on, @value_minor);
 
 -- name: RestoreCategory :exec
 INSERT INTO categories (id, household_id, kind, name, icon, color, position, archived_at)

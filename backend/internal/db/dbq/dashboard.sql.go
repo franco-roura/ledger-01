@@ -169,6 +169,7 @@ func (q *Queries) ReportTransactions(ctx context.Context, arg ReportTransactions
 const reportWallets = `-- name: ReportWallets :many
 SELECT w.id,
        w.currency,
+       w.type,
        (w.initial_balance_minor + coalesce((
            SELECT sum(CASE WHEN t.kind IN ('income', 'transfer_in') THEN t.amount_minor ELSE -t.amount_minor END)
            FROM transactions t
@@ -190,6 +191,7 @@ type ReportWalletsParams struct {
 type ReportWalletsRow struct {
 	ID           uuid.UUID
 	Currency     string
+	Type         WalletType
 	OpeningMinor int64
 }
 
@@ -209,7 +211,12 @@ func (q *Queries) ReportWallets(ctx context.Context, arg ReportWalletsParams) ([
 	items := []ReportWalletsRow{}
 	for rows.Next() {
 		var i ReportWalletsRow
-		if err := rows.Scan(&i.ID, &i.Currency, &i.OpeningMinor); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Currency,
+			&i.Type,
+			&i.OpeningMinor,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

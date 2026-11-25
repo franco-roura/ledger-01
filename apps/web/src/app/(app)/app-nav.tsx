@@ -54,6 +54,12 @@ export function AppNav({
           active: path.startsWith("/wallets") || path.startsWith("/future"),
         },
         {
+          label: "Net worth",
+          href: "/net-worth",
+          active: path.startsWith("/net-worth"),
+          desktopOnly: true,
+        },
+        {
           label: "Settings",
           href: "/settings/categories",
           active: path.startsWith("/settings"),

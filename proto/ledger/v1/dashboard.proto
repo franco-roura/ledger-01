@@ -4,6 +4,7 @@ package ledger.v1;
 
 import "ledger/v1/common.proto";
 import "ledger/v1/transaction.proto";
+import "ledger/v1/wallet.proto";
 
 // Household-wide reports in the user's base currency, or a requested one. Amounts in other
 // currencies are converted with the household's own transfer rates (latest transfer between the
@@ -54,6 +55,8 @@ message CategoryTotal {
 service DashboardService {
   rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
   rpc GetCategoryReport(GetCategoryReportRequest) returns (GetCategoryReportResponse);
+  // Assets, liabilities and net worth over every visible wallet.
+  rpc GetNetWorth(GetNetWorthRequest) returns (GetNetWorthResponse);
 }
 
 message GetDashboardRequest {
@@ -106,4 +109,53 @@ message GetCategoryReportResponse {
   // Newest first, at most 200, in their own wallet currencies.
   repeated Transaction transactions = 7;
   repeated string unconverted_currencies = 8;
+}
+
+message GetNetWorthRequest {
+  // Range of the history series; the totals are always as of today.
+  DateRange period = 1;
+  Bucket bucket = 2;
+  string today = 3;
+  // Same as GetDashboardRequest.currency.
+  string currency = 4;
+}
+
+message NetWorthPoint {
+  // First day of the bucket, "YYYY-MM-DD"; values are at the end of the bucket.
+  string date = 1;
+  int64 assets_minor = 2;
+  // What liabilities owe, as a positive number (negative when they hold credit).
+  int64 liabilities_minor = 3;
+  // assets_minor - liabilities_minor.
+  int64 net_worth_minor = 4;
+}
+
+message NetWorthWallet {
+  string wallet_id = 1;
+  WalletType type = 2;
+  // In the wallet's currency: the value for assets, what is owed (positive) for liabilities.
+  int64 amount_minor = 3;
+  // amount_minor in the report currency; 0 when its currency has no rate.
+  int64 converted_minor = 4;
+  // Liabilities only, in the wallet's currency: expenses minus income still to come (rows after
+  // today plus the not-yet-created occurrences of recurring rules that end).
+  int64 upcoming_debt_minor = 5;
+}
+
+// Net worth as of today. This is the one place upcoming rows count: on liabilities they are debt
+// still to come (e.g. the rest of an installment plan), shown apart and never as spending.
+message GetNetWorthResponse {
+  string currency = 1;
+  int64 assets_minor = 2;
+  // Owed today, positive.
+  int64 liabilities_minor = 3;
+  int64 net_worth_minor = 4;
+  // Liabilities' upcoming debt in the report currency, at today's rate.
+  int64 upcoming_debt_minor = 5;
+  repeated NetWorthPoint series = 6;
+  // Assets first, then liabilities, each in wallet order.
+  repeated NetWorthWallet wallets = 7;
+  // Upcoming debt by category, largest first.
+  repeated CategoryTotal upcoming_debt_categories = 8;
+  repeated string unconverted_currencies = 9;
 }

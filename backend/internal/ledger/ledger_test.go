@@ -46,7 +46,12 @@ func categoryNamed(t *testing.T, svc *ledger.Service, a ledger.Actor, kind ledge
 
 func mustWallet(t *testing.T, svc *ledger.Service, a ledger.Actor, name, currency string, initial int64) ledger.Wallet {
 	t.Helper()
-	w, err := svc.CreateWallet(context.Background(), a, name, currency, initial)
+	return mustTypedWallet(t, svc, a, name, currency, "", initial)
+}
+
+func mustTypedWallet(t *testing.T, svc *ledger.Service, a ledger.Actor, name, currency string, typ ledger.WalletType, initial int64) ledger.Wallet {
+	t.Helper()
+	w, err := svc.CreateWallet(context.Background(), a, name, currency, typ, initial)
 	if err != nil {
 		t.Fatal(err)
 	}

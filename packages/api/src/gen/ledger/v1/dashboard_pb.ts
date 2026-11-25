@@ -8,13 +8,15 @@ import type { DateRange } from "./common_pb";
 import { file_ledger_v1_common } from "./common_pb";
 import type { Transaction } from "./transaction_pb";
 import { file_ledger_v1_transaction } from "./transaction_pb";
+import type { WalletType } from "./wallet_pb";
+import { file_ledger_v1_wallet } from "./wallet_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file ledger/v1/dashboard.proto.
  */
 export const file_ledger_v1_dashboard: GenFile = /*@__PURE__*/
-  fileDesc("ChlsZWRnZXIvdjEvZGFzaGJvYXJkLnByb3RvEglsZWRnZXIudjEi3QEKD0Rhc2hib2FyZEZpbHRlchIkCgZwZXJpb2QYASABKAsyFC5sZWRnZXIudjEuRGF0ZVJhbmdlEhIKCndhbGxldF9pZHMYAiADKAkSFAoMY2F0ZWdvcnlfaWRzGAMgAygJEhIKCm5vdGVfcXVlcnkYBCABKAkSHQoQbWluX2Ftb3VudF9taW5vchgFIAEoA0gAiAEBEh0KEG1heF9hbW91bnRfbWlub3IYBiABKANIAYgBAUITChFfbWluX2Ftb3VudF9taW5vckITChFfbWF4X2Ftb3VudF9taW5vciJfCgtTZXJpZXNQb2ludBIMCgRkYXRlGAEgASgJEhUKDWJhbGFuY2VfbWlub3IYAiABKAMSFAoMaW5jb21lX21pbm9yGAMgASgDEhUKDWV4cGVuc2VfbWlub3IYBCABKAMiVQoNQ2F0ZWdvcnlUb3RhbBITCgtjYXRlZ29yeV9pZBgBIAEoCRIUCgxhbW91bnRfbWlub3IYAiABKAMSGQoRdHJhbnNhY3Rpb25fY291bnQYAyABKAMihQEKE0dldERhc2hib2FyZFJlcXVlc3QSKgoGZmlsdGVyGAEgASgLMhoubGVkZ2VyLnYxLkRhc2hib2FyZEZpbHRlchIhCgZidWNrZXQYAiABKA4yES5sZWRnZXIudjEuQnVja2V0Eg0KBXRvZGF5GAMgASgJEhAKCGN1cnJlbmN5GAQgASgJIqgDChRHZXREYXNoYm9hcmRSZXNwb25zZRIQCghjdXJyZW5jeRgBIAEoCRIVCg1iYWxhbmNlX21pbm9yGAIgASgDEhQKDGNoYW5nZV9taW5vchgDIAEoAxIWCg5leHBlbnNlc19taW5vchgEIAEoAxIUCgxpbmNvbWVfbWlub3IYBSABKAMSJgoGc2VyaWVzGAYgAygLMhYubGVkZ2VyLnYxLlNlcmllc1BvaW50EjQKEmV4cGVuc2VfY2F0ZWdvcmllcxgHIAMoCzIYLmxlZGdlci52MS5DYXRlZ29yeVRvdGFsEjMKEWluY29tZV9jYXRlZ29yaWVzGAggAygLMhgubGVkZ2VyLnYxLkNhdGVnb3J5VG90YWwSGgoSdHJhbnNmZXJzX2luX21pbm9yGAkgASgDEhsKE3RyYW5zZmVyc19vdXRfbWlub3IYCiABKAMSGgoSdHJhbnNmZXJzX2luX2NvdW50GAsgASgDEhsKE3RyYW5zZmVyc19vdXRfY291bnQYDCABKAMSHgoWdW5jb252ZXJ0ZWRfY3VycmVuY2llcxgNIAMoCSKfAQoYR2V0Q2F0ZWdvcnlSZXBvcnRSZXF1ZXN0EhMKC2NhdGVnb3J5X2lkGAEgASgJEioKBmZpbHRlchgCIAEoCzIaLmxlZGdlci52MS5EYXNoYm9hcmRGaWx0ZXISIQoGYnVja2V0GAMgASgOMhEubGVkZ2VyLnYxLkJ1Y2tldBINCgV0b2RheRgEIAEoCRIQCghjdXJyZW5jeRgFIAEoCSKDAgoZR2V0Q2F0ZWdvcnlSZXBvcnRSZXNwb25zZRIQCghjdXJyZW5jeRgBIAEoCRITCgt0b3RhbF9taW5vchgCIAEoAxIZChF0cmFuc2FjdGlvbl9jb3VudBgDIAEoAxIVCg1hdmVyYWdlX21pbm9yGAQgASgDEhcKD2J1c2llc3Rfd2Vla2RheRgFIAEoBRImCgZzZXJpZXMYBiADKAsyFi5sZWRnZXIudjEuU2VyaWVzUG9pbnQSLAoMdHJhbnNhY3Rpb25zGAcgAygLMhYubGVkZ2VyLnYxLlRyYW5zYWN0aW9uEh4KFnVuY29udmVydGVkX2N1cnJlbmNpZXMYCCADKAkqUwoGQnVja2V0EhYKEkJVQ0tFVF9VTlNQRUNJRklFRBAAEg4KCkJVQ0tFVF9EQVkQARIPCgtCVUNLRVRfV0VFSxACEhAKDEJVQ0tFVF9NT05USBADMsMBChBEYXNoYm9hcmRTZXJ2aWNlEk8KDEdldERhc2hib2FyZBIeLmxlZGdlci52MS5HZXREYXNoYm9hcmRSZXF1ZXN0Gh8ubGVkZ2VyLnYxLkdldERhc2hib2FyZFJlc3BvbnNlEl4KEUdldENhdGVnb3J5UmVwb3J0EiMubGVkZ2VyLnYxLkdldENhdGVnb3J5UmVwb3J0UmVxdWVzdBokLmxlZGdlci52MS5HZXRDYXRlZ29yeVJlcG9ydFJlc3BvbnNlQqYBCg1jb20ubGVkZ2VyLnYxQg5EYXNoYm9hcmRQcm90b1ABWkBnaXRodWIuY29tL2ZyYW5jby1yb3VyYS9sZWRnZXItMDEvYmFja2VuZC9nZW4vbGVkZ2VyL3YxO2xlZGdlcnYxogIDTFhYqgIJTGVkZ2VyLlYxygIJTGVkZ2VyXFYx4gIVTGVkZ2VyXFYxXEdQQk1ldGFkYXRh6gIKTGVkZ2VyOjpWMWIGcHJvdG8z", [file_ledger_v1_common, file_ledger_v1_transaction]);
+  fileDesc("ChlsZWRnZXIvdjEvZGFzaGJvYXJkLnByb3RvEglsZWRnZXIudjEi3QEKD0Rhc2hib2FyZEZpbHRlchIkCgZwZXJpb2QYASABKAsyFC5sZWRnZXIudjEuRGF0ZVJhbmdlEhIKCndhbGxldF9pZHMYAiADKAkSFAoMY2F0ZWdvcnlfaWRzGAMgAygJEhIKCm5vdGVfcXVlcnkYBCABKAkSHQoQbWluX2Ftb3VudF9taW5vchgFIAEoA0gAiAEBEh0KEG1heF9hbW91bnRfbWlub3IYBiABKANIAYgBAUITChFfbWluX2Ftb3VudF9taW5vckITChFfbWF4X2Ftb3VudF9taW5vciJfCgtTZXJpZXNQb2ludBIMCgRkYXRlGAEgASgJEhUKDWJhbGFuY2VfbWlub3IYAiABKAMSFAoMaW5jb21lX21pbm9yGAMgASgDEhUKDWV4cGVuc2VfbWlub3IYBCABKAMiVQoNQ2F0ZWdvcnlUb3RhbBITCgtjYXRlZ29yeV9pZBgBIAEoCRIUCgxhbW91bnRfbWlub3IYAiABKAMSGQoRdHJhbnNhY3Rpb25fY291bnQYAyABKAMihQEKE0dldERhc2hib2FyZFJlcXVlc3QSKgoGZmlsdGVyGAEgASgLMhoubGVkZ2VyLnYxLkRhc2hib2FyZEZpbHRlchIhCgZidWNrZXQYAiABKA4yES5sZWRnZXIudjEuQnVja2V0Eg0KBXRvZGF5GAMgASgJEhAKCGN1cnJlbmN5GAQgASgJIqgDChRHZXREYXNoYm9hcmRSZXNwb25zZRIQCghjdXJyZW5jeRgBIAEoCRIVCg1iYWxhbmNlX21pbm9yGAIgASgDEhQKDGNoYW5nZV9taW5vchgDIAEoAxIWCg5leHBlbnNlc19taW5vchgEIAEoAxIUCgxpbmNvbWVfbWlub3IYBSABKAMSJgoGc2VyaWVzGAYgAygLMhYubGVkZ2VyLnYxLlNlcmllc1BvaW50EjQKEmV4cGVuc2VfY2F0ZWdvcmllcxgHIAMoCzIYLmxlZGdlci52MS5DYXRlZ29yeVRvdGFsEjMKEWluY29tZV9jYXRlZ29yaWVzGAggAygLMhgubGVkZ2VyLnYxLkNhdGVnb3J5VG90YWwSGgoSdHJhbnNmZXJzX2luX21pbm9yGAkgASgDEhsKE3RyYW5zZmVyc19vdXRfbWlub3IYCiABKAMSGgoSdHJhbnNmZXJzX2luX2NvdW50GAsgASgDEhsKE3RyYW5zZmVyc19vdXRfY291bnQYDCABKAMSHgoWdW5jb252ZXJ0ZWRfY3VycmVuY2llcxgNIAMoCSKfAQoYR2V0Q2F0ZWdvcnlSZXBvcnRSZXF1ZXN0EhMKC2NhdGVnb3J5X2lkGAEgASgJEioKBmZpbHRlchgCIAEoCzIaLmxlZGdlci52MS5EYXNoYm9hcmRGaWx0ZXISIQoGYnVja2V0GAMgASgOMhEubGVkZ2VyLnYxLkJ1Y2tldBINCgV0b2RheRgEIAEoCRIQCghjdXJyZW5jeRgFIAEoCSKDAgoZR2V0Q2F0ZWdvcnlSZXBvcnRSZXNwb25zZRIQCghjdXJyZW5jeRgBIAEoCRITCgt0b3RhbF9taW5vchgCIAEoAxIZChF0cmFuc2FjdGlvbl9jb3VudBgDIAEoAxIVCg1hdmVyYWdlX21pbm9yGAQgASgDEhcKD2J1c2llc3Rfd2Vla2RheRgFIAEoBRImCgZzZXJpZXMYBiADKAsyFi5sZWRnZXIudjEuU2VyaWVzUG9pbnQSLAoMdHJhbnNhY3Rpb25zGAcgAygLMhYubGVkZ2VyLnYxLlRyYW5zYWN0aW9uEh4KFnVuY29udmVydGVkX2N1cnJlbmNpZXMYCCADKAkifgoSR2V0TmV0V29ydGhSZXF1ZXN0EiQKBnBlcmlvZBgBIAEoCzIULmxlZGdlci52MS5EYXRlUmFuZ2USIQoGYnVja2V0GAIgASgOMhEubGVkZ2VyLnYxLkJ1Y2tldBINCgV0b2RheRgDIAEoCRIQCghjdXJyZW5jeRgEIAEoCSJnCg1OZXRXb3J0aFBvaW50EgwKBGRhdGUYASABKAkSFAoMYXNzZXRzX21pbm9yGAIgASgDEhkKEWxpYWJpbGl0aWVzX21pbm9yGAMgASgDEhcKD25ldF93b3J0aF9taW5vchgEIAEoAyKUAQoOTmV0V29ydGhXYWxsZXQSEQoJd2FsbGV0X2lkGAEgASgJEiMKBHR5cGUYAiABKA4yFS5sZWRnZXIudjEuV2FsbGV0VHlwZRIUCgxhbW91bnRfbWlub3IYAyABKAMSFwoPY29udmVydGVkX21pbm9yGAQgASgDEhsKE3VwY29taW5nX2RlYnRfbWlub3IYBSABKAMiwAIKE0dldE5ldFdvcnRoUmVzcG9uc2USEAoIY3VycmVuY3kYASABKAkSFAoMYXNzZXRzX21pbm9yGAIgASgDEhkKEWxpYWJpbGl0aWVzX21pbm9yGAMgASgDEhcKD25ldF93b3J0aF9taW5vchgEIAEoAxIbChN1cGNvbWluZ19kZWJ0X21pbm9yGAUgASgDEigKBnNlcmllcxgGIAMoCzIYLmxlZGdlci52MS5OZXRXb3J0aFBvaW50EioKB3dhbGxldHMYByADKAsyGS5sZWRnZXIudjEuTmV0V29ydGhXYWxsZXQSOgoYdXBjb21pbmdfZGVidF9jYXRlZ29yaWVzGAggAygLMhgubGVkZ2VyLnYxLkNhdGVnb3J5VG90YWwSHgoWdW5jb252ZXJ0ZWRfY3VycmVuY2llcxgJIAMoCSpTCgZCdWNrZXQSFgoSQlVDS0VUX1VOU1BFQ0lGSUVEEAASDgoKQlVDS0VUX0RBWRABEg8KC0JVQ0tFVF9XRUVLEAISEAoMQlVDS0VUX01PTlRIEAMykQIKEERhc2hib2FyZFNlcnZpY2USTwoMR2V0RGFzaGJvYXJkEh4ubGVkZ2VyLnYxLkdldERhc2hib2FyZFJlcXVlc3QaHy5sZWRnZXIudjEuR2V0RGFzaGJvYXJkUmVzcG9uc2USXgoRR2V0Q2F0ZWdvcnlSZXBvcnQSIy5sZWRnZXIudjEuR2V0Q2F0ZWdvcnlSZXBvcnRSZXF1ZXN0GiQubGVkZ2VyLnYxLkdldENhdGVnb3J5UmVwb3J0UmVzcG9uc2USTAoLR2V0TmV0V29ydGgSHS5sZWRnZXIudjEuR2V0TmV0V29ydGhSZXF1ZXN0Gh4ubGVkZ2VyLnYxLkdldE5ldFdvcnRoUmVzcG9uc2VCpgEKDWNvbS5sZWRnZXIudjFCDkRhc2hib2FyZFByb3RvUAFaQGdpdGh1Yi5jb20vZnJhbmNvLXJvdXJhL2xlZGdlci0wMS9iYWNrZW5kL2dlbi9sZWRnZXIvdjE7bGVkZ2VydjGiAgNMWFiqAglMZWRnZXIuVjHKAglMZWRnZXJcVjHiAhVMZWRnZXJcVjFcR1BCTWV0YWRhdGHqAgpMZWRnZXI6OlYxYgZwcm90bzM", [file_ledger_v1_common, file_ledger_v1_transaction, file_ledger_v1_wallet]);
 
 /**
  * @generated from message ledger.v1.DashboardFilter
@@ -351,6 +353,192 @@ export const GetCategoryReportResponseSchema: GenMessage<GetCategoryReportRespon
   messageDesc(file_ledger_v1_dashboard, 6);
 
 /**
+ * @generated from message ledger.v1.GetNetWorthRequest
+ */
+export type GetNetWorthRequest = Message<"ledger.v1.GetNetWorthRequest"> & {
+  /**
+   * Range of the history series; the totals are always as of today.
+   *
+   * @generated from field: ledger.v1.DateRange period = 1;
+   */
+  period?: DateRange | undefined;
+
+  /**
+   * @generated from field: ledger.v1.Bucket bucket = 2;
+   */
+  bucket: Bucket;
+
+  /**
+   * @generated from field: string today = 3;
+   */
+  today: string;
+
+  /**
+   * Same as GetDashboardRequest.currency.
+   *
+   * @generated from field: string currency = 4;
+   */
+  currency: string;
+};
+
+/**
+ * Describes the message ledger.v1.GetNetWorthRequest.
+ * Use `create(GetNetWorthRequestSchema)` to create a new message.
+ */
+export const GetNetWorthRequestSchema: GenMessage<GetNetWorthRequest> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_dashboard, 7);
+
+/**
+ * @generated from message ledger.v1.NetWorthPoint
+ */
+export type NetWorthPoint = Message<"ledger.v1.NetWorthPoint"> & {
+  /**
+   * First day of the bucket, "YYYY-MM-DD"; values are at the end of the bucket.
+   *
+   * @generated from field: string date = 1;
+   */
+  date: string;
+
+  /**
+   * @generated from field: int64 assets_minor = 2;
+   */
+  assetsMinor: bigint;
+
+  /**
+   * What liabilities owe, as a positive number (negative when they hold credit).
+   *
+   * @generated from field: int64 liabilities_minor = 3;
+   */
+  liabilitiesMinor: bigint;
+
+  /**
+   * assets_minor - liabilities_minor.
+   *
+   * @generated from field: int64 net_worth_minor = 4;
+   */
+  netWorthMinor: bigint;
+};
+
+/**
+ * Describes the message ledger.v1.NetWorthPoint.
+ * Use `create(NetWorthPointSchema)` to create a new message.
+ */
+export const NetWorthPointSchema: GenMessage<NetWorthPoint> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_dashboard, 8);
+
+/**
+ * @generated from message ledger.v1.NetWorthWallet
+ */
+export type NetWorthWallet = Message<"ledger.v1.NetWorthWallet"> & {
+  /**
+   * @generated from field: string wallet_id = 1;
+   */
+  walletId: string;
+
+  /**
+   * @generated from field: ledger.v1.WalletType type = 2;
+   */
+  type: WalletType;
+
+  /**
+   * In the wallet's currency: the value for assets, what is owed (positive) for liabilities.
+   *
+   * @generated from field: int64 amount_minor = 3;
+   */
+  amountMinor: bigint;
+
+  /**
+   * amount_minor in the report currency; 0 when its currency has no rate.
+   *
+   * @generated from field: int64 converted_minor = 4;
+   */
+  convertedMinor: bigint;
+
+  /**
+   * Liabilities only, in the wallet's currency: expenses minus income still to come (rows after
+   * today plus the not-yet-created occurrences of recurring rules that end).
+   *
+   * @generated from field: int64 upcoming_debt_minor = 5;
+   */
+  upcomingDebtMinor: bigint;
+};
+
+/**
+ * Describes the message ledger.v1.NetWorthWallet.
+ * Use `create(NetWorthWalletSchema)` to create a new message.
+ */
+export const NetWorthWalletSchema: GenMessage<NetWorthWallet> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_dashboard, 9);
+
+/**
+ * Net worth as of today. This is the one place upcoming rows count: on liabilities they are debt
+ * still to come (e.g. the rest of an installment plan), shown apart and never as spending.
+ *
+ * @generated from message ledger.v1.GetNetWorthResponse
+ */
+export type GetNetWorthResponse = Message<"ledger.v1.GetNetWorthResponse"> & {
+  /**
+   * @generated from field: string currency = 1;
+   */
+  currency: string;
+
+  /**
+   * @generated from field: int64 assets_minor = 2;
+   */
+  assetsMinor: bigint;
+
+  /**
+   * Owed today, positive.
+   *
+   * @generated from field: int64 liabilities_minor = 3;
+   */
+  liabilitiesMinor: bigint;
+
+  /**
+   * @generated from field: int64 net_worth_minor = 4;
+   */
+  netWorthMinor: bigint;
+
+  /**
+   * Liabilities' upcoming debt in the report currency, at today's rate.
+   *
+   * @generated from field: int64 upcoming_debt_minor = 5;
+   */
+  upcomingDebtMinor: bigint;
+
+  /**
+   * @generated from field: repeated ledger.v1.NetWorthPoint series = 6;
+   */
+  series: NetWorthPoint[];
+
+  /**
+   * Assets first, then liabilities, each in wallet order.
+   *
+   * @generated from field: repeated ledger.v1.NetWorthWallet wallets = 7;
+   */
+  wallets: NetWorthWallet[];
+
+  /**
+   * Upcoming debt by category, largest first.
+   *
+   * @generated from field: repeated ledger.v1.CategoryTotal upcoming_debt_categories = 8;
+   */
+  upcomingDebtCategories: CategoryTotal[];
+
+  /**
+   * @generated from field: repeated string unconverted_currencies = 9;
+   */
+  unconvertedCurrencies: string[];
+};
+
+/**
+ * Describes the message ledger.v1.GetNetWorthResponse.
+ * Use `create(GetNetWorthResponseSchema)` to create a new message.
+ */
+export const GetNetWorthResponseSchema: GenMessage<GetNetWorthResponse> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_dashboard, 10);
+
+/**
  * @generated from enum ledger.v1.Bucket
  */
 export enum Bucket {
@@ -400,6 +588,16 @@ export const DashboardService: GenService<{
     methodKind: "unary";
     input: typeof GetCategoryReportRequestSchema;
     output: typeof GetCategoryReportResponseSchema;
+  },
+  /**
+   * Assets, liabilities and net worth over every visible wallet.
+   *
+   * @generated from rpc ledger.v1.DashboardService.GetNetWorth
+   */
+  getNetWorth: {
+    methodKind: "unary";
+    input: typeof GetNetWorthRequestSchema;
+    output: typeof GetNetWorthResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_ledger_v1_dashboard, 0);

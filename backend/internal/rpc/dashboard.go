@@ -115,3 +115,46 @@ func (s *Server) GetCategoryReport(ctx context.Context, req *connect.Request[v1.
 		UnconvertedCurrencies: r.Unconverted,
 	}), nil
 }
+
+func (s *Server) GetNetWorth(ctx context.Context, req *connect.Request[v1.GetNetWorthRequest]) (*connect.Response[v1.GetNetWorthResponse], error) {
+	a, err := s.actor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if req.Msg.Period == nil {
+		return nil, s.fail(ctx, &ledger.InvalidError{Field: "period", Msg: "is required"})
+	}
+	var f ledger.ReportFilter
+	if f.From, err = parseDate("period.from", req.Msg.Period.From); err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	if f.To, err = parseDate("period.to", req.Msg.Period.To); err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	if f.Today, err = parseToday(req.Msg.Today); err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	f.Currency = req.Msg.Currency
+	n, err := s.svc.NetWorthFor(ctx, a, f, bucketFromProto(req.Msg.Bucket))
+	if err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	series := make([]*v1.NetWorthPoint, len(n.Series))
+	for i, p := range n.Series {
+		series[i] = &v1.NetWorthPoint{
+			Date: money.FormatDate(p.Date), AssetsMinor: p.Assets, LiabilitiesMinor: p.Liabilities, NetWorthMinor: p.NetWorth,
+		}
+	}
+	wallets := make([]*v1.NetWorthWallet, len(n.Wallets))
+	for i, w := range n.Wallets {
+		wallets[i] = &v1.NetWorthWallet{
+			WalletId: w.WalletID.String(), Type: walletTypeToProto(w.Type), AmountMinor: w.Amount,
+			ConvertedMinor: w.Converted, UpcomingDebtMinor: w.UpcomingDebt,
+		}
+	}
+	return connect.NewResponse(&v1.GetNetWorthResponse{
+		Currency: n.Currency, AssetsMinor: n.Assets, LiabilitiesMinor: n.Liabilities, NetWorthMinor: n.NetWorth,
+		UpcomingDebtMinor: n.UpcomingDebt, Series: series, Wallets: wallets,
+		UpcomingDebtCategories: totalsToProto(n.UpcomingDebtCategories), UnconvertedCurrencies: n.Unconverted,
+	}), nil
+}

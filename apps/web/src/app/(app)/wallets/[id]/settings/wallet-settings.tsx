@@ -27,8 +27,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { WalletTypeSelect } from "@/components/wallet-type";
 import { useCategories } from "@/lib/api/hooks";
 import { today } from "@/lib/period";
+import { takesValuations } from "@/lib/wallet-types";
+import { ValuationsPanel } from "./valuations-panel";
 
 export function WalletSettings({ walletId }: { walletId: string }) {
   const router = useRouter();
@@ -79,6 +82,14 @@ export function WalletSettings({ walletId }: { walletId: string }) {
               required
             />
           </Field>
+          <Field label="Type" htmlFor="wallet-type">
+            <WalletTypeSelect
+              id="wallet-type"
+              value={wallet.type}
+              onChange={(type) => update.mutate({ id: walletId, type })}
+              disabled={update.isPending}
+            />
+          </Field>
           <div className="flex items-center gap-2">
             <Checkbox
               id="wallet-hidden"
@@ -99,7 +110,9 @@ export function WalletSettings({ walletId }: { walletId: string }) {
         </form>
       </Panel>
 
-      <Panel serial="CFG-02 · CATEGORIES" className="max-w-2xl">
+      {takesValuations(wallet.type) && <ValuationsPanel wallet={wallet} />}
+
+      <Panel serial="CFG-03 · CATEGORIES" className="max-w-2xl">
         <div className="flex flex-col gap-4">
           <p className="text-body-sm text-ink-soft">
             Hidden categories don't show up when you add transactions to this wallet. Existing
@@ -147,7 +160,7 @@ export function WalletSettings({ walletId }: { walletId: string }) {
         </div>
       </Panel>
 
-      <Panel serial="CFG-03 · DANGER" recess className="max-w-2xl">
+      <Panel serial="CFG-04 · DANGER" recess className="max-w-2xl">
         <div className="flex flex-col gap-4">
           <p className="text-body-sm text-ink">
             {hasTransactions

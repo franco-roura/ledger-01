@@ -23,8 +23,9 @@ import (
 // strings and dates are "YYYY-MM-DD", as everywhere else.
 const (
 	BackupFormat = "ledger-01-backup"
-	// Version 2 added members and creator emails; version 1 files still restore.
-	BackupVersion = 2
+	// Version 2 added members and creator emails; version 3 wallet types and valuations. Older
+	// files still restore (their wallets become bank wallets).
+	BackupVersion = 3
 	// BackupMaxBytes caps a backup once uncompressed, so a small gzip can't expand without end.
 	BackupMaxBytes = 64 << 20
 )
@@ -40,6 +41,7 @@ type Backup struct {
 	Members []BackupMember `json:"members,omitempty"`
 
 	Wallets          []BackupWallet         `json:"wallets"`
+	Valuations       []BackupValuation      `json:"valuations,omitempty"`
 	Categories       []BackupCategory       `json:"categories"`
 	HiddenCategories []BackupWalletCategory `json:"hidden_categories"`
 	Labels           []BackupLabel          `json:"labels"`
@@ -71,6 +73,14 @@ type BackupWallet struct {
 	Hidden              bool       `json:"hidden"`
 	Position            int32      `json:"position"`
 	ArchivedAt          *time.Time `json:"archived_at,omitempty"`
+	// Empty in files before version 3: bank.
+	Type string `json:"type,omitempty"`
+}
+
+type BackupValuation struct {
+	WalletID   uuid.UUID `json:"wallet_id"`
+	ValuedOn   string    `json:"valued_on"`
+	ValueMinor int64     `json:"value_minor"`
 }
 
 type BackupCategory struct {
@@ -243,7 +253,15 @@ func (s *Service) ExportBackup(ctx context.Context, a Actor) (*Backup, error) {
 	}
 	for _, w := range wallets {
 		b.Wallets = append(b.Wallets, BackupWallet{ID: w.ID, Name: w.Name, Currency: strings.TrimSpace(w.Currency),
-			InitialBalanceMinor: w.InitialBalanceMinor, Hidden: w.Hidden, Position: w.Position, ArchivedAt: w.ArchivedAt})
+			InitialBalanceMinor: w.InitialBalanceMinor, Hidden: w.Hidden, Position: w.Position, ArchivedAt: w.ArchivedAt,
+			Type: string(w.Type)})
+	}
+	vals, err := q.BackupValuations(ctx, h)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range vals {
+		b.Valuations = append(b.Valuations, BackupValuation{WalletID: v.WalletID, ValuedOn: money.FormatDate(v.ValuedOn), ValueMinor: v.ValueMinor})
 	}
 	cats, err := q.BackupCategories(ctx, h)
 	if err != nil {
@@ -577,8 +595,30 @@ func restoreBackup(ctx context.Context, q *dbq.Queries, a Actor, b *Backup, curr
 		if err != nil {
 			return err
 		}
+		typ := WalletType(w.Type)
+		if typ == "" {
+			typ = WalletBank
+		}
+		if !validWalletType(typ) {
+			return invalid("content", "wallet %s has unknown type %q", w.ID, w.Type)
+		}
 		if err := q.RestoreWallet(ctx, dbq.RestoreWalletParams{ID: id, HouseholdID: h, Name: w.Name, Currency: cur,
-			InitialBalanceMinor: w.InitialBalanceMinor, Hidden: w.Hidden, Position: w.Position, ArchivedAt: w.ArchivedAt}); err != nil {
+			InitialBalanceMinor: w.InitialBalanceMinor, Hidden: w.Hidden, Position: w.Position, ArchivedAt: w.ArchivedAt,
+			Type: typ}); err != nil {
+			return err
+		}
+	}
+	for _, v := range b.Valuations {
+		w, err := wallets.get(v.WalletID)
+		if err != nil {
+			return err
+		}
+		on, err := money.ParseDate(v.ValuedOn)
+		if err != nil {
+			return invalid("content", "valuation date %q: %v", v.ValuedOn, err)
+		}
+		if err := q.RestoreValuation(ctx, dbq.RestoreValuationParams{ID: newID(), HouseholdID: h, WalletID: w,
+			ValuedOn: on, ValueMinor: v.ValueMinor}); err != nil {
 			return err
 		}
 	}

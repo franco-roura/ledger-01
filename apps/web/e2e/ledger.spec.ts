@@ -32,7 +32,7 @@ test("wallets, an expense with a label, and a USD→UYU transfer", async ({ page
     await page.getByRole("button", { name: "Add wallet" }).first().click();
     await page.getByLabel("Name").fill(name);
     if (code !== "USD") {
-      await page.getByRole("combobox").click();
+      await page.getByLabel("Currency").click();
       await page.getByPlaceholder("Search currency…").fill(code);
       await page.getByRole("option", { name: new RegExp(`^${code}`) }).click();
     }

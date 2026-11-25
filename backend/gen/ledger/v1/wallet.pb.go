@@ -22,6 +22,69 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// What a wallet is. Cash, bank, investment and property are assets; credit cards and loans are
+// liabilities, whose (usually negative) balance is what is owed. Unspecified means bank.
+type WalletType int32
+
+const (
+	WalletType_WALLET_TYPE_UNSPECIFIED WalletType = 0
+	WalletType_WALLET_TYPE_CASH        WalletType = 1
+	WalletType_WALLET_TYPE_BANK        WalletType = 2
+	WalletType_WALLET_TYPE_INVESTMENT  WalletType = 3
+	WalletType_WALLET_TYPE_PROPERTY    WalletType = 4
+	WalletType_WALLET_TYPE_CREDIT_CARD WalletType = 5
+	WalletType_WALLET_TYPE_LOAN        WalletType = 6
+)
+
+// Enum value maps for WalletType.
+var (
+	WalletType_name = map[int32]string{
+		0: "WALLET_TYPE_UNSPECIFIED",
+		1: "WALLET_TYPE_CASH",
+		2: "WALLET_TYPE_BANK",
+		3: "WALLET_TYPE_INVESTMENT",
+		4: "WALLET_TYPE_PROPERTY",
+		5: "WALLET_TYPE_CREDIT_CARD",
+		6: "WALLET_TYPE_LOAN",
+	}
+	WalletType_value = map[string]int32{
+		"WALLET_TYPE_UNSPECIFIED": 0,
+		"WALLET_TYPE_CASH":        1,
+		"WALLET_TYPE_BANK":        2,
+		"WALLET_TYPE_INVESTMENT":  3,
+		"WALLET_TYPE_PROPERTY":    4,
+		"WALLET_TYPE_CREDIT_CARD": 5,
+		"WALLET_TYPE_LOAN":        6,
+	}
+)
+
+func (x WalletType) Enum() *WalletType {
+	p := new(WalletType)
+	*p = x
+	return p
+}
+
+func (x WalletType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (WalletType) Descriptor() protoreflect.EnumDescriptor {
+	return file_ledger_v1_wallet_proto_enumTypes[0].Descriptor()
+}
+
+func (WalletType) Type() protoreflect.EnumType {
+	return &file_ledger_v1_wallet_proto_enumTypes[0]
+}
+
+func (x WalletType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use WalletType.Descriptor instead.
+func (WalletType) EnumDescriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{0}
+}
+
 type Wallet struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -37,8 +100,15 @@ type Wallet struct {
 	Archived         bool                   `protobuf:"varint,8,opt,name=archived,proto3" json:"archived,omitempty"`
 	TransactionCount int64                  `protobuf:"varint,9,opt,name=transaction_count,json=transactionCount,proto3" json:"transaction_count,omitempty"`
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	Type             WalletType             `protobuf:"varint,11,opt,name=type,proto3,enum=ledger.v1.WalletType" json:"type,omitempty"`
+	// What the wallet is worth today. For investment and property wallets with a valuation on or
+	// before today: the latest valuation plus the wallet's movements after it. Otherwise the same
+	// as balance_minor.
+	ValueMinor int64 `protobuf:"varint,12,opt,name=value_minor,json=valueMinor,proto3" json:"value_minor,omitempty"`
+	// Date of the valuation value_minor comes from, "YYYY-MM-DD"; empty when none applies.
+	ValuedOn      string `protobuf:"bytes,13,opt,name=valued_on,json=valuedOn,proto3" json:"valued_on,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Wallet) Reset() {
@@ -141,6 +211,99 @@ func (x *Wallet) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Wallet) GetType() WalletType {
+	if x != nil {
+		return x.Type
+	}
+	return WalletType_WALLET_TYPE_UNSPECIFIED
+}
+
+func (x *Wallet) GetValueMinor() int64 {
+	if x != nil {
+		return x.ValueMinor
+	}
+	return 0
+}
+
+func (x *Wallet) GetValuedOn() string {
+	if x != nil {
+		return x.ValuedOn
+	}
+	return ""
+}
+
+// What an investment or property wallet is worth on a date. Valuations are never income or
+// spending; they only change the wallet's value (and net worth).
+type WalletValuation struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	WalletId string                 `protobuf:"bytes,2,opt,name=wallet_id,json=walletId,proto3" json:"wallet_id,omitempty"`
+	// "YYYY-MM-DD".
+	ValuedOn string `protobuf:"bytes,3,opt,name=valued_on,json=valuedOn,proto3" json:"valued_on,omitempty"`
+	// In the wallet's currency.
+	ValueMinor    int64 `protobuf:"varint,4,opt,name=value_minor,json=valueMinor,proto3" json:"value_minor,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WalletValuation) Reset() {
+	*x = WalletValuation{}
+	mi := &file_ledger_v1_wallet_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WalletValuation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WalletValuation) ProtoMessage() {}
+
+func (x *WalletValuation) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_wallet_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WalletValuation.ProtoReflect.Descriptor instead.
+func (*WalletValuation) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *WalletValuation) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *WalletValuation) GetWalletId() string {
+	if x != nil {
+		return x.WalletId
+	}
+	return ""
+}
+
+func (x *WalletValuation) GetValuedOn() string {
+	if x != nil {
+		return x.ValuedOn
+	}
+	return ""
+}
+
+func (x *WalletValuation) GetValueMinor() int64 {
+	if x != nil {
+		return x.ValueMinor
+	}
+	return 0
+}
+
 type ListWalletsRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	IncludeHidden   bool                   `protobuf:"varint,1,opt,name=include_hidden,json=includeHidden,proto3" json:"include_hidden,omitempty"`
@@ -153,7 +316,7 @@ type ListWalletsRequest struct {
 
 func (x *ListWalletsRequest) Reset() {
 	*x = ListWalletsRequest{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[1]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -165,7 +328,7 @@ func (x *ListWalletsRequest) String() string {
 func (*ListWalletsRequest) ProtoMessage() {}
 
 func (x *ListWalletsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[1]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -178,7 +341,7 @@ func (x *ListWalletsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWalletsRequest.ProtoReflect.Descriptor instead.
 func (*ListWalletsRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{1}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListWalletsRequest) GetIncludeHidden() bool {
@@ -211,7 +374,7 @@ type ListWalletsResponse struct {
 
 func (x *ListWalletsResponse) Reset() {
 	*x = ListWalletsResponse{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[2]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -223,7 +386,7 @@ func (x *ListWalletsResponse) String() string {
 func (*ListWalletsResponse) ProtoMessage() {}
 
 func (x *ListWalletsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[2]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -236,7 +399,7 @@ func (x *ListWalletsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWalletsResponse.ProtoReflect.Descriptor instead.
 func (*ListWalletsResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{2}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListWalletsResponse) GetWallets() []*Wallet {
@@ -256,7 +419,7 @@ type GetWalletRequest struct {
 
 func (x *GetWalletRequest) Reset() {
 	*x = GetWalletRequest{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[3]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -268,7 +431,7 @@ func (x *GetWalletRequest) String() string {
 func (*GetWalletRequest) ProtoMessage() {}
 
 func (x *GetWalletRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[3]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -281,7 +444,7 @@ func (x *GetWalletRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWalletRequest.ProtoReflect.Descriptor instead.
 func (*GetWalletRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{3}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetWalletRequest) GetId() string {
@@ -307,7 +470,7 @@ type GetWalletResponse struct {
 
 func (x *GetWalletResponse) Reset() {
 	*x = GetWalletResponse{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[4]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -319,7 +482,7 @@ func (x *GetWalletResponse) String() string {
 func (*GetWalletResponse) ProtoMessage() {}
 
 func (x *GetWalletResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[4]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -332,7 +495,7 @@ func (x *GetWalletResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWalletResponse.ProtoReflect.Descriptor instead.
 func (*GetWalletResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{4}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetWalletResponse) GetWallet() *Wallet {
@@ -347,13 +510,14 @@ type CreateWalletRequest struct {
 	Name                string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Currency            string                 `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
 	InitialBalanceMinor int64                  `protobuf:"varint,3,opt,name=initial_balance_minor,json=initialBalanceMinor,proto3" json:"initial_balance_minor,omitempty"`
+	Type                WalletType             `protobuf:"varint,4,opt,name=type,proto3,enum=ledger.v1.WalletType" json:"type,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *CreateWalletRequest) Reset() {
 	*x = CreateWalletRequest{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[5]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -365,7 +529,7 @@ func (x *CreateWalletRequest) String() string {
 func (*CreateWalletRequest) ProtoMessage() {}
 
 func (x *CreateWalletRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[5]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -378,7 +542,7 @@ func (x *CreateWalletRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWalletRequest.ProtoReflect.Descriptor instead.
 func (*CreateWalletRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{5}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateWalletRequest) GetName() string {
@@ -402,6 +566,13 @@ func (x *CreateWalletRequest) GetInitialBalanceMinor() int64 {
 	return 0
 }
 
+func (x *CreateWalletRequest) GetType() WalletType {
+	if x != nil {
+		return x.Type
+	}
+	return WalletType_WALLET_TYPE_UNSPECIFIED
+}
+
 type CreateWalletResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Wallet        *Wallet                `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
@@ -411,7 +582,7 @@ type CreateWalletResponse struct {
 
 func (x *CreateWalletResponse) Reset() {
 	*x = CreateWalletResponse{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[6]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -423,7 +594,7 @@ func (x *CreateWalletResponse) String() string {
 func (*CreateWalletResponse) ProtoMessage() {}
 
 func (x *CreateWalletResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[6]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -436,7 +607,7 @@ func (x *CreateWalletResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWalletResponse.ProtoReflect.Descriptor instead.
 func (*CreateWalletResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{6}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateWalletResponse) GetWallet() *Wallet {
@@ -453,13 +624,14 @@ type UpdateWalletRequest struct {
 	Hidden              *bool                  `protobuf:"varint,3,opt,name=hidden,proto3,oneof" json:"hidden,omitempty"`
 	Position            *int32                 `protobuf:"varint,4,opt,name=position,proto3,oneof" json:"position,omitempty"`
 	InitialBalanceMinor *int64                 `protobuf:"varint,5,opt,name=initial_balance_minor,json=initialBalanceMinor,proto3,oneof" json:"initial_balance_minor,omitempty"`
+	Type                *WalletType            `protobuf:"varint,6,opt,name=type,proto3,enum=ledger.v1.WalletType,oneof" json:"type,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *UpdateWalletRequest) Reset() {
 	*x = UpdateWalletRequest{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[7]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -471,7 +643,7 @@ func (x *UpdateWalletRequest) String() string {
 func (*UpdateWalletRequest) ProtoMessage() {}
 
 func (x *UpdateWalletRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[7]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -484,7 +656,7 @@ func (x *UpdateWalletRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWalletRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWalletRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{7}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateWalletRequest) GetId() string {
@@ -522,6 +694,13 @@ func (x *UpdateWalletRequest) GetInitialBalanceMinor() int64 {
 	return 0
 }
 
+func (x *UpdateWalletRequest) GetType() WalletType {
+	if x != nil && x.Type != nil {
+		return *x.Type
+	}
+	return WalletType_WALLET_TYPE_UNSPECIFIED
+}
+
 type UpdateWalletResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Wallet        *Wallet                `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
@@ -531,7 +710,7 @@ type UpdateWalletResponse struct {
 
 func (x *UpdateWalletResponse) Reset() {
 	*x = UpdateWalletResponse{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[8]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -543,7 +722,7 @@ func (x *UpdateWalletResponse) String() string {
 func (*UpdateWalletResponse) ProtoMessage() {}
 
 func (x *UpdateWalletResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[8]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -556,7 +735,7 @@ func (x *UpdateWalletResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWalletResponse.ProtoReflect.Descriptor instead.
 func (*UpdateWalletResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{8}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateWalletResponse) GetWallet() *Wallet {
@@ -575,7 +754,7 @@ type ArchiveWalletRequest struct {
 
 func (x *ArchiveWalletRequest) Reset() {
 	*x = ArchiveWalletRequest{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[9]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -587,7 +766,7 @@ func (x *ArchiveWalletRequest) String() string {
 func (*ArchiveWalletRequest) ProtoMessage() {}
 
 func (x *ArchiveWalletRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[9]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -600,7 +779,7 @@ func (x *ArchiveWalletRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArchiveWalletRequest.ProtoReflect.Descriptor instead.
 func (*ArchiveWalletRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{9}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ArchiveWalletRequest) GetId() string {
@@ -618,7 +797,7 @@ type ArchiveWalletResponse struct {
 
 func (x *ArchiveWalletResponse) Reset() {
 	*x = ArchiveWalletResponse{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[10]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -630,7 +809,7 @@ func (x *ArchiveWalletResponse) String() string {
 func (*ArchiveWalletResponse) ProtoMessage() {}
 
 func (x *ArchiveWalletResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[10]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -643,7 +822,7 @@ func (x *ArchiveWalletResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArchiveWalletResponse.ProtoReflect.Descriptor instead.
 func (*ArchiveWalletResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{10}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{11}
 }
 
 type DeleteWalletRequest struct {
@@ -655,7 +834,7 @@ type DeleteWalletRequest struct {
 
 func (x *DeleteWalletRequest) Reset() {
 	*x = DeleteWalletRequest{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[11]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -667,7 +846,7 @@ func (x *DeleteWalletRequest) String() string {
 func (*DeleteWalletRequest) ProtoMessage() {}
 
 func (x *DeleteWalletRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[11]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -680,7 +859,7 @@ func (x *DeleteWalletRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteWalletRequest.ProtoReflect.Descriptor instead.
 func (*DeleteWalletRequest) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{11}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteWalletRequest) GetId() string {
@@ -698,7 +877,7 @@ type DeleteWalletResponse struct {
 
 func (x *DeleteWalletResponse) Reset() {
 	*x = DeleteWalletResponse{}
-	mi := &file_ledger_v1_wallet_proto_msgTypes[12]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -710,7 +889,7 @@ func (x *DeleteWalletResponse) String() string {
 func (*DeleteWalletResponse) ProtoMessage() {}
 
 func (x *DeleteWalletResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ledger_v1_wallet_proto_msgTypes[12]
+	mi := &file_ledger_v1_wallet_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -723,14 +902,286 @@ func (x *DeleteWalletResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteWalletResponse.ProtoReflect.Descriptor instead.
 func (*DeleteWalletResponse) Descriptor() ([]byte, []int) {
-	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{12}
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{13}
+}
+
+type ListValuationsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WalletId      string                 `protobuf:"bytes,1,opt,name=wallet_id,json=walletId,proto3" json:"wallet_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListValuationsRequest) Reset() {
+	*x = ListValuationsRequest{}
+	mi := &file_ledger_v1_wallet_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListValuationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListValuationsRequest) ProtoMessage() {}
+
+func (x *ListValuationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_wallet_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListValuationsRequest.ProtoReflect.Descriptor instead.
+func (*ListValuationsRequest) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ListValuationsRequest) GetWalletId() string {
+	if x != nil {
+		return x.WalletId
+	}
+	return ""
+}
+
+type ListValuationsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Valuations    []*WalletValuation     `protobuf:"bytes,1,rep,name=valuations,proto3" json:"valuations,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListValuationsResponse) Reset() {
+	*x = ListValuationsResponse{}
+	mi := &file_ledger_v1_wallet_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListValuationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListValuationsResponse) ProtoMessage() {}
+
+func (x *ListValuationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_wallet_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListValuationsResponse.ProtoReflect.Descriptor instead.
+func (*ListValuationsResponse) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ListValuationsResponse) GetValuations() []*WalletValuation {
+	if x != nil {
+		return x.Valuations
+	}
+	return nil
+}
+
+type SaveValuationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WalletId      string                 `protobuf:"bytes,1,opt,name=wallet_id,json=walletId,proto3" json:"wallet_id,omitempty"`
+	ValuedOn      string                 `protobuf:"bytes,2,opt,name=valued_on,json=valuedOn,proto3" json:"valued_on,omitempty"`
+	ValueMinor    int64                  `protobuf:"varint,3,opt,name=value_minor,json=valueMinor,proto3" json:"value_minor,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveValuationRequest) Reset() {
+	*x = SaveValuationRequest{}
+	mi := &file_ledger_v1_wallet_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveValuationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveValuationRequest) ProtoMessage() {}
+
+func (x *SaveValuationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_wallet_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveValuationRequest.ProtoReflect.Descriptor instead.
+func (*SaveValuationRequest) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *SaveValuationRequest) GetWalletId() string {
+	if x != nil {
+		return x.WalletId
+	}
+	return ""
+}
+
+func (x *SaveValuationRequest) GetValuedOn() string {
+	if x != nil {
+		return x.ValuedOn
+	}
+	return ""
+}
+
+func (x *SaveValuationRequest) GetValueMinor() int64 {
+	if x != nil {
+		return x.ValueMinor
+	}
+	return 0
+}
+
+type SaveValuationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Valuation     *WalletValuation       `protobuf:"bytes,1,opt,name=valuation,proto3" json:"valuation,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveValuationResponse) Reset() {
+	*x = SaveValuationResponse{}
+	mi := &file_ledger_v1_wallet_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveValuationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveValuationResponse) ProtoMessage() {}
+
+func (x *SaveValuationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_wallet_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveValuationResponse.ProtoReflect.Descriptor instead.
+func (*SaveValuationResponse) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *SaveValuationResponse) GetValuation() *WalletValuation {
+	if x != nil {
+		return x.Valuation
+	}
+	return nil
+}
+
+type DeleteValuationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteValuationRequest) Reset() {
+	*x = DeleteValuationRequest{}
+	mi := &file_ledger_v1_wallet_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteValuationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteValuationRequest) ProtoMessage() {}
+
+func (x *DeleteValuationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_wallet_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteValuationRequest.ProtoReflect.Descriptor instead.
+func (*DeleteValuationRequest) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *DeleteValuationRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteValuationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteValuationResponse) Reset() {
+	*x = DeleteValuationResponse{}
+	mi := &file_ledger_v1_wallet_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteValuationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteValuationResponse) ProtoMessage() {}
+
+func (x *DeleteValuationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ledger_v1_wallet_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteValuationResponse.ProtoReflect.Descriptor instead.
+func (*DeleteValuationResponse) Descriptor() ([]byte, []int) {
+	return file_ledger_v1_wallet_proto_rawDescGZIP(), []int{19}
 }
 
 var File_ledger_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_ledger_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x16ledger/v1/wallet.proto\x12\tledger.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd9\x02\n" +
+	"\x16ledger/v1/wallet.proto\x12\tledger.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc2\x03\n" +
 	"\x06Wallet\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
@@ -743,7 +1194,17 @@ const file_ledger_v1_wallet_proto_rawDesc = "" +
 	"\x11transaction_count\x18\t \x01(\x03R\x10transactionCount\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"|\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12)\n" +
+	"\x04type\x18\v \x01(\x0e2\x15.ledger.v1.WalletTypeR\x04type\x12\x1f\n" +
+	"\vvalue_minor\x18\f \x01(\x03R\n" +
+	"valueMinor\x12\x1b\n" +
+	"\tvalued_on\x18\r \x01(\tR\bvaluedOn\"|\n" +
+	"\x0fWalletValuation\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\twallet_id\x18\x02 \x01(\tR\bwalletId\x12\x1b\n" +
+	"\tvalued_on\x18\x03 \x01(\tR\bvaluedOn\x12\x1f\n" +
+	"\vvalue_minor\x18\x04 \x01(\x03R\n" +
+	"valueMinor\"|\n" +
 	"\x12ListWalletsRequest\x12%\n" +
 	"\x0einclude_hidden\x18\x01 \x01(\bR\rincludeHidden\x12)\n" +
 	"\x10include_archived\x18\x02 \x01(\bR\x0fincludeArchived\x12\x14\n" +
@@ -754,23 +1215,26 @@ const file_ledger_v1_wallet_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05today\x18\x02 \x01(\tR\x05today\">\n" +
 	"\x11GetWalletResponse\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.ledger.v1.WalletR\x06wallet\"y\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.ledger.v1.WalletR\x06wallet\"\xa4\x01\n" +
 	"\x13CreateWalletRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bcurrency\x18\x02 \x01(\tR\bcurrency\x122\n" +
-	"\x15initial_balance_minor\x18\x03 \x01(\x03R\x13initialBalanceMinor\"A\n" +
+	"\x15initial_balance_minor\x18\x03 \x01(\x03R\x13initialBalanceMinor\x12)\n" +
+	"\x04type\x18\x04 \x01(\x0e2\x15.ledger.v1.WalletTypeR\x04type\"A\n" +
 	"\x14CreateWalletResponse\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.ledger.v1.WalletR\x06wallet\"\xf0\x01\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.ledger.v1.WalletR\x06wallet\"\xa9\x02\n" +
 	"\x13UpdateWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x1b\n" +
 	"\x06hidden\x18\x03 \x01(\bH\x01R\x06hidden\x88\x01\x01\x12\x1f\n" +
 	"\bposition\x18\x04 \x01(\x05H\x02R\bposition\x88\x01\x01\x127\n" +
-	"\x15initial_balance_minor\x18\x05 \x01(\x03H\x03R\x13initialBalanceMinor\x88\x01\x01B\a\n" +
+	"\x15initial_balance_minor\x18\x05 \x01(\x03H\x03R\x13initialBalanceMinor\x88\x01\x01\x12.\n" +
+	"\x04type\x18\x06 \x01(\x0e2\x15.ledger.v1.WalletTypeH\x04R\x04type\x88\x01\x01B\a\n" +
 	"\x05_nameB\t\n" +
 	"\a_hiddenB\v\n" +
 	"\t_positionB\x18\n" +
-	"\x16_initial_balance_minor\"A\n" +
+	"\x16_initial_balance_minorB\a\n" +
+	"\x05_type\"A\n" +
 	"\x14UpdateWalletResponse\x12)\n" +
 	"\x06wallet\x18\x01 \x01(\v2\x11.ledger.v1.WalletR\x06wallet\"&\n" +
 	"\x14ArchiveWalletRequest\x12\x0e\n" +
@@ -778,14 +1242,42 @@ const file_ledger_v1_wallet_proto_rawDesc = "" +
 	"\x15ArchiveWalletResponse\"%\n" +
 	"\x13DeleteWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x16\n" +
-	"\x14DeleteWalletResponse2\xec\x03\n" +
+	"\x14DeleteWalletResponse\"4\n" +
+	"\x15ListValuationsRequest\x12\x1b\n" +
+	"\twallet_id\x18\x01 \x01(\tR\bwalletId\"T\n" +
+	"\x16ListValuationsResponse\x12:\n" +
+	"\n" +
+	"valuations\x18\x01 \x03(\v2\x1a.ledger.v1.WalletValuationR\n" +
+	"valuations\"q\n" +
+	"\x14SaveValuationRequest\x12\x1b\n" +
+	"\twallet_id\x18\x01 \x01(\tR\bwalletId\x12\x1b\n" +
+	"\tvalued_on\x18\x02 \x01(\tR\bvaluedOn\x12\x1f\n" +
+	"\vvalue_minor\x18\x03 \x01(\x03R\n" +
+	"valueMinor\"Q\n" +
+	"\x15SaveValuationResponse\x128\n" +
+	"\tvaluation\x18\x01 \x01(\v2\x1a.ledger.v1.WalletValuationR\tvaluation\"(\n" +
+	"\x16DeleteValuationRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x19\n" +
+	"\x17DeleteValuationResponse*\xbe\x01\n" +
+	"\n" +
+	"WalletType\x12\x1b\n" +
+	"\x17WALLET_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10WALLET_TYPE_CASH\x10\x01\x12\x14\n" +
+	"\x10WALLET_TYPE_BANK\x10\x02\x12\x1a\n" +
+	"\x16WALLET_TYPE_INVESTMENT\x10\x03\x12\x18\n" +
+	"\x14WALLET_TYPE_PROPERTY\x10\x04\x12\x1b\n" +
+	"\x17WALLET_TYPE_CREDIT_CARD\x10\x05\x12\x14\n" +
+	"\x10WALLET_TYPE_LOAN\x10\x062\xf1\x05\n" +
 	"\rWalletService\x12L\n" +
 	"\vListWallets\x12\x1d.ledger.v1.ListWalletsRequest\x1a\x1e.ledger.v1.ListWalletsResponse\x12F\n" +
 	"\tGetWallet\x12\x1b.ledger.v1.GetWalletRequest\x1a\x1c.ledger.v1.GetWalletResponse\x12O\n" +
 	"\fCreateWallet\x12\x1e.ledger.v1.CreateWalletRequest\x1a\x1f.ledger.v1.CreateWalletResponse\x12O\n" +
 	"\fUpdateWallet\x12\x1e.ledger.v1.UpdateWalletRequest\x1a\x1f.ledger.v1.UpdateWalletResponse\x12R\n" +
 	"\rArchiveWallet\x12\x1f.ledger.v1.ArchiveWalletRequest\x1a .ledger.v1.ArchiveWalletResponse\x12O\n" +
-	"\fDeleteWallet\x12\x1e.ledger.v1.DeleteWalletRequest\x1a\x1f.ledger.v1.DeleteWalletResponseB\xa3\x01\n" +
+	"\fDeleteWallet\x12\x1e.ledger.v1.DeleteWalletRequest\x1a\x1f.ledger.v1.DeleteWalletResponse\x12U\n" +
+	"\x0eListValuations\x12 .ledger.v1.ListValuationsRequest\x1a!.ledger.v1.ListValuationsResponse\x12R\n" +
+	"\rSaveValuation\x12\x1f.ledger.v1.SaveValuationRequest\x1a .ledger.v1.SaveValuationResponse\x12X\n" +
+	"\x0fDeleteValuation\x12!.ledger.v1.DeleteValuationRequest\x1a\".ledger.v1.DeleteValuationResponseB\xa3\x01\n" +
 	"\rcom.ledger.v1B\vWalletProtoP\x01Z@github.com/franco-roura/ledger-01/backend/gen/ledger/v1;ledgerv1\xa2\x02\x03LXX\xaa\x02\tLedger.V1\xca\x02\tLedger\\V1\xe2\x02\x15Ledger\\V1\\GPBMetadata\xea\x02\n" +
 	"Ledger::V1b\x06proto3"
 
@@ -801,46 +1293,66 @@ func file_ledger_v1_wallet_proto_rawDescGZIP() []byte {
 	return file_ledger_v1_wallet_proto_rawDescData
 }
 
-var file_ledger_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_ledger_v1_wallet_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_ledger_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_ledger_v1_wallet_proto_goTypes = []any{
-	(*Wallet)(nil),                // 0: ledger.v1.Wallet
-	(*ListWalletsRequest)(nil),    // 1: ledger.v1.ListWalletsRequest
-	(*ListWalletsResponse)(nil),   // 2: ledger.v1.ListWalletsResponse
-	(*GetWalletRequest)(nil),      // 3: ledger.v1.GetWalletRequest
-	(*GetWalletResponse)(nil),     // 4: ledger.v1.GetWalletResponse
-	(*CreateWalletRequest)(nil),   // 5: ledger.v1.CreateWalletRequest
-	(*CreateWalletResponse)(nil),  // 6: ledger.v1.CreateWalletResponse
-	(*UpdateWalletRequest)(nil),   // 7: ledger.v1.UpdateWalletRequest
-	(*UpdateWalletResponse)(nil),  // 8: ledger.v1.UpdateWalletResponse
-	(*ArchiveWalletRequest)(nil),  // 9: ledger.v1.ArchiveWalletRequest
-	(*ArchiveWalletResponse)(nil), // 10: ledger.v1.ArchiveWalletResponse
-	(*DeleteWalletRequest)(nil),   // 11: ledger.v1.DeleteWalletRequest
-	(*DeleteWalletResponse)(nil),  // 12: ledger.v1.DeleteWalletResponse
-	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
+	(WalletType)(0),                 // 0: ledger.v1.WalletType
+	(*Wallet)(nil),                  // 1: ledger.v1.Wallet
+	(*WalletValuation)(nil),         // 2: ledger.v1.WalletValuation
+	(*ListWalletsRequest)(nil),      // 3: ledger.v1.ListWalletsRequest
+	(*ListWalletsResponse)(nil),     // 4: ledger.v1.ListWalletsResponse
+	(*GetWalletRequest)(nil),        // 5: ledger.v1.GetWalletRequest
+	(*GetWalletResponse)(nil),       // 6: ledger.v1.GetWalletResponse
+	(*CreateWalletRequest)(nil),     // 7: ledger.v1.CreateWalletRequest
+	(*CreateWalletResponse)(nil),    // 8: ledger.v1.CreateWalletResponse
+	(*UpdateWalletRequest)(nil),     // 9: ledger.v1.UpdateWalletRequest
+	(*UpdateWalletResponse)(nil),    // 10: ledger.v1.UpdateWalletResponse
+	(*ArchiveWalletRequest)(nil),    // 11: ledger.v1.ArchiveWalletRequest
+	(*ArchiveWalletResponse)(nil),   // 12: ledger.v1.ArchiveWalletResponse
+	(*DeleteWalletRequest)(nil),     // 13: ledger.v1.DeleteWalletRequest
+	(*DeleteWalletResponse)(nil),    // 14: ledger.v1.DeleteWalletResponse
+	(*ListValuationsRequest)(nil),   // 15: ledger.v1.ListValuationsRequest
+	(*ListValuationsResponse)(nil),  // 16: ledger.v1.ListValuationsResponse
+	(*SaveValuationRequest)(nil),    // 17: ledger.v1.SaveValuationRequest
+	(*SaveValuationResponse)(nil),   // 18: ledger.v1.SaveValuationResponse
+	(*DeleteValuationRequest)(nil),  // 19: ledger.v1.DeleteValuationRequest
+	(*DeleteValuationResponse)(nil), // 20: ledger.v1.DeleteValuationResponse
+	(*timestamppb.Timestamp)(nil),   // 21: google.protobuf.Timestamp
 }
 var file_ledger_v1_wallet_proto_depIdxs = []int32{
-	13, // 0: ledger.v1.Wallet.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 1: ledger.v1.ListWalletsResponse.wallets:type_name -> ledger.v1.Wallet
-	0,  // 2: ledger.v1.GetWalletResponse.wallet:type_name -> ledger.v1.Wallet
-	0,  // 3: ledger.v1.CreateWalletResponse.wallet:type_name -> ledger.v1.Wallet
-	0,  // 4: ledger.v1.UpdateWalletResponse.wallet:type_name -> ledger.v1.Wallet
-	1,  // 5: ledger.v1.WalletService.ListWallets:input_type -> ledger.v1.ListWalletsRequest
-	3,  // 6: ledger.v1.WalletService.GetWallet:input_type -> ledger.v1.GetWalletRequest
-	5,  // 7: ledger.v1.WalletService.CreateWallet:input_type -> ledger.v1.CreateWalletRequest
-	7,  // 8: ledger.v1.WalletService.UpdateWallet:input_type -> ledger.v1.UpdateWalletRequest
-	9,  // 9: ledger.v1.WalletService.ArchiveWallet:input_type -> ledger.v1.ArchiveWalletRequest
-	11, // 10: ledger.v1.WalletService.DeleteWallet:input_type -> ledger.v1.DeleteWalletRequest
-	2,  // 11: ledger.v1.WalletService.ListWallets:output_type -> ledger.v1.ListWalletsResponse
-	4,  // 12: ledger.v1.WalletService.GetWallet:output_type -> ledger.v1.GetWalletResponse
-	6,  // 13: ledger.v1.WalletService.CreateWallet:output_type -> ledger.v1.CreateWalletResponse
-	8,  // 14: ledger.v1.WalletService.UpdateWallet:output_type -> ledger.v1.UpdateWalletResponse
-	10, // 15: ledger.v1.WalletService.ArchiveWallet:output_type -> ledger.v1.ArchiveWalletResponse
-	12, // 16: ledger.v1.WalletService.DeleteWallet:output_type -> ledger.v1.DeleteWalletResponse
-	11, // [11:17] is the sub-list for method output_type
-	5,  // [5:11] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	21, // 0: ledger.v1.Wallet.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 1: ledger.v1.Wallet.type:type_name -> ledger.v1.WalletType
+	1,  // 2: ledger.v1.ListWalletsResponse.wallets:type_name -> ledger.v1.Wallet
+	1,  // 3: ledger.v1.GetWalletResponse.wallet:type_name -> ledger.v1.Wallet
+	0,  // 4: ledger.v1.CreateWalletRequest.type:type_name -> ledger.v1.WalletType
+	1,  // 5: ledger.v1.CreateWalletResponse.wallet:type_name -> ledger.v1.Wallet
+	0,  // 6: ledger.v1.UpdateWalletRequest.type:type_name -> ledger.v1.WalletType
+	1,  // 7: ledger.v1.UpdateWalletResponse.wallet:type_name -> ledger.v1.Wallet
+	2,  // 8: ledger.v1.ListValuationsResponse.valuations:type_name -> ledger.v1.WalletValuation
+	2,  // 9: ledger.v1.SaveValuationResponse.valuation:type_name -> ledger.v1.WalletValuation
+	3,  // 10: ledger.v1.WalletService.ListWallets:input_type -> ledger.v1.ListWalletsRequest
+	5,  // 11: ledger.v1.WalletService.GetWallet:input_type -> ledger.v1.GetWalletRequest
+	7,  // 12: ledger.v1.WalletService.CreateWallet:input_type -> ledger.v1.CreateWalletRequest
+	9,  // 13: ledger.v1.WalletService.UpdateWallet:input_type -> ledger.v1.UpdateWalletRequest
+	11, // 14: ledger.v1.WalletService.ArchiveWallet:input_type -> ledger.v1.ArchiveWalletRequest
+	13, // 15: ledger.v1.WalletService.DeleteWallet:input_type -> ledger.v1.DeleteWalletRequest
+	15, // 16: ledger.v1.WalletService.ListValuations:input_type -> ledger.v1.ListValuationsRequest
+	17, // 17: ledger.v1.WalletService.SaveValuation:input_type -> ledger.v1.SaveValuationRequest
+	19, // 18: ledger.v1.WalletService.DeleteValuation:input_type -> ledger.v1.DeleteValuationRequest
+	4,  // 19: ledger.v1.WalletService.ListWallets:output_type -> ledger.v1.ListWalletsResponse
+	6,  // 20: ledger.v1.WalletService.GetWallet:output_type -> ledger.v1.GetWalletResponse
+	8,  // 21: ledger.v1.WalletService.CreateWallet:output_type -> ledger.v1.CreateWalletResponse
+	10, // 22: ledger.v1.WalletService.UpdateWallet:output_type -> ledger.v1.UpdateWalletResponse
+	12, // 23: ledger.v1.WalletService.ArchiveWallet:output_type -> ledger.v1.ArchiveWalletResponse
+	14, // 24: ledger.v1.WalletService.DeleteWallet:output_type -> ledger.v1.DeleteWalletResponse
+	16, // 25: ledger.v1.WalletService.ListValuations:output_type -> ledger.v1.ListValuationsResponse
+	18, // 26: ledger.v1.WalletService.SaveValuation:output_type -> ledger.v1.SaveValuationResponse
+	20, // 27: ledger.v1.WalletService.DeleteValuation:output_type -> ledger.v1.DeleteValuationResponse
+	19, // [19:28] is the sub-list for method output_type
+	10, // [10:19] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_ledger_v1_wallet_proto_init() }
@@ -848,19 +1360,20 @@ func file_ledger_v1_wallet_proto_init() {
 	if File_ledger_v1_wallet_proto != nil {
 		return
 	}
-	file_ledger_v1_wallet_proto_msgTypes[7].OneofWrappers = []any{}
+	file_ledger_v1_wallet_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ledger_v1_wallet_proto_rawDesc), len(file_ledger_v1_wallet_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   13,
+			NumEnums:      1,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_ledger_v1_wallet_proto_goTypes,
 		DependencyIndexes: file_ledger_v1_wallet_proto_depIdxs,
+		EnumInfos:         file_ledger_v1_wallet_proto_enumTypes,
 		MessageInfos:      file_ledger_v1_wallet_proto_msgTypes,
 	}.Build()
 	File_ledger_v1_wallet_proto = out.File

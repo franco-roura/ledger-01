@@ -2,8 +2,8 @@
 // @generated from file ledger/v1/wallet.proto (package ledger.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ledger/v1/wallet.proto.
  */
 export const file_ledger_v1_wallet: GenFile = /*@__PURE__*/
-  fileDesc("ChZsZWRnZXIvdjEvd2FsbGV0LnByb3RvEglsZWRnZXIudjEi6QEKBldhbGxldBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhAKCGN1cnJlbmN5GAMgASgJEh0KFWluaXRpYWxfYmFsYW5jZV9taW5vchgEIAEoAxIVCg1iYWxhbmNlX21pbm9yGAUgASgDEg4KBmhpZGRlbhgGIAEoCBIQCghwb3NpdGlvbhgHIAEoBRIQCghhcmNoaXZlZBgIIAEoCBIZChF0cmFuc2FjdGlvbl9jb3VudBgJIAEoAxIuCgpjcmVhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJVChJMaXN0V2FsbGV0c1JlcXVlc3QSFgoOaW5jbHVkZV9oaWRkZW4YASABKAgSGAoQaW5jbHVkZV9hcmNoaXZlZBgCIAEoCBINCgV0b2RheRgDIAEoCSI5ChNMaXN0V2FsbGV0c1Jlc3BvbnNlEiIKB3dhbGxldHMYASADKAsyES5sZWRnZXIudjEuV2FsbGV0Ii0KEEdldFdhbGxldFJlcXVlc3QSCgoCaWQYASABKAkSDQoFdG9kYXkYAiABKAkiNgoRR2V0V2FsbGV0UmVzcG9uc2USIQoGd2FsbGV0GAEgASgLMhEubGVkZ2VyLnYxLldhbGxldCJUChNDcmVhdGVXYWxsZXRSZXF1ZXN0EgwKBG5hbWUYASABKAkSEAoIY3VycmVuY3kYAiABKAkSHQoVaW5pdGlhbF9iYWxhbmNlX21pbm9yGAMgASgDIjkKFENyZWF0ZVdhbGxldFJlc3BvbnNlEiEKBndhbGxldBgBIAEoCzIRLmxlZGdlci52MS5XYWxsZXQivwEKE1VwZGF0ZVdhbGxldFJlcXVlc3QSCgoCaWQYASABKAkSEQoEbmFtZRgCIAEoCUgAiAEBEhMKBmhpZGRlbhgDIAEoCEgBiAEBEhUKCHBvc2l0aW9uGAQgASgFSAKIAQESIgoVaW5pdGlhbF9iYWxhbmNlX21pbm9yGAUgASgDSAOIAQFCBwoFX25hbWVCCQoHX2hpZGRlbkILCglfcG9zaXRpb25CGAoWX2luaXRpYWxfYmFsYW5jZV9taW5vciI5ChRVcGRhdGVXYWxsZXRSZXNwb25zZRIhCgZ3YWxsZXQYASABKAsyES5sZWRnZXIudjEuV2FsbGV0IiIKFEFyY2hpdmVXYWxsZXRSZXF1ZXN0EgoKAmlkGAEgASgJIhcKFUFyY2hpdmVXYWxsZXRSZXNwb25zZSIhChNEZWxldGVXYWxsZXRSZXF1ZXN0EgoKAmlkGAEgASgJIhYKFERlbGV0ZVdhbGxldFJlc3BvbnNlMuwDCg1XYWxsZXRTZXJ2aWNlEkwKC0xpc3RXYWxsZXRzEh0ubGVkZ2VyLnYxLkxpc3RXYWxsZXRzUmVxdWVzdBoeLmxlZGdlci52MS5MaXN0V2FsbGV0c1Jlc3BvbnNlEkYKCUdldFdhbGxldBIbLmxlZGdlci52MS5HZXRXYWxsZXRSZXF1ZXN0GhwubGVkZ2VyLnYxLkdldFdhbGxldFJlc3BvbnNlEk8KDENyZWF0ZVdhbGxldBIeLmxlZGdlci52MS5DcmVhdGVXYWxsZXRSZXF1ZXN0Gh8ubGVkZ2VyLnYxLkNyZWF0ZVdhbGxldFJlc3BvbnNlEk8KDFVwZGF0ZVdhbGxldBIeLmxlZGdlci52MS5VcGRhdGVXYWxsZXRSZXF1ZXN0Gh8ubGVkZ2VyLnYxLlVwZGF0ZVdhbGxldFJlc3BvbnNlElIKDUFyY2hpdmVXYWxsZXQSHy5sZWRnZXIudjEuQXJjaGl2ZVdhbGxldFJlcXVlc3QaIC5sZWRnZXIudjEuQXJjaGl2ZVdhbGxldFJlc3BvbnNlEk8KDERlbGV0ZVdhbGxldBIeLmxlZGdlci52MS5EZWxldGVXYWxsZXRSZXF1ZXN0Gh8ubGVkZ2VyLnYxLkRlbGV0ZVdhbGxldFJlc3BvbnNlQqMBCg1jb20ubGVkZ2VyLnYxQgtXYWxsZXRQcm90b1ABWkBnaXRodWIuY29tL2ZyYW5jby1yb3VyYS9sZWRnZXItMDEvYmFja2VuZC9nZW4vbGVkZ2VyL3YxO2xlZGdlcnYxogIDTFhYqgIJTGVkZ2VyLlYxygIJTGVkZ2VyXFYx4gIVTGVkZ2VyXFYxXEdQQk1ldGFkYXRh6gIKTGVkZ2VyOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChZsZWRnZXIvdjEvd2FsbGV0LnByb3RvEglsZWRnZXIudjEitgIKBldhbGxldBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhAKCGN1cnJlbmN5GAMgASgJEh0KFWluaXRpYWxfYmFsYW5jZV9taW5vchgEIAEoAxIVCg1iYWxhbmNlX21pbm9yGAUgASgDEg4KBmhpZGRlbhgGIAEoCBIQCghwb3NpdGlvbhgHIAEoBRIQCghhcmNoaXZlZBgIIAEoCBIZChF0cmFuc2FjdGlvbl9jb3VudBgJIAEoAxIuCgpjcmVhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIjCgR0eXBlGAsgASgOMhUubGVkZ2VyLnYxLldhbGxldFR5cGUSEwoLdmFsdWVfbWlub3IYDCABKAMSEQoJdmFsdWVkX29uGA0gASgJIlgKD1dhbGxldFZhbHVhdGlvbhIKCgJpZBgBIAEoCRIRCgl3YWxsZXRfaWQYAiABKAkSEQoJdmFsdWVkX29uGAMgASgJEhMKC3ZhbHVlX21pbm9yGAQgASgDIlUKEkxpc3RXYWxsZXRzUmVxdWVzdBIWCg5pbmNsdWRlX2hpZGRlbhgBIAEoCBIYChBpbmNsdWRlX2FyY2hpdmVkGAIgASgIEg0KBXRvZGF5GAMgASgJIjkKE0xpc3RXYWxsZXRzUmVzcG9uc2USIgoHd2FsbGV0cxgBIAMoCzIRLmxlZGdlci52MS5XYWxsZXQiLQoQR2V0V2FsbGV0UmVxdWVzdBIKCgJpZBgBIAEoCRINCgV0b2RheRgCIAEoCSI2ChFHZXRXYWxsZXRSZXNwb25zZRIhCgZ3YWxsZXQYASABKAsyES5sZWRnZXIudjEuV2FsbGV0InkKE0NyZWF0ZVdhbGxldFJlcXVlc3QSDAoEbmFtZRgBIAEoCRIQCghjdXJyZW5jeRgCIAEoCRIdChVpbml0aWFsX2JhbGFuY2VfbWlub3IYAyABKAMSIwoEdHlwZRgEIAEoDjIVLmxlZGdlci52MS5XYWxsZXRUeXBlIjkKFENyZWF0ZVdhbGxldFJlc3BvbnNlEiEKBndhbGxldBgBIAEoCzIRLmxlZGdlci52MS5XYWxsZXQi8gEKE1VwZGF0ZVdhbGxldFJlcXVlc3QSCgoCaWQYASABKAkSEQoEbmFtZRgCIAEoCUgAiAEBEhMKBmhpZGRlbhgDIAEoCEgBiAEBEhUKCHBvc2l0aW9uGAQgASgFSAKIAQESIgoVaW5pdGlhbF9iYWxhbmNlX21pbm9yGAUgASgDSAOIAQESKAoEdHlwZRgGIAEoDjIVLmxlZGdlci52MS5XYWxsZXRUeXBlSASIAQFCBwoFX25hbWVCCQoHX2hpZGRlbkILCglfcG9zaXRpb25CGAoWX2luaXRpYWxfYmFsYW5jZV9taW5vckIHCgVfdHlwZSI5ChRVcGRhdGVXYWxsZXRSZXNwb25zZRIhCgZ3YWxsZXQYASABKAsyES5sZWRnZXIudjEuV2FsbGV0IiIKFEFyY2hpdmVXYWxsZXRSZXF1ZXN0EgoKAmlkGAEgASgJIhcKFUFyY2hpdmVXYWxsZXRSZXNwb25zZSIhChNEZWxldGVXYWxsZXRSZXF1ZXN0EgoKAmlkGAEgASgJIhYKFERlbGV0ZVdhbGxldFJlc3BvbnNlIioKFUxpc3RWYWx1YXRpb25zUmVxdWVzdBIRCgl3YWxsZXRfaWQYASABKAkiSAoWTGlzdFZhbHVhdGlvbnNSZXNwb25zZRIuCgp2YWx1YXRpb25zGAEgAygLMhoubGVkZ2VyLnYxLldhbGxldFZhbHVhdGlvbiJRChRTYXZlVmFsdWF0aW9uUmVxdWVzdBIRCgl3YWxsZXRfaWQYASABKAkSEQoJdmFsdWVkX29uGAIgASgJEhMKC3ZhbHVlX21pbm9yGAMgASgDIkYKFVNhdmVWYWx1YXRpb25SZXNwb25zZRItCgl2YWx1YXRpb24YASABKAsyGi5sZWRnZXIudjEuV2FsbGV0VmFsdWF0aW9uIiQKFkRlbGV0ZVZhbHVhdGlvblJlcXVlc3QSCgoCaWQYASABKAkiGQoXRGVsZXRlVmFsdWF0aW9uUmVzcG9uc2UqvgEKCldhbGxldFR5cGUSGwoXV0FMTEVUX1RZUEVfVU5TUEVDSUZJRUQQABIUChBXQUxMRVRfVFlQRV9DQVNIEAESFAoQV0FMTEVUX1RZUEVfQkFOSxACEhoKFldBTExFVF9UWVBFX0lOVkVTVE1FTlQQAxIYChRXQUxMRVRfVFlQRV9QUk9QRVJUWRAEEhsKF1dBTExFVF9UWVBFX0NSRURJVF9DQVJEEAUSFAoQV0FMTEVUX1RZUEVfTE9BThAGMvEFCg1XYWxsZXRTZXJ2aWNlEkwKC0xpc3RXYWxsZXRzEh0ubGVkZ2VyLnYxLkxpc3RXYWxsZXRzUmVxdWVzdBoeLmxlZGdlci52MS5MaXN0V2FsbGV0c1Jlc3BvbnNlEkYKCUdldFdhbGxldBIbLmxlZGdlci52MS5HZXRXYWxsZXRSZXF1ZXN0GhwubGVkZ2VyLnYxLkdldFdhbGxldFJlc3BvbnNlEk8KDENyZWF0ZVdhbGxldBIeLmxlZGdlci52MS5DcmVhdGVXYWxsZXRSZXF1ZXN0Gh8ubGVkZ2VyLnYxLkNyZWF0ZVdhbGxldFJlc3BvbnNlEk8KDFVwZGF0ZVdhbGxldBIeLmxlZGdlci52MS5VcGRhdGVXYWxsZXRSZXF1ZXN0Gh8ubGVkZ2VyLnYxLlVwZGF0ZVdhbGxldFJlc3BvbnNlElIKDUFyY2hpdmVXYWxsZXQSHy5sZWRnZXIudjEuQXJjaGl2ZVdhbGxldFJlcXVlc3QaIC5sZWRnZXIudjEuQXJjaGl2ZVdhbGxldFJlc3BvbnNlEk8KDERlbGV0ZVdhbGxldBIeLmxlZGdlci52MS5EZWxldGVXYWxsZXRSZXF1ZXN0Gh8ubGVkZ2VyLnYxLkRlbGV0ZVdhbGxldFJlc3BvbnNlElUKDkxpc3RWYWx1YXRpb25zEiAubGVkZ2VyLnYxLkxpc3RWYWx1YXRpb25zUmVxdWVzdBohLmxlZGdlci52MS5MaXN0VmFsdWF0aW9uc1Jlc3BvbnNlElIKDVNhdmVWYWx1YXRpb24SHy5sZWRnZXIudjEuU2F2ZVZhbHVhdGlvblJlcXVlc3QaIC5sZWRnZXIudjEuU2F2ZVZhbHVhdGlvblJlc3BvbnNlElgKD0RlbGV0ZVZhbHVhdGlvbhIhLmxlZGdlci52MS5EZWxldGVWYWx1YXRpb25SZXF1ZXN0GiIubGVkZ2VyLnYxLkRlbGV0ZVZhbHVhdGlvblJlc3BvbnNlQqMBCg1jb20ubGVkZ2VyLnYxQgtXYWxsZXRQcm90b1ABWkBnaXRodWIuY29tL2ZyYW5jby1yb3VyYS9sZWRnZXItMDEvYmFja2VuZC9nZW4vbGVkZ2VyL3YxO2xlZGdlcnYxogIDTFhYqgIJTGVkZ2VyLlYxygIJTGVkZ2VyXFYx4gIVTGVkZ2VyXFYxXEdQQk1ldGFkYXRh6gIKTGVkZ2VyOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ledger.v1.Wallet
@@ -72,6 +72,27 @@ export type Wallet = Message<"ledger.v1.Wallet"> & {
    * @generated from field: google.protobuf.Timestamp created_at = 10;
    */
   createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: ledger.v1.WalletType type = 11;
+   */
+  type: WalletType;
+
+  /**
+   * What the wallet is worth today. For investment and property wallets with a valuation on or
+   * before today: the latest valuation plus the wallet's movements after it. Otherwise the same
+   * as balance_minor.
+   *
+   * @generated from field: int64 value_minor = 12;
+   */
+  valueMinor: bigint;
+
+  /**
+   * Date of the valuation value_minor comes from, "YYYY-MM-DD"; empty when none applies.
+   *
+   * @generated from field: string valued_on = 13;
+   */
+  valuedOn: string;
 };
 
 /**
@@ -80,6 +101,45 @@ export type Wallet = Message<"ledger.v1.Wallet"> & {
  */
 export const WalletSchema: GenMessage<Wallet> = /*@__PURE__*/
   messageDesc(file_ledger_v1_wallet, 0);
+
+/**
+ * What an investment or property wallet is worth on a date. Valuations are never income or
+ * spending; they only change the wallet's value (and net worth).
+ *
+ * @generated from message ledger.v1.WalletValuation
+ */
+export type WalletValuation = Message<"ledger.v1.WalletValuation"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string wallet_id = 2;
+   */
+  walletId: string;
+
+  /**
+   * "YYYY-MM-DD".
+   *
+   * @generated from field: string valued_on = 3;
+   */
+  valuedOn: string;
+
+  /**
+   * In the wallet's currency.
+   *
+   * @generated from field: int64 value_minor = 4;
+   */
+  valueMinor: bigint;
+};
+
+/**
+ * Describes the message ledger.v1.WalletValuation.
+ * Use `create(WalletValuationSchema)` to create a new message.
+ */
+export const WalletValuationSchema: GenMessage<WalletValuation> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_wallet, 1);
 
 /**
  * @generated from message ledger.v1.ListWalletsRequest
@@ -108,7 +168,7 @@ export type ListWalletsRequest = Message<"ledger.v1.ListWalletsRequest"> & {
  * Use `create(ListWalletsRequestSchema)` to create a new message.
  */
 export const ListWalletsRequestSchema: GenMessage<ListWalletsRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 1);
+  messageDesc(file_ledger_v1_wallet, 2);
 
 /**
  * @generated from message ledger.v1.ListWalletsResponse
@@ -125,7 +185,7 @@ export type ListWalletsResponse = Message<"ledger.v1.ListWalletsResponse"> & {
  * Use `create(ListWalletsResponseSchema)` to create a new message.
  */
 export const ListWalletsResponseSchema: GenMessage<ListWalletsResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 2);
+  messageDesc(file_ledger_v1_wallet, 3);
 
 /**
  * @generated from message ledger.v1.GetWalletRequest
@@ -147,7 +207,7 @@ export type GetWalletRequest = Message<"ledger.v1.GetWalletRequest"> & {
  * Use `create(GetWalletRequestSchema)` to create a new message.
  */
 export const GetWalletRequestSchema: GenMessage<GetWalletRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 3);
+  messageDesc(file_ledger_v1_wallet, 4);
 
 /**
  * @generated from message ledger.v1.GetWalletResponse
@@ -164,7 +224,7 @@ export type GetWalletResponse = Message<"ledger.v1.GetWalletResponse"> & {
  * Use `create(GetWalletResponseSchema)` to create a new message.
  */
 export const GetWalletResponseSchema: GenMessage<GetWalletResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 4);
+  messageDesc(file_ledger_v1_wallet, 5);
 
 /**
  * @generated from message ledger.v1.CreateWalletRequest
@@ -184,6 +244,11 @@ export type CreateWalletRequest = Message<"ledger.v1.CreateWalletRequest"> & {
    * @generated from field: int64 initial_balance_minor = 3;
    */
   initialBalanceMinor: bigint;
+
+  /**
+   * @generated from field: ledger.v1.WalletType type = 4;
+   */
+  type: WalletType;
 };
 
 /**
@@ -191,7 +256,7 @@ export type CreateWalletRequest = Message<"ledger.v1.CreateWalletRequest"> & {
  * Use `create(CreateWalletRequestSchema)` to create a new message.
  */
 export const CreateWalletRequestSchema: GenMessage<CreateWalletRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 5);
+  messageDesc(file_ledger_v1_wallet, 6);
 
 /**
  * @generated from message ledger.v1.CreateWalletResponse
@@ -208,7 +273,7 @@ export type CreateWalletResponse = Message<"ledger.v1.CreateWalletResponse"> & {
  * Use `create(CreateWalletResponseSchema)` to create a new message.
  */
 export const CreateWalletResponseSchema: GenMessage<CreateWalletResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 6);
+  messageDesc(file_ledger_v1_wallet, 7);
 
 /**
  * @generated from message ledger.v1.UpdateWalletRequest
@@ -238,6 +303,11 @@ export type UpdateWalletRequest = Message<"ledger.v1.UpdateWalletRequest"> & {
    * @generated from field: optional int64 initial_balance_minor = 5;
    */
   initialBalanceMinor?: bigint | undefined;
+
+  /**
+   * @generated from field: optional ledger.v1.WalletType type = 6;
+   */
+  type?: WalletType | undefined;
 };
 
 /**
@@ -245,7 +315,7 @@ export type UpdateWalletRequest = Message<"ledger.v1.UpdateWalletRequest"> & {
  * Use `create(UpdateWalletRequestSchema)` to create a new message.
  */
 export const UpdateWalletRequestSchema: GenMessage<UpdateWalletRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 7);
+  messageDesc(file_ledger_v1_wallet, 8);
 
 /**
  * @generated from message ledger.v1.UpdateWalletResponse
@@ -262,7 +332,7 @@ export type UpdateWalletResponse = Message<"ledger.v1.UpdateWalletResponse"> & {
  * Use `create(UpdateWalletResponseSchema)` to create a new message.
  */
 export const UpdateWalletResponseSchema: GenMessage<UpdateWalletResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 8);
+  messageDesc(file_ledger_v1_wallet, 9);
 
 /**
  * @generated from message ledger.v1.ArchiveWalletRequest
@@ -279,7 +349,7 @@ export type ArchiveWalletRequest = Message<"ledger.v1.ArchiveWalletRequest"> & {
  * Use `create(ArchiveWalletRequestSchema)` to create a new message.
  */
 export const ArchiveWalletRequestSchema: GenMessage<ArchiveWalletRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 9);
+  messageDesc(file_ledger_v1_wallet, 10);
 
 /**
  * @generated from message ledger.v1.ArchiveWalletResponse
@@ -292,7 +362,7 @@ export type ArchiveWalletResponse = Message<"ledger.v1.ArchiveWalletResponse"> &
  * Use `create(ArchiveWalletResponseSchema)` to create a new message.
  */
 export const ArchiveWalletResponseSchema: GenMessage<ArchiveWalletResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 10);
+  messageDesc(file_ledger_v1_wallet, 11);
 
 /**
  * @generated from message ledger.v1.DeleteWalletRequest
@@ -309,7 +379,7 @@ export type DeleteWalletRequest = Message<"ledger.v1.DeleteWalletRequest"> & {
  * Use `create(DeleteWalletRequestSchema)` to create a new message.
  */
 export const DeleteWalletRequestSchema: GenMessage<DeleteWalletRequest> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 11);
+  messageDesc(file_ledger_v1_wallet, 12);
 
 /**
  * @generated from message ledger.v1.DeleteWalletResponse
@@ -322,7 +392,164 @@ export type DeleteWalletResponse = Message<"ledger.v1.DeleteWalletResponse"> & {
  * Use `create(DeleteWalletResponseSchema)` to create a new message.
  */
 export const DeleteWalletResponseSchema: GenMessage<DeleteWalletResponse> = /*@__PURE__*/
-  messageDesc(file_ledger_v1_wallet, 12);
+  messageDesc(file_ledger_v1_wallet, 13);
+
+/**
+ * @generated from message ledger.v1.ListValuationsRequest
+ */
+export type ListValuationsRequest = Message<"ledger.v1.ListValuationsRequest"> & {
+  /**
+   * @generated from field: string wallet_id = 1;
+   */
+  walletId: string;
+};
+
+/**
+ * Describes the message ledger.v1.ListValuationsRequest.
+ * Use `create(ListValuationsRequestSchema)` to create a new message.
+ */
+export const ListValuationsRequestSchema: GenMessage<ListValuationsRequest> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_wallet, 14);
+
+/**
+ * @generated from message ledger.v1.ListValuationsResponse
+ */
+export type ListValuationsResponse = Message<"ledger.v1.ListValuationsResponse"> & {
+  /**
+   * @generated from field: repeated ledger.v1.WalletValuation valuations = 1;
+   */
+  valuations: WalletValuation[];
+};
+
+/**
+ * Describes the message ledger.v1.ListValuationsResponse.
+ * Use `create(ListValuationsResponseSchema)` to create a new message.
+ */
+export const ListValuationsResponseSchema: GenMessage<ListValuationsResponse> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_wallet, 15);
+
+/**
+ * @generated from message ledger.v1.SaveValuationRequest
+ */
+export type SaveValuationRequest = Message<"ledger.v1.SaveValuationRequest"> & {
+  /**
+   * @generated from field: string wallet_id = 1;
+   */
+  walletId: string;
+
+  /**
+   * @generated from field: string valued_on = 2;
+   */
+  valuedOn: string;
+
+  /**
+   * @generated from field: int64 value_minor = 3;
+   */
+  valueMinor: bigint;
+};
+
+/**
+ * Describes the message ledger.v1.SaveValuationRequest.
+ * Use `create(SaveValuationRequestSchema)` to create a new message.
+ */
+export const SaveValuationRequestSchema: GenMessage<SaveValuationRequest> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_wallet, 16);
+
+/**
+ * @generated from message ledger.v1.SaveValuationResponse
+ */
+export type SaveValuationResponse = Message<"ledger.v1.SaveValuationResponse"> & {
+  /**
+   * @generated from field: ledger.v1.WalletValuation valuation = 1;
+   */
+  valuation?: WalletValuation | undefined;
+};
+
+/**
+ * Describes the message ledger.v1.SaveValuationResponse.
+ * Use `create(SaveValuationResponseSchema)` to create a new message.
+ */
+export const SaveValuationResponseSchema: GenMessage<SaveValuationResponse> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_wallet, 17);
+
+/**
+ * @generated from message ledger.v1.DeleteValuationRequest
+ */
+export type DeleteValuationRequest = Message<"ledger.v1.DeleteValuationRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message ledger.v1.DeleteValuationRequest.
+ * Use `create(DeleteValuationRequestSchema)` to create a new message.
+ */
+export const DeleteValuationRequestSchema: GenMessage<DeleteValuationRequest> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_wallet, 18);
+
+/**
+ * @generated from message ledger.v1.DeleteValuationResponse
+ */
+export type DeleteValuationResponse = Message<"ledger.v1.DeleteValuationResponse"> & {
+};
+
+/**
+ * Describes the message ledger.v1.DeleteValuationResponse.
+ * Use `create(DeleteValuationResponseSchema)` to create a new message.
+ */
+export const DeleteValuationResponseSchema: GenMessage<DeleteValuationResponse> = /*@__PURE__*/
+  messageDesc(file_ledger_v1_wallet, 19);
+
+/**
+ * What a wallet is. Cash, bank, investment and property are assets; credit cards and loans are
+ * liabilities, whose (usually negative) balance is what is owed. Unspecified means bank.
+ *
+ * @generated from enum ledger.v1.WalletType
+ */
+export enum WalletType {
+  /**
+   * @generated from enum value: WALLET_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: WALLET_TYPE_CASH = 1;
+   */
+  CASH = 1,
+
+  /**
+   * @generated from enum value: WALLET_TYPE_BANK = 2;
+   */
+  BANK = 2,
+
+  /**
+   * @generated from enum value: WALLET_TYPE_INVESTMENT = 3;
+   */
+  INVESTMENT = 3,
+
+  /**
+   * @generated from enum value: WALLET_TYPE_PROPERTY = 4;
+   */
+  PROPERTY = 4,
+
+  /**
+   * @generated from enum value: WALLET_TYPE_CREDIT_CARD = 5;
+   */
+  CREDIT_CARD = 5,
+
+  /**
+   * @generated from enum value: WALLET_TYPE_LOAN = 6;
+   */
+  LOAN = 6,
+}
+
+/**
+ * Describes the enum ledger.v1.WalletType.
+ */
+export const WalletTypeSchema: GenEnum<WalletType> = /*@__PURE__*/
+  enumDesc(file_ledger_v1_wallet, 0);
 
 /**
  * @generated from service ledger.v1.WalletService
@@ -379,6 +606,35 @@ export const WalletService: GenService<{
     methodKind: "unary";
     input: typeof DeleteWalletRequestSchema;
     output: typeof DeleteWalletResponseSchema;
+  },
+  /**
+   * Newest first.
+   *
+   * @generated from rpc ledger.v1.WalletService.ListValuations
+   */
+  listValuations: {
+    methodKind: "unary";
+    input: typeof ListValuationsRequestSchema;
+    output: typeof ListValuationsResponseSchema;
+  },
+  /**
+   * One valuation per wallet and date: saving a date again replaces its value. Only investment
+   * and property wallets take valuations.
+   *
+   * @generated from rpc ledger.v1.WalletService.SaveValuation
+   */
+  saveValuation: {
+    methodKind: "unary";
+    input: typeof SaveValuationRequestSchema;
+    output: typeof SaveValuationResponseSchema;
+  },
+  /**
+   * @generated from rpc ledger.v1.WalletService.DeleteValuation
+   */
+  deleteValuation: {
+    methodKind: "unary";
+    input: typeof DeleteValuationRequestSchema;
+    output: typeof DeleteValuationResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_ledger_v1_wallet, 0);

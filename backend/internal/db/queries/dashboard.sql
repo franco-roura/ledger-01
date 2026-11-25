@@ -3,6 +3,7 @@
 -- just before the period starts. Rows after today are upcoming and never count in reports.
 SELECT w.id,
        w.currency,
+       w.type,
        (w.initial_balance_minor + coalesce((
            SELECT sum(CASE WHEN t.kind IN ('income', 'transfer_in') THEN t.amount_minor ELSE -t.amount_minor END)
            FROM transactions t

@@ -2,10 +2,13 @@
 
 import { Button, Checkbox, Label, Panel, SectionHeader, Skeleton } from "@franco_roura/module-01";
 import { Amount } from "@franco_roura/module-01/finance";
-import { CalendarClock, EyeOff, Plus, Wallet as WalletIcon } from "lucide-react";
+import { CalendarClock, EyeOff, Plus, Scale } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { WalletTypeIcon } from "@/components/wallet-type";
 import { useCurrencies, useWallets } from "@/lib/api/hooks";
+import { formatDay } from "@/lib/period";
+import { takesValuations } from "@/lib/wallet-types";
 import { CreateWalletDialog } from "./create-wallet-dialog";
 
 export const walletCode = (i: number) => `W-${String(i + 1).padStart(2, "0")}`;
@@ -27,6 +30,11 @@ export function WalletGrid() {
         ruler
         aside={
           <div className="flex gap-2">
+            <Button variant="secondary" asChild>
+              <Link href="/net-worth">
+                <Scale strokeWidth={1.25} /> Net worth
+              </Link>
+            </Button>
             <Button variant="secondary" asChild>
               <Link href="/future">
                 <CalendarClock strokeWidth={1.25} /> Future
@@ -85,7 +93,7 @@ export function WalletGrid() {
                 >
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2">
-                      <WalletIcon className="size-4 text-ink-soft" strokeWidth={1.25} />
+                      <WalletTypeIcon type={w.type} className="size-4 shrink-0 text-ink-soft" />
                       <h2 className="truncate font-display text-display-sm text-ink">{w.name}</h2>
                       {w.hidden && (
                         <EyeOff
@@ -96,13 +104,15 @@ export function WalletGrid() {
                       )}
                     </div>
                     <Amount
-                      minor={w.balanceMinor}
+                      minor={takesValuations(w.type) ? w.valueMinor : w.balanceMinor}
                       currency={w.currency}
                       minorUnits={minorUnits(w.currency)}
                       size="lg"
                     />
                     <span className="hud-sm text-ink-soft">
-                      {w.transactionCount.toString()} transactions
+                      {w.valuedOn && takesValuations(w.type)
+                        ? `Valued ${formatDay(w.valuedOn)}`
+                        : `${w.transactionCount.toString()} transactions`}
                     </span>
                   </div>
                 </Panel>
