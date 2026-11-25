@@ -229,3 +229,84 @@ test("deleting a budget's last category leaves an empty scope until All is chose
   await expect(page.getByRole("heading", { name: newName })).toBeVisible();
   expect((await read()).budget.allCategories).toBe(true);
 });
+
+test("a budget with rollover carries leftover into this period", async ({ page }) => {
+  await signIn(page);
+  const tag = unique();
+  const rpc = async (method: string, data: Record<string, unknown>) => {
+    const res = await page.request.post(`/api/ledger.v1.${method}`, { data });
+    expect(res.ok(), `${method}: ${await res.text()}`).toBe(true);
+    return res.json();
+  };
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  const { wallet } = await rpc("WalletService/CreateWallet", {
+    name: `Rollover ${tag}`,
+    currency: "USD",
+  });
+  const { category } = await rpc("CategoryService/CreateCategory", {
+    name: `Clothes ${tag}`,
+    kind: "CATEGORY_KIND_EXPENSE",
+    icon: "shirt",
+    color: "cat-orange",
+  });
+  await rpc("TransactionService/CreateTransaction", {
+    walletId: wallet.id,
+    kind: "TRANSACTION_KIND_EXPENSE",
+    categoryId: category.id,
+    amountMinor: "3000",
+    occurredOn: iso(new Date(start.getFullYear(), start.getMonth(), 4)),
+    today: iso(now),
+  });
+  // Rollover turned on two periods ago: 70.00 left then, 100.00 last period, so 170.00 carries.
+  const budgetName = `Clothes budget ${tag}`;
+  const { budget } = await rpc("BudgetService/CreateBudget", {
+    budget: {
+      name: budgetName,
+      amountMinor: "10000",
+      currency: "USD",
+      repeat: "BUDGET_REPEAT_MONTHLY",
+      startDate: iso(start),
+      allWallets: false,
+      walletIds: [wallet.id],
+      allCategories: false,
+      categoryIds: [category.id],
+      carryLeftover: true,
+    },
+    today: iso(new Date(start.getFullYear(), start.getMonth(), 6)),
+  });
+  expect(budget.rolloverFrom).toBe(iso(start));
+
+  await page.goto("/budgets");
+  const card = page.getByRole("link", { name: new RegExp(budgetName) });
+  await expect(card).toContainText("of 270.00 USD");
+  await expect(card).toContainText("100.00 USD + 170.00 USD carried");
+  await expect(card).toContainText("270.00 USD left");
+
+  await card.click();
+  await expect(page.getByText("0.00 USD of 270.00 USD spent")).toBeVisible();
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  const editor = page.getByRole("dialog");
+  await expect(editor.getByRole("checkbox", { name: "Carry leftover" })).toBeChecked();
+  await expect(editor.getByRole("checkbox", { name: "Carry overspend" })).not.toBeChecked();
+  await editor.getByRole("checkbox", { name: "Carry overspend" }).check();
+  await editor.getByRole("button", { name: "Save budget" }).click();
+  await expect(editor).toBeHidden();
+  const saved = await rpc("BudgetService/GetBudget", { id: budget.id });
+  expect(saved.budget.carryOverspend).toBe(true);
+  expect(saved.budget.rolloverFrom).toBe(iso(start));
+
+  // One-time budgets can't roll over, so the options go away.
+  await page.goto("/budgets");
+  await page
+    .getByRole("button", { name: /New budget|Add budget/ })
+    .first()
+    .click();
+  const form = page.getByRole("dialog");
+  await expect(form.getByRole("checkbox", { name: "Carry leftover" })).toBeVisible();
+  await form.getByLabel("Repeats").click();
+  await page.getByRole("option", { name: "Once", exact: true }).click();
+  await expect(form.getByRole("checkbox", { name: "Carry leftover" })).toHaveCount(0);
+});

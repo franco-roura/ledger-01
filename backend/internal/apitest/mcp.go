@@ -265,6 +265,33 @@ func MCPScenario(t *testing.T, do Driver) Result {
 	}
 	res.add("summary expenses %v", sum["expenses"].(map[string]any)["display"])
 
+	// A budget with rollover turned on in September carries September's leftover into October.
+	r = do(t, http.MethodPost, rpcPath("BudgetService", "CreateBudget"), map[string]any{
+		"budget": map[string]any{
+			"name": "MCP budget", "amountMinor": "5000", "currency": "USD", "repeat": "BUDGET_REPEAT_MONTHLY",
+			"startDate": "2026-09-01", "walletIds": []string{wallet}, "categoryIds": []string{category},
+			"allWallets": false, "allCategories": false, "carryLeftover": true,
+		},
+		"today": "2026-09-15",
+	}, session)
+	if r.Status != http.StatusOK {
+		t.Fatalf("CreateBudget = %d %s", r.Status, r.Body)
+	}
+	budget := r.JSON(t)["budget"].(map[string]any)
+	if budget["rolloverFrom"] != "2026-09-01" {
+		t.Fatalf("budget = %v", budget)
+	}
+	status := CallTool(t, do, access, "budget_status", map[string]any{"budget_id": budget["id"], "today": "2026-10-30"})
+	bo := status["budgets"].([]any)[0].(map[string]any)
+	p := bo["period"].(map[string]any)
+	minor := func(k string) any { return p[k].(map[string]any)["minor"] }
+	// 50.00 - 18.50 left in September; October: 50.00 + 31.50 = 81.50, 18.50 spent.
+	if bo["carry_leftover"] != true || minor("carried") != float64(3150) || minor("limit") != float64(8150) ||
+		minor("remaining") != float64(6300) {
+		t.Fatalf("budget_status = %v", status)
+	}
+	res.add("budget carried %v limit %v", p["carried"].(map[string]any)["display"], p["limit"].(map[string]any)["display"])
+
 	// A tool error is a result the model can read, not a protocol failure.
 	bad2 := MCPResult(t, MCP(t, do, access, "tools/call", map[string]any{
 		"name": "search_transactions", "arguments": map[string]any{"from": "yesterday", "to": "2026-10-30"},

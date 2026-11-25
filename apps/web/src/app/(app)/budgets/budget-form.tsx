@@ -4,10 +4,12 @@ import { Code, ConnectError } from "@connectrpc/connect";
 import { useMutation, useQuery } from "@connectrpc/connect-query";
 import {
   Button,
+  Checkbox,
   DatePicker,
   Field,
   fault,
   Input,
+  Label,
   MultiCombobox,
   Select,
   SelectContent,
@@ -34,9 +36,19 @@ import { type ReactNode, useId, useState } from "react";
 import { toast } from "sonner";
 import { CurrencySelect } from "@/components/currency-select";
 import { repeatOptions } from "@/lib/budgets";
-import { currentMonth } from "@/lib/period";
+import { currentMonth, today } from "@/lib/period";
 
-type FieldKey = "name" | "amount" | "currency" | "repeat" | "start" | "end" | "wallets" | "cats";
+type FieldKey =
+  | "name"
+  | "amount"
+  | "currency"
+  | "repeat"
+  | "start"
+  | "end"
+  | "wallets"
+  | "cats"
+  | "leftover"
+  | "overspend";
 
 const serverFields: Record<string, FieldKey> = {
   name: "name",
@@ -47,6 +59,8 @@ const serverFields: Record<string, FieldKey> = {
   end_date: "end",
   wallet_ids: "wallets",
   category_ids: "cats",
+  carry_leftover: "leftover",
+  carry_overspend: "overspend",
 };
 
 /** Create or edit a budget. Fields are in fill order, so the form flows top to bottom. */
@@ -81,6 +95,8 @@ export function BudgetForm({
   const [categoryScope, setCategoryScope] = useState(
     !editing || editing.allCategories ? [ALL] : editing.categoryIds,
   );
+  const [carryLeftover, setCarryLeftover] = useState(editing?.carryLeftover ?? false);
+  const [carryOverspend, setCarryOverspend] = useState(editing?.carryOverspend ?? false);
   const missingWallets = walletScope.length === 0;
   const missingCategories = categoryScope.length === 0;
   const create = useMutation(BudgetService.method.createBudget);
@@ -120,11 +136,14 @@ export function BudgetForm({
       allCategories: categoryScope.includes(ALL),
       walletIds: walletScope.filter((id) => id !== ALL),
       categoryIds: categoryScope.filter((id) => id !== ALL),
+      carryLeftover: !once && carryLeftover,
+      carryOverspend: !once && carryOverspend,
     };
     try {
+      // Turning rollover on starts carrying from the period containing today.
       const res = editing
-        ? await update.mutateAsync({ id: editing.id, budget: input })
-        : await create.mutateAsync({ budget: input });
+        ? await update.mutateAsync({ id: editing.id, budget: input, today: today() })
+        : await create.mutateAsync({ budget: input, today: today() });
       toast.success(editing ? "Saved" : "Budget added");
       if (res.budget) onDone(res.budget);
     } catch (err) {
@@ -302,6 +321,34 @@ export function BudgetForm({
         />
       </Field>
 
+      {!once && (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 text-body-sm">Rollover</legend>
+          <CarryOption
+            id={fieldId("leftover")}
+            label="Carry leftover"
+            hint="Unspent money is added to the next period's limit."
+            checked={carryLeftover}
+            error={errors.leftover}
+            onChange={(v) => {
+              setCarryLeftover(v);
+              clear("leftover");
+            }}
+          />
+          <CarryOption
+            id={fieldId("overspend")}
+            label="Carry overspend"
+            hint="Going over lowers the next period's limit."
+            checked={carryOverspend}
+            error={errors.overspend}
+            onChange={(v) => {
+              setCarryOverspend(v);
+              clear("overspend");
+            }}
+          />
+        </fieldset>
+      )}
+
       <div className="flex justify-end gap-2 pt-2">
         <Button type="submit" disabled={create.isPending || update.isPending}>
           {editing ? "Save budget" : "Add budget"}
@@ -312,6 +359,43 @@ export function BudgetForm({
 }
 
 const ALL = "all";
+
+function CarryOption({
+  id,
+  label,
+  hint,
+  checked,
+  error,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  checked: boolean;
+  error?: string;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <Checkbox
+        id={id}
+        checked={checked}
+        onCheckedChange={(v) => onChange(v === true)}
+        aria-describedby={`${id}-hint`}
+        aria-invalid={error ? true : undefined}
+        className="mt-0.5"
+      />
+      <div className="flex flex-col gap-0.5">
+        <Label htmlFor={id} className="text-body-sm">
+          {label}
+        </Label>
+        <span id={`${id}-hint`} className="text-body-sm text-ink-soft">
+          {error ?? hint}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function ScopePicker({
   id,

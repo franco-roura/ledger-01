@@ -89,9 +89,10 @@ func seedEverything(t *testing.T, svc *ledger.Service, a ledger.Actor) {
 		Repeat: ledger.Recurrence{Frequency: ledger.FreqMonthly}}); err != nil {
 		t.Fatal(err)
 	}
+	carry := true
 	if _, err := svc.CreateBudget(ctx, a, ledger.BudgetInput{Name: "Food", Amount: 300_00, Currency: "USD",
 		Repeat: ledger.RepeatMonthly, Start: on("2026-10-01"), WalletIDs: []uuid.UUID{checking.ID},
-		CategoryIDs: []uuid.UUID{groceries.ID}}); err != nil {
+		CategoryIDs: []uuid.UUID{groceries.ID}, CarryLeftover: &carry, Today: on("2026-10-01")}); err != nil {
 		t.Fatal(err)
 	}
 	if err := svc.SetCategoryHidden(ctx, a, pesos.ID, groceries.ID, true); err != nil {
@@ -126,6 +127,9 @@ func TestBackupRoundTrip(t *testing.T) {
 		len(before.ImportProfiles) != 1 || len(before.ImportRefs) == 0 || len(before.Labels) != 1 {
 		t.Fatalf("seeded backup is missing rows: %+v", before.Counts())
 	}
+	if bu := before.Budgets[0]; !bu.CarryLeftover || bu.CarryOverspend || bu.RolloverFrom != "2026-10-01" {
+		t.Fatalf("budget rollover not exported: %+v", bu)
+	}
 	content, err := ledger.EncodeBackup(before)
 	if err != nil {
 		t.Fatal(err)
@@ -157,6 +161,16 @@ func TestBackupRoundTrip(t *testing.T) {
 	}
 	if got, want := canon(t, export(t, svc, a)), canon(t, before); got != want {
 		t.Fatal("restoring into b changed a")
+	}
+
+	// A backup with rollover on but no chain start starts it at the budget's start date; a one-time
+	// budget never rolls over.
+	decoded.Budgets[0].RolloverFrom = ""
+	if _, err := svc.RestoreBackup(ctx, b, decoded); err != nil {
+		t.Fatal(err)
+	}
+	if bu := export(t, svc, b).Budgets[0]; !bu.CarryLeftover || bu.RolloverFrom != bu.StartDate {
+		t.Fatalf("restored rollover without a start: %+v", bu)
 	}
 
 	// The restored import refs still flag the statement's rows as duplicates.

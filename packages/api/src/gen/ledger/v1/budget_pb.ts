@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ledger/v1/budget.proto.
  */
 export const file_ledger_v1_budget: GenFile = /*@__PURE__*/
-  fileDesc("ChZsZWRnZXIvdjEvYnVkZ2V0LnByb3RvEglsZWRnZXIudjEi8AEKBkJ1ZGdldBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhQKDGFtb3VudF9taW5vchgDIAEoAxIQCghjdXJyZW5jeRgEIAEoCRInCgZyZXBlYXQYBSABKA4yFy5sZWRnZXIudjEuQnVkZ2V0UmVwZWF0EhIKCnN0YXJ0X2RhdGUYBiABKAkSEAoIZW5kX2RhdGUYByABKAkSEgoKd2FsbGV0X2lkcxgIIAMoCRIUCgxjYXRlZ29yeV9pZHMYCSADKAkSEwoLYWxsX3dhbGxldHMYCiABKAgSFgoOYWxsX2NhdGVnb3JpZXMYCyABKAgi0QEKDkJ1ZGdldFByb2dyZXNzEiQKBnBlcmlvZBgBIAEoCzIULmxlZGdlci52MS5EYXRlUmFuZ2USJQoFc3RhdGUYAiABKA4yFi5sZWRnZXIudjEuQnVkZ2V0U3RhdGUSEwoLc3BlbnRfbWlub3IYAyABKAMSFwoPcmVtYWluaW5nX21pbm9yGAQgASgDEh0KFWRhaWx5X2FsbG93YW5jZV9taW5vchgFIAEoAxISCgpkYXlzX3RvdGFsGAYgASgFEhEKCWRheXNfbGVmdBgHIAEoBSJeCg1CdWRnZXRTdW1tYXJ5EiEKBmJ1ZGdldBgBIAEoCzIRLmxlZGdlci52MS5CdWRnZXQSKgoHY3VycmVudBgCIAEoCzIZLmxlZGdlci52MS5CdWRnZXRQcm9ncmVzcyJRCgtXYWxsZXRUb3RhbBIRCgl3YWxsZXRfaWQYASABKAkSFAoMYW1vdW50X21pbm9yGAIgASgDEhkKEXRyYW5zYWN0aW9uX2NvdW50GAMgASgDIiMKEkxpc3RCdWRnZXRzUmVxdWVzdBINCgV0b2RheRgBIAEoCSJgChNMaXN0QnVkZ2V0c1Jlc3BvbnNlEikKB2J1ZGdldHMYASADKAsyGC5sZWRnZXIudjEuQnVkZ2V0U3VtbWFyeRIeChZ1bmNvbnZlcnRlZF9jdXJyZW5jaWVzGAIgAygJIkIKEEdldEJ1ZGdldFJlcXVlc3QSCgoCaWQYASABKAkSDQoFdG9kYXkYAiABKAkSEwoLcGVyaW9kX2RhdGUYAyABKAkitAIKEUdldEJ1ZGdldFJlc3BvbnNlEiEKBmJ1ZGdldBgBIAEoCzIRLmxlZGdlci52MS5CdWRnZXQSKwoIcHJvZ3Jlc3MYAiABKAsyGS5sZWRnZXIudjEuQnVkZ2V0UHJvZ3Jlc3MSKgoHaGlzdG9yeRgDIAMoCzIZLmxlZGdlci52MS5CdWRnZXRQcm9ncmVzcxIsCgpjYXRlZ29yaWVzGAQgAygLMhgubGVkZ2VyLnYxLkNhdGVnb3J5VG90YWwSJwoHd2FsbGV0cxgFIAMoCzIWLmxlZGdlci52MS5XYWxsZXRUb3RhbBIsCgx0cmFuc2FjdGlvbnMYBiADKAsyFi5sZWRnZXIudjEuVHJhbnNhY3Rpb24SHgoWdW5jb252ZXJ0ZWRfY3VycmVuY2llcxgHIAMoCSKWAgoLQnVkZ2V0SW5wdXQSDAoEbmFtZRgBIAEoCRIUCgxhbW91bnRfbWlub3IYAiABKAMSEAoIY3VycmVuY3kYAyABKAkSJwoGcmVwZWF0GAQgASgOMhcubGVkZ2VyLnYxLkJ1ZGdldFJlcGVhdBISCgpzdGFydF9kYXRlGAUgASgJEhAKCGVuZF9kYXRlGAYgASgJEhIKCndhbGxldF9pZHMYByADKAkSFAoMY2F0ZWdvcnlfaWRzGAggAygJEhgKC2FsbF93YWxsZXRzGAkgASgISACIAQESGwoOYWxsX2NhdGVnb3JpZXMYCiABKAhIAYgBAUIOCgxfYWxsX3dhbGxldHNCEQoPX2FsbF9jYXRlZ29yaWVzIj0KE0NyZWF0ZUJ1ZGdldFJlcXVlc3QSJgoGYnVkZ2V0GAEgASgLMhYubGVkZ2VyLnYxLkJ1ZGdldElucHV0IjkKFENyZWF0ZUJ1ZGdldFJlc3BvbnNlEiEKBmJ1ZGdldBgBIAEoCzIRLmxlZGdlci52MS5CdWRnZXQiSQoTVXBkYXRlQnVkZ2V0UmVxdWVzdBIKCgJpZBgBIAEoCRImCgZidWRnZXQYAiABKAsyFi5sZWRnZXIudjEuQnVkZ2V0SW5wdXQiOQoUVXBkYXRlQnVkZ2V0UmVzcG9uc2USIQoGYnVkZ2V0GAEgASgLMhEubGVkZ2VyLnYxLkJ1ZGdldCIhChNEZWxldGVCdWRnZXRSZXF1ZXN0EgoKAmlkGAEgASgJIhYKFERlbGV0ZUJ1ZGdldFJlc3BvbnNlKskBCgxCdWRnZXRSZXBlYXQSHQoZQlVER0VUX1JFUEVBVF9VTlNQRUNJRklFRBAAEhYKEkJVREdFVF9SRVBFQVRfT05DRRABEhcKE0JVREdFVF9SRVBFQVRfREFJTFkQAhIYChRCVURHRVRfUkVQRUFUX1dFRUtMWRADEhoKFkJVREdFVF9SRVBFQVRfQklXRUVLTFkQBBIZChVCVURHRVRfUkVQRUFUX01PTlRITFkQBRIYChRCVURHRVRfUkVQRUFUX1lFQVJMWRAGKncKC0J1ZGdldFN0YXRlEhwKGEJVREdFVF9TVEFURV9VTlNQRUNJRklFRBAAEhkKFUJVREdFVF9TVEFURV9VUENPTUlORxABEhcKE0JVREdFVF9TVEFURV9BQ1RJVkUQAhIWChJCVURHRVRfU1RBVEVfRU5ERUQQAzKYAwoNQnVkZ2V0U2VydmljZRJMCgtMaXN0QnVkZ2V0cxIdLmxlZGdlci52MS5MaXN0QnVkZ2V0c1JlcXVlc3QaHi5sZWRnZXIudjEuTGlzdEJ1ZGdldHNSZXNwb25zZRJGCglHZXRCdWRnZXQSGy5sZWRnZXIudjEuR2V0QnVkZ2V0UmVxdWVzdBocLmxlZGdlci52MS5HZXRCdWRnZXRSZXNwb25zZRJPCgxDcmVhdGVCdWRnZXQSHi5sZWRnZXIudjEuQ3JlYXRlQnVkZ2V0UmVxdWVzdBofLmxlZGdlci52MS5DcmVhdGVCdWRnZXRSZXNwb25zZRJPCgxVcGRhdGVCdWRnZXQSHi5sZWRnZXIudjEuVXBkYXRlQnVkZ2V0UmVxdWVzdBofLmxlZGdlci52MS5VcGRhdGVCdWRnZXRSZXNwb25zZRJPCgxEZWxldGVCdWRnZXQSHi5sZWRnZXIudjEuRGVsZXRlQnVkZ2V0UmVxdWVzdBofLmxlZGdlci52MS5EZWxldGVCdWRnZXRSZXNwb25zZUKjAQoNY29tLmxlZGdlci52MUILQnVkZ2V0UHJvdG9QAVpAZ2l0aHViLmNvbS9mcmFuY28tcm91cmEvbGVkZ2VyLTAxL2JhY2tlbmQvZ2VuL2xlZGdlci92MTtsZWRnZXJ2MaICA0xYWKoCCUxlZGdlci5WMcoCCUxlZGdlclxWMeICFUxlZGdlclxWMVxHUEJNZXRhZGF0YeoCCkxlZGdlcjo6VjFiBnByb3RvMw", [file_ledger_v1_common, file_ledger_v1_dashboard, file_ledger_v1_transaction]);
+  fileDesc("ChZsZWRnZXIvdjEvYnVkZ2V0LnByb3RvEglsZWRnZXIudjEiuAIKBkJ1ZGdldBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhQKDGFtb3VudF9taW5vchgDIAEoAxIQCghjdXJyZW5jeRgEIAEoCRInCgZyZXBlYXQYBSABKA4yFy5sZWRnZXIudjEuQnVkZ2V0UmVwZWF0EhIKCnN0YXJ0X2RhdGUYBiABKAkSEAoIZW5kX2RhdGUYByABKAkSEgoKd2FsbGV0X2lkcxgIIAMoCRIUCgxjYXRlZ29yeV9pZHMYCSADKAkSEwoLYWxsX3dhbGxldHMYCiABKAgSFgoOYWxsX2NhdGVnb3JpZXMYCyABKAgSFgoOY2FycnlfbGVmdG92ZXIYDCABKAgSFwoPY2Fycnlfb3ZlcnNwZW5kGA0gASgIEhUKDXJvbGxvdmVyX2Zyb20YDiABKAki/QEKDkJ1ZGdldFByb2dyZXNzEiQKBnBlcmlvZBgBIAEoCzIULmxlZGdlci52MS5EYXRlUmFuZ2USJQoFc3RhdGUYAiABKA4yFi5sZWRnZXIudjEuQnVkZ2V0U3RhdGUSEwoLc3BlbnRfbWlub3IYAyABKAMSFwoPcmVtYWluaW5nX21pbm9yGAQgASgDEh0KFWRhaWx5X2FsbG93YW5jZV9taW5vchgFIAEoAxISCgpkYXlzX3RvdGFsGAYgASgFEhEKCWRheXNfbGVmdBgHIAEoBRIVCg1jYXJyaWVkX21pbm9yGAggASgDEhMKC2xpbWl0X21pbm9yGAkgASgDIl4KDUJ1ZGdldFN1bW1hcnkSIQoGYnVkZ2V0GAEgASgLMhEubGVkZ2VyLnYxLkJ1ZGdldBIqCgdjdXJyZW50GAIgASgLMhkubGVkZ2VyLnYxLkJ1ZGdldFByb2dyZXNzIlEKC1dhbGxldFRvdGFsEhEKCXdhbGxldF9pZBgBIAEoCRIUCgxhbW91bnRfbWlub3IYAiABKAMSGQoRdHJhbnNhY3Rpb25fY291bnQYAyABKAMiIwoSTGlzdEJ1ZGdldHNSZXF1ZXN0Eg0KBXRvZGF5GAEgASgJImAKE0xpc3RCdWRnZXRzUmVzcG9uc2USKQoHYnVkZ2V0cxgBIAMoCzIYLmxlZGdlci52MS5CdWRnZXRTdW1tYXJ5Eh4KFnVuY29udmVydGVkX2N1cnJlbmNpZXMYAiADKAkiQgoQR2V0QnVkZ2V0UmVxdWVzdBIKCgJpZBgBIAEoCRINCgV0b2RheRgCIAEoCRITCgtwZXJpb2RfZGF0ZRgDIAEoCSK0AgoRR2V0QnVkZ2V0UmVzcG9uc2USIQoGYnVkZ2V0GAEgASgLMhEubGVkZ2VyLnYxLkJ1ZGdldBIrCghwcm9ncmVzcxgCIAEoCzIZLmxlZGdlci52MS5CdWRnZXRQcm9ncmVzcxIqCgdoaXN0b3J5GAMgAygLMhkubGVkZ2VyLnYxLkJ1ZGdldFByb2dyZXNzEiwKCmNhdGVnb3JpZXMYBCADKAsyGC5sZWRnZXIudjEuQ2F0ZWdvcnlUb3RhbBInCgd3YWxsZXRzGAUgAygLMhYubGVkZ2VyLnYxLldhbGxldFRvdGFsEiwKDHRyYW5zYWN0aW9ucxgGIAMoCzIWLmxlZGdlci52MS5UcmFuc2FjdGlvbhIeChZ1bmNvbnZlcnRlZF9jdXJyZW5jaWVzGAcgAygJIvgCCgtCdWRnZXRJbnB1dBIMCgRuYW1lGAEgASgJEhQKDGFtb3VudF9taW5vchgCIAEoAxIQCghjdXJyZW5jeRgDIAEoCRInCgZyZXBlYXQYBCABKA4yFy5sZWRnZXIudjEuQnVkZ2V0UmVwZWF0EhIKCnN0YXJ0X2RhdGUYBSABKAkSEAoIZW5kX2RhdGUYBiABKAkSEgoKd2FsbGV0X2lkcxgHIAMoCRIUCgxjYXRlZ29yeV9pZHMYCCADKAkSGAoLYWxsX3dhbGxldHMYCSABKAhIAIgBARIbCg5hbGxfY2F0ZWdvcmllcxgKIAEoCEgBiAEBEhsKDmNhcnJ5X2xlZnRvdmVyGAsgASgISAKIAQESHAoPY2Fycnlfb3ZlcnNwZW5kGAwgASgISAOIAQFCDgoMX2FsbF93YWxsZXRzQhEKD19hbGxfY2F0ZWdvcmllc0IRCg9fY2FycnlfbGVmdG92ZXJCEgoQX2NhcnJ5X292ZXJzcGVuZCJMChNDcmVhdGVCdWRnZXRSZXF1ZXN0EiYKBmJ1ZGdldBgBIAEoCzIWLmxlZGdlci52MS5CdWRnZXRJbnB1dBINCgV0b2RheRgCIAEoCSI5ChRDcmVhdGVCdWRnZXRSZXNwb25zZRIhCgZidWRnZXQYASABKAsyES5sZWRnZXIudjEuQnVkZ2V0IlgKE1VwZGF0ZUJ1ZGdldFJlcXVlc3QSCgoCaWQYASABKAkSJgoGYnVkZ2V0GAIgASgLMhYubGVkZ2VyLnYxLkJ1ZGdldElucHV0Eg0KBXRvZGF5GAMgASgJIjkKFFVwZGF0ZUJ1ZGdldFJlc3BvbnNlEiEKBmJ1ZGdldBgBIAEoCzIRLmxlZGdlci52MS5CdWRnZXQiIQoTRGVsZXRlQnVkZ2V0UmVxdWVzdBIKCgJpZBgBIAEoCSIWChREZWxldGVCdWRnZXRSZXNwb25zZSrJAQoMQnVkZ2V0UmVwZWF0Eh0KGUJVREdFVF9SRVBFQVRfVU5TUEVDSUZJRUQQABIWChJCVURHRVRfUkVQRUFUX09OQ0UQARIXChNCVURHRVRfUkVQRUFUX0RBSUxZEAISGAoUQlVER0VUX1JFUEVBVF9XRUVLTFkQAxIaChZCVURHRVRfUkVQRUFUX0JJV0VFS0xZEAQSGQoVQlVER0VUX1JFUEVBVF9NT05USExZEAUSGAoUQlVER0VUX1JFUEVBVF9ZRUFSTFkQBip3CgtCdWRnZXRTdGF0ZRIcChhCVURHRVRfU1RBVEVfVU5TUEVDSUZJRUQQABIZChVCVURHRVRfU1RBVEVfVVBDT01JTkcQARIXChNCVURHRVRfU1RBVEVfQUNUSVZFEAISFgoSQlVER0VUX1NUQVRFX0VOREVEEAMymAMKDUJ1ZGdldFNlcnZpY2USTAoLTGlzdEJ1ZGdldHMSHS5sZWRnZXIudjEuTGlzdEJ1ZGdldHNSZXF1ZXN0Gh4ubGVkZ2VyLnYxLkxpc3RCdWRnZXRzUmVzcG9uc2USRgoJR2V0QnVkZ2V0EhsubGVkZ2VyLnYxLkdldEJ1ZGdldFJlcXVlc3QaHC5sZWRnZXIudjEuR2V0QnVkZ2V0UmVzcG9uc2USTwoMQ3JlYXRlQnVkZ2V0Eh4ubGVkZ2VyLnYxLkNyZWF0ZUJ1ZGdldFJlcXVlc3QaHy5sZWRnZXIudjEuQ3JlYXRlQnVkZ2V0UmVzcG9uc2USTwoMVXBkYXRlQnVkZ2V0Eh4ubGVkZ2VyLnYxLlVwZGF0ZUJ1ZGdldFJlcXVlc3QaHy5sZWRnZXIudjEuVXBkYXRlQnVkZ2V0UmVzcG9uc2USTwoMRGVsZXRlQnVkZ2V0Eh4ubGVkZ2VyLnYxLkRlbGV0ZUJ1ZGdldFJlcXVlc3QaHy5sZWRnZXIudjEuRGVsZXRlQnVkZ2V0UmVzcG9uc2VCowEKDWNvbS5sZWRnZXIudjFCC0J1ZGdldFByb3RvUAFaQGdpdGh1Yi5jb20vZnJhbmNvLXJvdXJhL2xlZGdlci0wMS9iYWNrZW5kL2dlbi9sZWRnZXIvdjE7bGVkZ2VydjGiAgNMWFiqAglMZWRnZXIuVjHKAglMZWRnZXJcVjHiAhVMZWRnZXJcVjFcR1BCTWV0YWRhdGHqAgpMZWRnZXI6OlYxYgZwcm90bzM", [file_ledger_v1_common, file_ledger_v1_dashboard, file_ledger_v1_transaction]);
 
 /**
  * @generated from message ledger.v1.Budget
@@ -80,6 +80,27 @@ export type Budget = Message<"ledger.v1.Budget"> & {
    * @generated from field: bool all_categories = 11;
    */
   allCategories: boolean;
+
+  /**
+   * Rollover (repeating budgets only): unspent money raises the next period's limit, and going
+   * over lowers it. The carry chains from period to period, starting at rollover_from.
+   *
+   * @generated from field: bool carry_leftover = 12;
+   */
+  carryLeftover: boolean;
+
+  /**
+   * @generated from field: bool carry_overspend = 13;
+   */
+  carryOverspend: boolean;
+
+  /**
+   * Read-only. The first day of the period that contained "today" when rollover was turned on;
+   * earlier periods carry nothing. Empty when both carry flags are off.
+   *
+   * @generated from field: string rollover_from = 14;
+   */
+  rolloverFrom: string;
 };
 
 /**
@@ -111,7 +132,7 @@ export type BudgetProgress = Message<"ledger.v1.BudgetProgress"> & {
   spentMinor: bigint;
 
   /**
-   * Budgeted minus spent; negative when over budget.
+   * limit_minor minus spent; negative when over budget.
    *
    * @generated from field: int64 remaining_minor = 4;
    */
@@ -119,7 +140,7 @@ export type BudgetProgress = Message<"ledger.v1.BudgetProgress"> & {
 
   /**
    * Remaining spread over the days left (today included); 0 when nothing is left or the
-   * period is over. Before the period, the whole amount spread over its days.
+   * period is over. Before the period, the whole limit spread over its days.
    *
    * @generated from field: int64 daily_allowance_minor = 5;
    */
@@ -136,6 +157,21 @@ export type BudgetProgress = Message<"ledger.v1.BudgetProgress"> & {
    * @generated from field: int32 days_left = 7;
    */
   daysLeft: number;
+
+  /**
+   * Carried in from the previous period: positive for leftover, negative for overspend. 0 without
+   * rollover.
+   *
+   * @generated from field: int64 carried_minor = 8;
+   */
+  carriedMinor: bigint;
+
+  /**
+   * The period's effective limit: amount_minor + carried_minor. Can be zero or negative.
+   *
+   * @generated from field: int64 limit_minor = 9;
+   */
+  limitMinor: bigint;
 };
 
 /**
@@ -374,6 +410,18 @@ export type BudgetInput = Message<"ledger.v1.BudgetInput"> & {
    * @generated from field: optional bool all_categories = 10;
    */
   allCategories?: boolean | undefined;
+
+  /**
+   * Only for repeating budgets. Omitted keeps the current value (false for a new budget).
+   *
+   * @generated from field: optional bool carry_leftover = 11;
+   */
+  carryLeftover?: boolean | undefined;
+
+  /**
+   * @generated from field: optional bool carry_overspend = 12;
+   */
+  carryOverspend?: boolean | undefined;
 };
 
 /**
@@ -391,6 +439,13 @@ export type CreateBudgetRequest = Message<"ledger.v1.CreateBudgetRequest"> & {
    * @generated from field: ledger.v1.BudgetInput budget = 1;
    */
   budget?: BudgetInput | undefined;
+
+  /**
+   * Turning rollover on starts the chain at the period containing today.
+   *
+   * @generated from field: string today = 2;
+   */
+  today: string;
 };
 
 /**
@@ -430,6 +485,13 @@ export type UpdateBudgetRequest = Message<"ledger.v1.UpdateBudgetRequest"> & {
    * @generated from field: ledger.v1.BudgetInput budget = 2;
    */
   budget?: BudgetInput | undefined;
+
+  /**
+   * Turning rollover on starts the chain at the period containing today.
+   *
+   * @generated from field: string today = 3;
+   */
+  today: string;
 };
 
 /**

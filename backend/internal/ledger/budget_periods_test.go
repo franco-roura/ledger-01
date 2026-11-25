@@ -61,20 +61,71 @@ func TestBudgetPeriods(t *testing.T) {
 
 func TestBudgetProgress(t *testing.T) {
 	b := Budget{Repeat: RepeatMonthly, Start: day("2026-10-01"), Amount: 300_00}
-	p := b.progress(0, 100_00, day("2026-10-22")) // 10 days left, today included
+	p := b.progress(0, 100_00, 0, day("2026-10-22")) // 10 days left, today included
 	if p.State != BudgetActive || p.DaysTotal != 31 || p.DaysLeft != 10 || p.Remaining != 200_00 || p.DailyAllowance != 20_00 {
 		t.Fatalf("active: %+v", p)
 	}
-	p = b.progress(0, 350_00, day("2026-10-22"))
+	p = b.progress(0, 350_00, 0, day("2026-10-22"))
 	if p.Remaining != -50_00 || p.DailyAllowance != 0 {
 		t.Fatalf("over: %+v", p)
 	}
-	p = b.progress(0, 0, day("2026-09-20"))
+	p = b.progress(0, 0, 0, day("2026-09-20"))
 	if p.State != BudgetUpcoming || p.DaysLeft != 31 || p.DailyAllowance != 300_00/31 {
 		t.Fatalf("upcoming: %+v", p)
 	}
-	p = b.progress(0, 10_00, day("2026-11-02"))
+	p = b.progress(0, 10_00, 0, day("2026-11-02"))
 	if p.State != BudgetEnded || p.DaysLeft != 0 || p.DailyAllowance != 0 {
 		t.Fatalf("ended: %+v", p)
+	}
+}
+
+func TestBudgetCarries(t *testing.T) {
+	start := day("2026-01-01")
+	march := day("2026-03-01")
+	for _, c := range []struct {
+		name                string
+		leftover, overspend bool
+		from                time.Time
+		spent               map[int]int64
+		cur                 int
+		want                map[int]int64
+	}{
+		{"leftover only", true, false, start, map[int]int64{0: 60_00, 1: 150_00, 2: 0}, 3,
+			map[int]int64{1: 40_00, 2: 0, 3: 100_00}},
+		{"overspend only", false, true, start, map[int]int64{0: 60_00, 1: 150_00, 2: 0}, 3,
+			map[int]int64{1: 0, 2: -50_00, 3: 0}},
+		{"both", true, true, start, map[int]int64{0: 60_00, 1: 150_00, 2: 0}, 3,
+			map[int]int64{1: 40_00, 2: -10_00, 3: 90_00}},
+		{"debt below zero is paid back", true, true, start, map[int]int64{0: 350_00}, 4,
+			map[int]int64{1: -250_00, 2: -150_00, 3: -50_00, 4: 50_00}},
+		{"periods before rollover_from carry nothing", true, true, march, map[int]int64{2: 70_00}, 3,
+			map[int]int64{1: 0, 2: 0, 3: 30_00}},
+		{"not started yet", true, true, start, nil, 0, map[int]int64{0: 0}},
+	} {
+		b := Budget{Repeat: RepeatMonthly, Start: start, Amount: 100_00, CarryLeftover: c.leftover, CarryOverspend: c.overspend, RolloverFrom: &c.from}
+		got := b.carries(c.spent, c.cur)
+		for i, want := range c.want {
+			if got[i] != want {
+				t.Errorf("%s: carry into period %d = %d, want %d (all: %v)", c.name, i, got[i], want, got)
+			}
+		}
+	}
+
+	// Without rollover, or on a one-time budget, nothing carries.
+	end := day("2026-12-31")
+	for _, b := range []Budget{
+		{Repeat: RepeatMonthly, Start: start, Amount: 100_00},
+		{Repeat: RepeatOnce, Start: start, End: &end, Amount: 100_00, CarryLeftover: true, RolloverFrom: &start},
+	} {
+		if got := b.carries(map[int]int64{0: 10_00}, 2); len(got) != 0 {
+			t.Errorf("%s budget carried %v", b.Repeat, got)
+		}
+	}
+
+	// A period's limit and remaining include what it carried in.
+	b := Budget{Repeat: RepeatMonthly, Start: start, Amount: 100_00}
+	p := b.progress(0, 30_00, -150_00, day("2026-01-11"))
+	if p.Limit != -50_00 || p.Remaining != -80_00 || p.DailyAllowance != 0 || p.Carried != -150_00 {
+		t.Fatalf("negative limit: %+v", p)
 	}
 }

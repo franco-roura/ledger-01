@@ -154,6 +154,13 @@ type Budget struct {
 	// When false, an empty selection counts no expenses.
 	AllWallets    bool `protobuf:"varint,10,opt,name=all_wallets,json=allWallets,proto3" json:"all_wallets,omitempty"`
 	AllCategories bool `protobuf:"varint,11,opt,name=all_categories,json=allCategories,proto3" json:"all_categories,omitempty"`
+	// Rollover (repeating budgets only): unspent money raises the next period's limit, and going
+	// over lowers it. The carry chains from period to period, starting at rollover_from.
+	CarryLeftover  bool `protobuf:"varint,12,opt,name=carry_leftover,json=carryLeftover,proto3" json:"carry_leftover,omitempty"`
+	CarryOverspend bool `protobuf:"varint,13,opt,name=carry_overspend,json=carryOverspend,proto3" json:"carry_overspend,omitempty"`
+	// Read-only. The first day of the period that contained "today" when rollover was turned on;
+	// earlier periods carry nothing. Empty when both carry flags are off.
+	RolloverFrom  string `protobuf:"bytes,14,opt,name=rollover_from,json=rolloverFrom,proto3" json:"rollover_from,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -265,20 +272,46 @@ func (x *Budget) GetAllCategories() bool {
 	return false
 }
 
+func (x *Budget) GetCarryLeftover() bool {
+	if x != nil {
+		return x.CarryLeftover
+	}
+	return false
+}
+
+func (x *Budget) GetCarryOverspend() bool {
+	if x != nil {
+		return x.CarryOverspend
+	}
+	return false
+}
+
+func (x *Budget) GetRolloverFrom() string {
+	if x != nil {
+		return x.RolloverFrom
+	}
+	return ""
+}
+
 // Spending in one period of a budget, in the budget's currency.
 type BudgetProgress struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	Period     *DateRange             `protobuf:"bytes,1,opt,name=period,proto3" json:"period,omitempty"`
 	State      BudgetState            `protobuf:"varint,2,opt,name=state,proto3,enum=ledger.v1.BudgetState" json:"state,omitempty"`
 	SpentMinor int64                  `protobuf:"varint,3,opt,name=spent_minor,json=spentMinor,proto3" json:"spent_minor,omitempty"`
-	// Budgeted minus spent; negative when over budget.
+	// limit_minor minus spent; negative when over budget.
 	RemainingMinor int64 `protobuf:"varint,4,opt,name=remaining_minor,json=remainingMinor,proto3" json:"remaining_minor,omitempty"`
 	// Remaining spread over the days left (today included); 0 when nothing is left or the
-	// period is over. Before the period, the whole amount spread over its days.
+	// period is over. Before the period, the whole limit spread over its days.
 	DailyAllowanceMinor int64 `protobuf:"varint,5,opt,name=daily_allowance_minor,json=dailyAllowanceMinor,proto3" json:"daily_allowance_minor,omitempty"`
 	DaysTotal           int32 `protobuf:"varint,6,opt,name=days_total,json=daysTotal,proto3" json:"days_total,omitempty"`
 	// Days from today to the end of the period, today included.
-	DaysLeft      int32 `protobuf:"varint,7,opt,name=days_left,json=daysLeft,proto3" json:"days_left,omitempty"`
+	DaysLeft int32 `protobuf:"varint,7,opt,name=days_left,json=daysLeft,proto3" json:"days_left,omitempty"`
+	// Carried in from the previous period: positive for leftover, negative for overspend. 0 without
+	// rollover.
+	CarriedMinor int64 `protobuf:"varint,8,opt,name=carried_minor,json=carriedMinor,proto3" json:"carried_minor,omitempty"`
+	// The period's effective limit: amount_minor + carried_minor. Can be zero or negative.
+	LimitMinor    int64 `protobuf:"varint,9,opt,name=limit_minor,json=limitMinor,proto3" json:"limit_minor,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -358,6 +391,20 @@ func (x *BudgetProgress) GetDaysTotal() int32 {
 func (x *BudgetProgress) GetDaysLeft() int32 {
 	if x != nil {
 		return x.DaysLeft
+	}
+	return 0
+}
+
+func (x *BudgetProgress) GetCarriedMinor() int64 {
+	if x != nil {
+		return x.CarriedMinor
+	}
+	return 0
+}
+
+func (x *BudgetProgress) GetLimitMinor() int64 {
+	if x != nil {
+		return x.LimitMinor
 	}
 	return 0
 }
@@ -742,8 +789,11 @@ type BudgetInput struct {
 	// except when editing an existing empty scope, which is preserved.
 	AllWallets    *bool `protobuf:"varint,9,opt,name=all_wallets,json=allWallets,proto3,oneof" json:"all_wallets,omitempty"`
 	AllCategories *bool `protobuf:"varint,10,opt,name=all_categories,json=allCategories,proto3,oneof" json:"all_categories,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Only for repeating budgets. Omitted keeps the current value (false for a new budget).
+	CarryLeftover  *bool `protobuf:"varint,11,opt,name=carry_leftover,json=carryLeftover,proto3,oneof" json:"carry_leftover,omitempty"`
+	CarryOverspend *bool `protobuf:"varint,12,opt,name=carry_overspend,json=carryOverspend,proto3,oneof" json:"carry_overspend,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *BudgetInput) Reset() {
@@ -846,9 +896,25 @@ func (x *BudgetInput) GetAllCategories() bool {
 	return false
 }
 
+func (x *BudgetInput) GetCarryLeftover() bool {
+	if x != nil && x.CarryLeftover != nil {
+		return *x.CarryLeftover
+	}
+	return false
+}
+
+func (x *BudgetInput) GetCarryOverspend() bool {
+	if x != nil && x.CarryOverspend != nil {
+		return *x.CarryOverspend
+	}
+	return false
+}
+
 type CreateBudgetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Budget        *BudgetInput           `protobuf:"bytes,1,opt,name=budget,proto3" json:"budget,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Budget *BudgetInput           `protobuf:"bytes,1,opt,name=budget,proto3" json:"budget,omitempty"`
+	// Turning rollover on starts the chain at the period containing today.
+	Today         string `protobuf:"bytes,2,opt,name=today,proto3" json:"today,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -888,6 +954,13 @@ func (x *CreateBudgetRequest) GetBudget() *BudgetInput {
 		return x.Budget
 	}
 	return nil
+}
+
+func (x *CreateBudgetRequest) GetToday() string {
+	if x != nil {
+		return x.Today
+	}
+	return ""
 }
 
 type CreateBudgetResponse struct {
@@ -935,9 +1008,11 @@ func (x *CreateBudgetResponse) GetBudget() *Budget {
 }
 
 type UpdateBudgetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Budget        *BudgetInput           `protobuf:"bytes,2,opt,name=budget,proto3" json:"budget,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Id     string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Budget *BudgetInput           `protobuf:"bytes,2,opt,name=budget,proto3" json:"budget,omitempty"`
+	// Turning rollover on starts the chain at the period containing today.
+	Today         string `protobuf:"bytes,3,opt,name=today,proto3" json:"today,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -984,6 +1059,13 @@ func (x *UpdateBudgetRequest) GetBudget() *BudgetInput {
 		return x.Budget
 	}
 	return nil
+}
+
+func (x *UpdateBudgetRequest) GetToday() string {
+	if x != nil {
+		return x.Today
+	}
+	return ""
 }
 
 type UpdateBudgetResponse struct {
@@ -1114,7 +1196,7 @@ var File_ledger_v1_budget_proto protoreflect.FileDescriptor
 
 const file_ledger_v1_budget_proto_rawDesc = "" +
 	"\n" +
-	"\x16ledger/v1/budget.proto\x12\tledger.v1\x1a\x16ledger/v1/common.proto\x1a\x19ledger/v1/dashboard.proto\x1a\x1bledger/v1/transaction.proto\"\xe0\x02\n" +
+	"\x16ledger/v1/budget.proto\x12\tledger.v1\x1a\x16ledger/v1/common.proto\x1a\x19ledger/v1/dashboard.proto\x1a\x1bledger/v1/transaction.proto\"\xd5\x03\n" +
 	"\x06Budget\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
@@ -1130,7 +1212,10 @@ const file_ledger_v1_budget_proto_rawDesc = "" +
 	"\vall_wallets\x18\n" +
 	" \x01(\bR\n" +
 	"allWallets\x12%\n" +
-	"\x0eall_categories\x18\v \x01(\bR\rallCategories\"\xa6\x02\n" +
+	"\x0eall_categories\x18\v \x01(\bR\rallCategories\x12%\n" +
+	"\x0ecarry_leftover\x18\f \x01(\bR\rcarryLeftover\x12'\n" +
+	"\x0fcarry_overspend\x18\r \x01(\bR\x0ecarryOverspend\x12#\n" +
+	"\rrollover_from\x18\x0e \x01(\tR\frolloverFrom\"\xec\x02\n" +
 	"\x0eBudgetProgress\x12,\n" +
 	"\x06period\x18\x01 \x01(\v2\x14.ledger.v1.DateRangeR\x06period\x12,\n" +
 	"\x05state\x18\x02 \x01(\x0e2\x16.ledger.v1.BudgetStateR\x05state\x12\x1f\n" +
@@ -1140,7 +1225,10 @@ const file_ledger_v1_budget_proto_rawDesc = "" +
 	"\x15daily_allowance_minor\x18\x05 \x01(\x03R\x13dailyAllowanceMinor\x12\x1d\n" +
 	"\n" +
 	"days_total\x18\x06 \x01(\x05R\tdaysTotal\x12\x1b\n" +
-	"\tdays_left\x18\a \x01(\x05R\bdaysLeft\"o\n" +
+	"\tdays_left\x18\a \x01(\x05R\bdaysLeft\x12#\n" +
+	"\rcarried_minor\x18\b \x01(\x03R\fcarriedMinor\x12\x1f\n" +
+	"\vlimit_minor\x18\t \x01(\x03R\n" +
+	"limitMinor\"o\n" +
 	"\rBudgetSummary\x12)\n" +
 	"\x06budget\x18\x01 \x01(\v2\x11.ledger.v1.BudgetR\x06budget\x123\n" +
 	"\acurrent\x18\x02 \x01(\v2\x19.ledger.v1.BudgetProgressR\acurrent\"z\n" +
@@ -1167,7 +1255,7 @@ const file_ledger_v1_budget_proto_rawDesc = "" +
 	"categories\x120\n" +
 	"\awallets\x18\x05 \x03(\v2\x16.ledger.v1.WalletTotalR\awallets\x12:\n" +
 	"\ftransactions\x18\x06 \x03(\v2\x16.ledger.v1.TransactionR\ftransactions\x125\n" +
-	"\x16unconverted_currencies\x18\a \x03(\tR\x15unconvertedCurrencies\"\x82\x03\n" +
+	"\x16unconverted_currencies\x18\a \x03(\tR\x15unconvertedCurrencies\"\x83\x04\n" +
 	"\vBudgetInput\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12!\n" +
 	"\famount_minor\x18\x02 \x01(\x03R\vamountMinor\x12\x1a\n" +
@@ -1182,16 +1270,22 @@ const file_ledger_v1_budget_proto_rawDesc = "" +
 	"\vall_wallets\x18\t \x01(\bH\x00R\n" +
 	"allWallets\x88\x01\x01\x12*\n" +
 	"\x0eall_categories\x18\n" +
-	" \x01(\bH\x01R\rallCategories\x88\x01\x01B\x0e\n" +
+	" \x01(\bH\x01R\rallCategories\x88\x01\x01\x12*\n" +
+	"\x0ecarry_leftover\x18\v \x01(\bH\x02R\rcarryLeftover\x88\x01\x01\x12,\n" +
+	"\x0fcarry_overspend\x18\f \x01(\bH\x03R\x0ecarryOverspend\x88\x01\x01B\x0e\n" +
 	"\f_all_walletsB\x11\n" +
-	"\x0f_all_categories\"E\n" +
+	"\x0f_all_categoriesB\x11\n" +
+	"\x0f_carry_leftoverB\x12\n" +
+	"\x10_carry_overspend\"[\n" +
 	"\x13CreateBudgetRequest\x12.\n" +
-	"\x06budget\x18\x01 \x01(\v2\x16.ledger.v1.BudgetInputR\x06budget\"A\n" +
+	"\x06budget\x18\x01 \x01(\v2\x16.ledger.v1.BudgetInputR\x06budget\x12\x14\n" +
+	"\x05today\x18\x02 \x01(\tR\x05today\"A\n" +
 	"\x14CreateBudgetResponse\x12)\n" +
-	"\x06budget\x18\x01 \x01(\v2\x11.ledger.v1.BudgetR\x06budget\"U\n" +
+	"\x06budget\x18\x01 \x01(\v2\x11.ledger.v1.BudgetR\x06budget\"k\n" +
 	"\x13UpdateBudgetRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
-	"\x06budget\x18\x02 \x01(\v2\x16.ledger.v1.BudgetInputR\x06budget\"A\n" +
+	"\x06budget\x18\x02 \x01(\v2\x16.ledger.v1.BudgetInputR\x06budget\x12\x14\n" +
+	"\x05today\x18\x03 \x01(\tR\x05today\"A\n" +
 	"\x14UpdateBudgetResponse\x12)\n" +
 	"\x06budget\x18\x01 \x01(\v2\x11.ledger.v1.BudgetR\x06budget\"%\n" +
 	"\x13DeleteBudgetRequest\x12\x0e\n" +

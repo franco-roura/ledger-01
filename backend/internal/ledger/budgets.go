@@ -36,6 +36,11 @@ type Budget struct {
 	CategoryIDs   []uuid.UUID
 	AllWallets    bool
 	AllCategories bool
+	// Rollover: the leftover and/or the overspend of each period carries into the next, chaining
+	// from the period starting at RolloverFrom (set while either flag is on).
+	CarryLeftover  bool
+	CarryOverspend bool
+	RolloverFrom   *time.Time
 }
 
 type BudgetInput struct {
@@ -49,6 +54,11 @@ type BudgetInput struct {
 	CategoryIDs   []uuid.UUID
 	AllWallets    *bool
 	AllCategories *bool
+	// nil keeps the current value (false for a new budget).
+	CarryLeftover  *bool
+	CarryOverspend *bool
+	// Turning rollover on starts the chain at the period containing Today (zero means UTC today).
+	Today time.Time
 }
 
 type BudgetState int
@@ -64,7 +74,9 @@ type BudgetProgress struct {
 	From, To       time.Time
 	State          BudgetState
 	Spent          int64
-	Remaining      int64
+	Carried        int64 // carried in from the previous period: + leftover, - overspend
+	Limit          int64 // Amount + Carried; can be zero or negative
+	Remaining      int64 // Limit - Spent
 	DailyAllowance int64
 	DaysTotal      int
 	DaysLeft       int
@@ -161,10 +173,50 @@ func (b Budget) periodIndex(d time.Time) int {
 	return i
 }
 
-// progress measures one period's spending as of today.
-func (b Budget) progress(i int, spent int64, today time.Time) BudgetProgress {
+// rolls reports whether the budget carries anything between periods.
+func (b Budget) rolls() bool {
+	return b.Repeat != RepeatOnce && b.RolloverFrom != nil && (b.CarryLeftover || b.CarryOverspend)
+}
+
+// chainStart is the first period whose spending the carry into period cur depends on (cur itself
+// without rollover).
+func (b Budget) chainStart(cur int) int {
+	if !b.rolls() {
+		return cur
+	}
+	return min(cur, b.periodIndex(*b.RolloverFrom))
+}
+
+// carries returns what each period up to cur carries in from the one before, given the spending of
+// every period from chainStart(cur). A period's result is its limit (amount plus its own carry)
+// minus its spending; a positive result carries on with CarryLeftover, a negative one with
+// CarryOverspend. There is no floor: a big overspend can push later limits to zero or below until
+// cheaper periods pay it back. Periods missing from the map carry nothing.
+func (b Budget) carries(spent map[int]int64, cur int) map[int]int64 {
+	out := map[int]int64{}
+	if !b.rolls() {
+		return out
+	}
+	for i := b.chainStart(cur); i < cur; i++ {
+		res := b.Amount + out[i] - spent[i]
+		switch {
+		case res > 0 && b.CarryLeftover:
+			out[i+1] = res
+		case res < 0 && b.CarryOverspend:
+			out[i+1] = res
+		}
+	}
+	return out
+}
+
+// progress measures one period's spending as of today, against its amount plus what it carried in.
+func (b Budget) progress(i int, spent, carried int64, today time.Time) BudgetProgress {
 	from, to := b.period(i)
-	p := BudgetProgress{From: from, To: to, Spent: spent, Remaining: b.Amount - spent, DaysTotal: daysBetween(from, to) + 1}
+	limit := b.Amount + carried
+	p := BudgetProgress{
+		From: from, To: to, Spent: spent, Carried: carried, Limit: limit, Remaining: limit - spent,
+		DaysTotal: daysBetween(from, to) + 1,
+	}
 	switch {
 	case today.Before(from):
 		p.State, p.DaysLeft = BudgetUpcoming, p.DaysTotal
@@ -181,13 +233,12 @@ func (b Budget) progress(i int, spent int64, today time.Time) BudgetProgress {
 
 // --- reads -------------------------------------------------------------------------------------
 
-func budgetFrom(id uuid.UUID, name string, amount int64, currency string, repeat BudgetRepeat, start time.Time,
-	end *time.Time, walletIDs, categoryIDs []uuid.UUID, allWallets, allCategories bool,
-) Budget {
+func budgetFrom(r dbq.Budget, walletIDs, categoryIDs []uuid.UUID) Budget {
 	return Budget{
-		ID: id, Name: name, Amount: amount, Currency: strings.TrimSpace(currency), Repeat: repeat,
-		Start: start, End: end, WalletIDs: walletIDs, CategoryIDs: categoryIDs,
-		AllWallets: allWallets, AllCategories: allCategories,
+		ID: r.ID, Name: r.Name, Amount: r.AmountMinor, Currency: strings.TrimSpace(r.Currency), Repeat: r.Repeat,
+		Start: r.StartDate, End: r.EndDate, WalletIDs: walletIDs, CategoryIDs: categoryIDs,
+		AllWallets: r.AllWallets, AllCategories: r.AllCategories,
+		CarryLeftover: r.CarryLeftover, CarryOverspend: r.CarryOverspend, RolloverFrom: r.RolloverFrom,
 	}
 }
 
@@ -196,7 +247,7 @@ func (s *Service) getBudget(ctx context.Context, a Actor, id uuid.UUID) (Budget,
 	if err != nil {
 		return Budget{}, dbErr(err, "budget")
 	}
-	return budgetFrom(r.ID, r.Name, r.AmountMinor, r.Currency, r.Repeat, r.StartDate, r.EndDate, r.WalletIds, r.CategoryIds, r.AllWallets, r.AllCategories), nil
+	return budgetFrom(r.Budget, r.WalletIds, r.CategoryIds), nil
 }
 
 // budgetExpenses returns the expenses a budget counts in [from, to], leaving out upcoming ones
@@ -252,20 +303,21 @@ func (s *Service) ListBudgets(ctx context.Context, a Actor, today time.Time) ([]
 	}
 	out := make([]BudgetSummary, len(rows))
 	for n, r := range rows {
-		b := budgetFrom(r.ID, r.Name, r.AmountMinor, r.Currency, r.Repeat, r.StartDate, r.EndDate, r.WalletIds, r.CategoryIds, r.AllWallets, r.AllCategories)
+		b := budgetFrom(r.Budget, r.WalletIds, r.CategoryIds)
 		i := b.periodIndex(today)
-		from, to := b.period(i)
+		from, _ := b.period(b.chainStart(i))
+		_, to := b.period(i)
 		exp, err := s.budgetExpenses(ctx, a, b, from, to, today)
 		if err != nil {
 			return nil, nil, err
 		}
-		var spent int64
+		spent := map[int]int64{}
 		for _, e := range exp {
 			if v, ok := sc.convert(e, b.Currency); ok {
-				spent += v
+				spent[b.periodIndex(e.OccurredOn)] += v
 			}
 		}
-		out[n] = BudgetSummary{Budget: b, Current: b.progress(i, spent, today)}
+		out[n] = BudgetSummary{Budget: b, Current: b.progress(i, spent[i], b.carries(spent, i)[i], today)}
 	}
 	return out, sc.unconverted(), nil
 }
@@ -283,7 +335,7 @@ func (s *Service) BudgetDetailFor(ctx context.Context, a Actor, id uuid.UUID, to
 		sel = min(b.periodIndex(*periodDate), cur)
 	}
 	lo := max(0, cur-maxBudgetHistory+1)
-	from, _ := b.period(min(lo, sel))
+	from, _ := b.period(min(lo, sel, b.chainStart(cur)))
 	_, to := b.period(cur)
 	exp, err := s.budgetExpenses(ctx, a, b, from, to, today)
 	if err != nil {
@@ -333,9 +385,10 @@ func (s *Service) BudgetDetailFor(ctx context.Context, a Actor, id uuid.UUID, to
 		wt.Count++
 	}
 
-	out.Progress = b.progress(sel, spent[sel], today)
+	carried := b.carries(spent, cur)
+	out.Progress = b.progress(sel, spent[sel], carried[sel], today)
 	for i := cur; i >= lo; i-- {
-		out.History = append(out.History, b.progress(i, spent[i], today))
+		out.History = append(out.History, b.progress(i, spent[i], carried[i], today))
 	}
 	out.Categories = sortedTotals(cats)
 	for _, wt := range wallets {
@@ -387,6 +440,14 @@ func (s *Service) checkBudget(ctx context.Context, q *dbq.Queries, a Actor, in *
 	} else {
 		in.End = nil
 	}
+	if in.Repeat == RepeatOnce {
+		if in.CarryLeftover != nil && *in.CarryLeftover {
+			return invalid("carry_leftover", "only repeating budgets can carry over")
+		}
+		if in.CarryOverspend != nil && *in.CarryOverspend {
+			return invalid("carry_overspend", "only repeating budgets can carry over")
+		}
+	}
 
 	if budgetAll(in.AllWallets, in.WalletIDs) && len(in.WalletIDs) > 0 {
 		return invalid("wallet_ids", "choose all wallets or specific wallets")
@@ -436,6 +497,37 @@ func setBudgetLinks(ctx context.Context, q *dbq.Queries, id uuid.UUID, in Budget
 	return q.AddBudgetCategories(ctx, dbq.AddBudgetCategoriesParams{BudgetID: id, CategoryIds: in.CategoryIDs})
 }
 
+// rollover resolves a write's carry flags against the stored budget (nil for a new one) and returns
+// them with the chain's start: kept while rollover stays on, the period containing today when it
+// is turned on, nil when it is off. One-time budgets never roll over.
+func rollover(in BudgetInput, current *dbq.Budget) (leftover, overspend bool, from *time.Time) {
+	pick := func(flag *bool, cur bool) bool {
+		if flag != nil {
+			return *flag
+		}
+		return cur
+	}
+	var wasOn bool
+	if current != nil {
+		leftover, overspend = current.CarryLeftover, current.CarryOverspend
+		wasOn = (leftover || overspend) && current.RolloverFrom != nil
+	}
+	leftover, overspend = pick(in.CarryLeftover, leftover), pick(in.CarryOverspend, overspend)
+	if in.Repeat == RepeatOnce || !(leftover || overspend) {
+		return false, false, nil
+	}
+	if wasOn {
+		return leftover, overspend, current.RolloverFrom
+	}
+	today := in.Today
+	if today.IsZero() {
+		today = Today()
+	}
+	b := Budget{Repeat: in.Repeat, Start: in.Start}
+	start := b.periodStart(b.periodIndex(today))
+	return leftover, overspend, &start
+}
+
 // budgetAll uses the legacy default for old clients and backups that omit the flag.
 func budgetAll(flag *bool, ids []uuid.UUID) bool {
 	if flag != nil {
@@ -450,10 +542,12 @@ func (s *Service) CreateBudget(ctx context.Context, a Actor, in BudgetInput) (Bu
 		if err := s.checkBudget(ctx, q, a, &in); err != nil {
 			return err
 		}
+		leftover, overspend, from := rollover(in, nil)
 		if _, err := q.CreateBudget(ctx, dbq.CreateBudgetParams{
 			ID: id, HouseholdID: a.HouseholdID, Name: in.Name, AmountMinor: in.Amount, Currency: in.Currency,
 			Repeat: in.Repeat, StartDate: in.Start, EndDate: in.End,
 			AllWallets: budgetAll(in.AllWallets, in.WalletIDs), AllCategories: budgetAll(in.AllCategories, in.CategoryIDs),
+			CarryLeftover: leftover, CarryOverspend: overspend, RolloverFrom: from,
 		}); err != nil {
 			return dbErr(err, "budget")
 		}
@@ -470,23 +564,23 @@ func (s *Service) UpdateBudget(ctx context.Context, a Actor, id uuid.UUID, in Bu
 		if err := s.checkBudget(ctx, q, a, &in); err != nil {
 			return err
 		}
-		// An older client editing an exhausted scope must not turn it into "all".
-		if (in.AllWallets == nil && len(in.WalletIDs) == 0) || (in.AllCategories == nil && len(in.CategoryIDs) == 0) {
-			current, err := q.GetBudget(ctx, dbq.GetBudgetParams{ID: id, HouseholdID: a.HouseholdID})
-			if err != nil {
-				return dbErr(err, "budget")
-			}
-			if in.AllWallets == nil && len(current.WalletIds) == 0 {
-				in.AllWallets = &current.AllWallets
-			}
-			if in.AllCategories == nil && len(current.CategoryIds) == 0 {
-				in.AllCategories = &current.AllCategories
-			}
+		current, err := q.GetBudget(ctx, dbq.GetBudgetParams{ID: id, HouseholdID: a.HouseholdID})
+		if err != nil {
+			return dbErr(err, "budget")
 		}
+		// An older client editing an exhausted scope must not turn it into "all".
+		if in.AllWallets == nil && len(current.WalletIds) == 0 && len(in.WalletIDs) == 0 {
+			in.AllWallets = &current.Budget.AllWallets
+		}
+		if in.AllCategories == nil && len(current.CategoryIds) == 0 && len(in.CategoryIDs) == 0 {
+			in.AllCategories = &current.Budget.AllCategories
+		}
+		leftover, overspend, from := rollover(in, &current.Budget)
 		n, err := q.UpdateBudget(ctx, dbq.UpdateBudgetParams{
 			ID: id, HouseholdID: a.HouseholdID, Name: in.Name, AmountMinor: in.Amount, Currency: in.Currency,
 			Repeat: in.Repeat, StartDate: in.Start, EndDate: in.End,
 			AllWallets: budgetAll(in.AllWallets, in.WalletIDs), AllCategories: budgetAll(in.AllCategories, in.CategoryIDs),
+			CarryLeftover: leftover, CarryOverspend: overspend, RolloverFrom: from,
 		})
 		if err != nil {
 			return dbErr(err, "budget")

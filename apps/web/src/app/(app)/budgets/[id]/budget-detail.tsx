@@ -30,7 +30,14 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useCategories, useCurrencies, useWallets } from "@/lib/api/hooks";
-import { periodStatus, repeatOptions, todayShare } from "@/lib/budgets";
+import {
+  carryText,
+  meterValues,
+  periodStatus,
+  repeatOptions,
+  rolloverText,
+  todayShare,
+} from "@/lib/budgets";
 import { formatDay, formatPeriod, today } from "@/lib/period";
 import { BudgetEditor } from "../budget-editor";
 
@@ -113,19 +120,25 @@ export function BudgetDetail({ budgetId }: { budgetId: string }) {
     return categoryColors[Math.max(i, 0) % categoryColors.length] ?? "cat-slate";
   };
 
+  const carried = b && p ? carryText(b.amountMinor, p.carriedMinor, currency, units) : undefined;
+  const rollover = b ? rolloverText(b) : undefined;
+
   const tiles = [
     {
       label: "Budgeted",
-      node: b && (
-        <Amount
-          minor={b.amountMinor}
-          currency={currency}
-          minorUnits={units}
-          size="lg"
-          sign="never"
-          tone="plain"
-          className="max-sm:text-amount-md"
-        />
+      node: b && p && (
+        <div className="flex flex-col gap-1">
+          <Amount
+            minor={p.limitMinor}
+            currency={currency}
+            minorUnits={units}
+            size="lg"
+            sign="never"
+            tone="plain"
+            className="max-sm:text-amount-md"
+          />
+          {carried && <span className="text-body-sm text-ink-soft">{carried}</span>}
+        </div>
       ),
     },
     {
@@ -192,6 +205,7 @@ export function BudgetDetail({ budgetId }: { budgetId: string }) {
             {b && (
               <span className="hud-sm text-ink-soft">
                 {repeatLabel} · {formatMoney(b.amountMinor, currency, units)}
+                {rollover && ` · ${rollover}`}
               </span>
             )}
           </div>
@@ -261,7 +275,7 @@ export function BudgetDetail({ budgetId }: { budgetId: string }) {
             <div className="flex flex-wrap items-baseline justify-between gap-2 text-body-sm">
               <span className="text-ink">
                 {formatMoney(p.spentMinor, currency, units)} of{" "}
-                {formatMoney(b.amountMinor, currency, units)} spent
+                {formatMoney(p.limitMinor, currency, units)} spent
               </span>
               <span className={over ? "text-expense-ink" : "text-ink-soft"}>
                 {over
@@ -270,8 +284,7 @@ export function BudgetDetail({ budgetId }: { budgetId: string }) {
               </span>
             </div>
             <BudgetMeter
-              spent={p.spentMinor}
-              budget={b.amountMinor}
+              {...meterValues(p.spentMinor, p.limitMinor)}
               elapsed={todayShare(p)}
               label={`${b.name} budget`}
             />
@@ -416,13 +429,14 @@ export function BudgetDetail({ budgetId }: { budgetId: string }) {
                         )}
                       >
                         {formatMoney(h.spentMinor, currency, units, { code: false })}
+                        {h.carriedMinor !== 0n &&
+                          ` of ${formatMoney(h.limitMinor, currency, units, { code: false })}`}
                       </span>
                     </span>
                     {b && (
                       <BudgetMeter
                         size="sm"
-                        spent={h.spentMinor}
-                        budget={b.amountMinor}
+                        {...meterValues(h.spentMinor, h.limitMinor)}
                         elapsed={todayShare(h)}
                         label={`Spent ${range(h)}`}
                       />
