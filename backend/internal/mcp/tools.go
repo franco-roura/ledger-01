@@ -36,7 +36,9 @@ func (s *Server) addTools(srv *sdk.Server) {
 			"transactions, in the base currency."), tool(s, s.categoryReport))
 	sdk.AddTool(srv, readOnly("budget_status", "Budgets",
 		"Without budget_id: every budget with its current period's spending. With budget_id: that budget's "+
-			"period (the current one, or the one containing period_date), past periods and the categories spent on."), tool(s, s.budgetStatus))
+			"period (the current one, or the one containing period_date), past periods and the categories spent on. "+
+			"A budget with rollover carries its leftover and/or overspend into the next period: each period's limit "+
+			"is the amount plus what it carried in, and remaining is measured against that limit."), tool(s, s.budgetStatus))
 	sdk.AddTool(srv, readOnly("list_upcoming", "Upcoming transactions",
 		"Scheduled (recurring) transactions dated after today, soonest first."), tool(s, s.listUpcoming))
 }
@@ -542,30 +544,37 @@ type PeriodOut struct {
 	From           string `json:"from"`
 	To             string `json:"to"`
 	State          string `json:"state" jsonschema:"upcoming, active or ended"`
+	Carried        Money  `json:"carried" jsonschema:"carried in from the previous period: positive leftover, negative overspend"`
+	Limit          Money  `json:"limit" jsonschema:"the period's effective limit: the budget amount plus carried"`
 	Spent          Money  `json:"spent"`
-	Remaining      Money  `json:"remaining"`
+	Remaining      Money  `json:"remaining" jsonschema:"limit minus spent; negative when over"`
 	DailyAllowance Money  `json:"daily_allowance" jsonschema:"what can still be spent per day"`
 	DaysLeft       int    `json:"days_left"`
 }
 
 func period(m moneyFmt, cur string, p ledger.BudgetProgress) PeriodOut {
 	state := map[ledger.BudgetState]string{ledger.BudgetUpcoming: "upcoming", ledger.BudgetActive: "active", ledger.BudgetEnded: "ended"}[p.State]
-	return PeriodOut{From: date(p.From), To: date(p.To), State: state, Spent: m.of(p.Spent, cur), Remaining: m.of(p.Remaining, cur),
+	return PeriodOut{From: date(p.From), To: date(p.To), State: state, Carried: m.of(p.Carried, cur), Limit: m.of(p.Limit, cur),
+		Spent: m.of(p.Spent, cur), Remaining: m.of(p.Remaining, cur),
 		DailyAllowance: m.of(p.DailyAllowance, cur), DaysLeft: p.DaysLeft}
 }
 
 type BudgetOut struct {
-	ID            string    `json:"id"`
-	Name          string    `json:"name"`
-	Amount        Money     `json:"amount"`
-	Repeat        string    `json:"repeat"`
-	Start         string    `json:"start"`
-	End           string    `json:"end,omitempty"`
-	Categories    []string  `json:"categories"`
-	AllCategories bool      `json:"all_categories"`
-	Wallets       []string  `json:"wallets"`
-	AllWallets    bool      `json:"all_wallets"`
-	Period        PeriodOut `json:"period"`
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Amount        Money    `json:"amount"`
+	Repeat        string   `json:"repeat"`
+	Start         string   `json:"start"`
+	End           string   `json:"end,omitempty"`
+	Categories    []string `json:"categories"`
+	AllCategories bool     `json:"all_categories"`
+	Wallets       []string `json:"wallets"`
+	AllWallets    bool     `json:"all_wallets"`
+	// Rollover settings.
+	CarryLeftover  bool      `json:"carry_leftover"`
+	CarryOverspend bool      `json:"carry_overspend"`
+	RolloverFrom   string    `json:"rollover_from,omitempty" jsonschema:"first day of the first period that carries over"`
+	Period         PeriodOut `json:"period"`
 }
 
 type BudgetsOut struct {
@@ -578,7 +587,8 @@ type BudgetsOut struct {
 
 func budgetOut(m moneyFmt, n names, b ledger.Budget, p ledger.BudgetProgress) BudgetOut {
 	out := BudgetOut{ID: b.ID.String(), Name: b.Name, Amount: m.of(b.Amount, b.Currency), Repeat: string(b.Repeat),
-		Start: date(b.Start), End: optDate(b.End), Categories: []string{}, Wallets: []string{}, AllCategories: b.AllCategories, AllWallets: b.AllWallets, Period: period(m, b.Currency, p)}
+		Start: date(b.Start), End: optDate(b.End), Categories: []string{}, Wallets: []string{}, AllCategories: b.AllCategories, AllWallets: b.AllWallets,
+		CarryLeftover: b.CarryLeftover, CarryOverspend: b.CarryOverspend, RolloverFrom: optDate(b.RolloverFrom), Period: period(m, b.Currency, p)}
 	for _, id := range b.CategoryIDs {
 		out.Categories = append(out.Categories, n.categories[id])
 	}

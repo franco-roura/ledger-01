@@ -193,22 +193,27 @@ func (q *Queries) CountWalletsByIDs(ctx context.Context, arg CountWalletsByIDsPa
 }
 
 const createBudget = `-- name: CreateBudget :one
-INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories,
+                     carry_leftover, carry_overspend, rollover_from)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+        $11, $12, $13)
 RETURNING id
 `
 
 type CreateBudgetParams struct {
-	ID            uuid.UUID
-	HouseholdID   uuid.UUID
-	Name          string
-	AmountMinor   int64
-	Currency      string
-	Repeat        BudgetRepeat
-	StartDate     time.Time
-	EndDate       *time.Time
-	AllWallets    bool
-	AllCategories bool
+	ID             uuid.UUID
+	HouseholdID    uuid.UUID
+	Name           string
+	AmountMinor    int64
+	Currency       string
+	Repeat         BudgetRepeat
+	StartDate      time.Time
+	EndDate        *time.Time
+	AllWallets     bool
+	AllCategories  bool
+	CarryLeftover  bool
+	CarryOverspend bool
+	RolloverFrom   *time.Time
 }
 
 func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (uuid.UUID, error) {
@@ -223,6 +228,9 @@ func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (uui
 		arg.EndDate,
 		arg.AllWallets,
 		arg.AllCategories,
+		arg.CarryLeftover,
+		arg.CarryOverspend,
+		arg.RolloverFrom,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -247,7 +255,7 @@ func (q *Queries) DeleteBudget(ctx context.Context, arg DeleteBudgetParams) (int
 }
 
 const getBudget = `-- name: GetBudget :one
-SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at, b.all_wallets, b.all_categories,
+SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at, b.all_wallets, b.all_categories, b.carry_leftover, b.carry_overspend, b.rollover_from,
        coalesce((SELECT array_agg(bw.wallet_id ORDER BY bw.wallet_id) FROM budget_wallets bw WHERE bw.budget_id = b.id), '{}')::uuid[] AS wallet_ids,
        coalesce((SELECT array_agg(bc.category_id ORDER BY bc.category_id) FROM budget_categories bc WHERE bc.budget_id = b.id), '{}')::uuid[] AS category_ids
 FROM budgets b
@@ -260,38 +268,30 @@ type GetBudgetParams struct {
 }
 
 type GetBudgetRow struct {
-	ID            uuid.UUID
-	HouseholdID   uuid.UUID
-	Name          string
-	AmountMinor   int64
-	Currency      string
-	Repeat        BudgetRepeat
-	StartDate     time.Time
-	EndDate       *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	AllWallets    bool
-	AllCategories bool
-	WalletIds     []uuid.UUID
-	CategoryIds   []uuid.UUID
+	Budget      Budget
+	WalletIds   []uuid.UUID
+	CategoryIds []uuid.UUID
 }
 
 func (q *Queries) GetBudget(ctx context.Context, arg GetBudgetParams) (GetBudgetRow, error) {
 	row := q.db.QueryRow(ctx, getBudget, arg.ID, arg.HouseholdID)
 	var i GetBudgetRow
 	err := row.Scan(
-		&i.ID,
-		&i.HouseholdID,
-		&i.Name,
-		&i.AmountMinor,
-		&i.Currency,
-		&i.Repeat,
-		&i.StartDate,
-		&i.EndDate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.AllWallets,
-		&i.AllCategories,
+		&i.Budget.ID,
+		&i.Budget.HouseholdID,
+		&i.Budget.Name,
+		&i.Budget.AmountMinor,
+		&i.Budget.Currency,
+		&i.Budget.Repeat,
+		&i.Budget.StartDate,
+		&i.Budget.EndDate,
+		&i.Budget.CreatedAt,
+		&i.Budget.UpdatedAt,
+		&i.Budget.AllWallets,
+		&i.Budget.AllCategories,
+		&i.Budget.CarryLeftover,
+		&i.Budget.CarryOverspend,
+		&i.Budget.RolloverFrom,
 		&i.WalletIds,
 		&i.CategoryIds,
 	)
@@ -299,7 +299,7 @@ func (q *Queries) GetBudget(ctx context.Context, arg GetBudgetParams) (GetBudget
 }
 
 const listBudgets = `-- name: ListBudgets :many
-SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at, b.all_wallets, b.all_categories,
+SELECT b.id, b.household_id, b.name, b.amount_minor, b.currency, b.repeat, b.start_date, b.end_date, b.created_at, b.updated_at, b.all_wallets, b.all_categories, b.carry_leftover, b.carry_overspend, b.rollover_from,
        coalesce((SELECT array_agg(bw.wallet_id ORDER BY bw.wallet_id) FROM budget_wallets bw WHERE bw.budget_id = b.id), '{}')::uuid[] AS wallet_ids,
        coalesce((SELECT array_agg(bc.category_id ORDER BY bc.category_id) FROM budget_categories bc WHERE bc.budget_id = b.id), '{}')::uuid[] AS category_ids
 FROM budgets b
@@ -308,20 +308,9 @@ ORDER BY lower(b.name), b.id
 `
 
 type ListBudgetsRow struct {
-	ID            uuid.UUID
-	HouseholdID   uuid.UUID
-	Name          string
-	AmountMinor   int64
-	Currency      string
-	Repeat        BudgetRepeat
-	StartDate     time.Time
-	EndDate       *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	AllWallets    bool
-	AllCategories bool
-	WalletIds     []uuid.UUID
-	CategoryIds   []uuid.UUID
+	Budget      Budget
+	WalletIds   []uuid.UUID
+	CategoryIds []uuid.UUID
 }
 
 func (q *Queries) ListBudgets(ctx context.Context, householdID uuid.UUID) ([]ListBudgetsRow, error) {
@@ -334,18 +323,21 @@ func (q *Queries) ListBudgets(ctx context.Context, householdID uuid.UUID) ([]Lis
 	for rows.Next() {
 		var i ListBudgetsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.HouseholdID,
-			&i.Name,
-			&i.AmountMinor,
-			&i.Currency,
-			&i.Repeat,
-			&i.StartDate,
-			&i.EndDate,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.AllWallets,
-			&i.AllCategories,
+			&i.Budget.ID,
+			&i.Budget.HouseholdID,
+			&i.Budget.Name,
+			&i.Budget.AmountMinor,
+			&i.Budget.Currency,
+			&i.Budget.Repeat,
+			&i.Budget.StartDate,
+			&i.Budget.EndDate,
+			&i.Budget.CreatedAt,
+			&i.Budget.UpdatedAt,
+			&i.Budget.AllWallets,
+			&i.Budget.AllCategories,
+			&i.Budget.CarryLeftover,
+			&i.Budget.CarryOverspend,
+			&i.Budget.RolloverFrom,
 			&i.WalletIds,
 			&i.CategoryIds,
 		); err != nil {
@@ -391,21 +383,26 @@ const updateBudget = `-- name: UpdateBudget :execrows
 UPDATE budgets
 SET name = $1, amount_minor = $2, currency = $3, repeat = $4,
     start_date = $5, end_date = $6,
-    all_wallets = $7, all_categories = $8, updated_at = now()
-WHERE id = $9 AND household_id = $10
+    all_wallets = $7, all_categories = $8,
+    carry_leftover = $9, carry_overspend = $10, rollover_from = $11,
+    updated_at = now()
+WHERE id = $12 AND household_id = $13
 `
 
 type UpdateBudgetParams struct {
-	Name          string
-	AmountMinor   int64
-	Currency      string
-	Repeat        BudgetRepeat
-	StartDate     time.Time
-	EndDate       *time.Time
-	AllWallets    bool
-	AllCategories bool
-	ID            uuid.UUID
-	HouseholdID   uuid.UUID
+	Name           string
+	AmountMinor    int64
+	Currency       string
+	Repeat         BudgetRepeat
+	StartDate      time.Time
+	EndDate        *time.Time
+	AllWallets     bool
+	AllCategories  bool
+	CarryLeftover  bool
+	CarryOverspend bool
+	RolloverFrom   *time.Time
+	ID             uuid.UUID
+	HouseholdID    uuid.UUID
 }
 
 func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (int64, error) {
@@ -418,6 +415,9 @@ func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (int
 		arg.EndDate,
 		arg.AllWallets,
 		arg.AllCategories,
+		arg.CarryLeftover,
+		arg.CarryOverspend,
+		arg.RolloverFrom,
 		arg.ID,
 		arg.HouseholdID,
 	)

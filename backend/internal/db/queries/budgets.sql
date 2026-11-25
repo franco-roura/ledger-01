@@ -1,5 +1,5 @@
 -- name: ListBudgets :many
-SELECT b.*,
+SELECT sqlc.embed(b),
        coalesce((SELECT array_agg(bw.wallet_id ORDER BY bw.wallet_id) FROM budget_wallets bw WHERE bw.budget_id = b.id), '{}')::uuid[] AS wallet_ids,
        coalesce((SELECT array_agg(bc.category_id ORDER BY bc.category_id) FROM budget_categories bc WHERE bc.budget_id = b.id), '{}')::uuid[] AS category_ids
 FROM budgets b
@@ -7,22 +7,26 @@ WHERE b.household_id = $1
 ORDER BY lower(b.name), b.id;
 
 -- name: GetBudget :one
-SELECT b.*,
+SELECT sqlc.embed(b),
        coalesce((SELECT array_agg(bw.wallet_id ORDER BY bw.wallet_id) FROM budget_wallets bw WHERE bw.budget_id = b.id), '{}')::uuid[] AS wallet_ids,
        coalesce((SELECT array_agg(bc.category_id ORDER BY bc.category_id) FROM budget_categories bc WHERE bc.budget_id = b.id), '{}')::uuid[] AS category_ids
 FROM budgets b
 WHERE b.id = @id AND b.household_id = @household_id;
 
 -- name: CreateBudget :one
-INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories)
-VALUES (@id, @household_id, @name, @amount_minor, @currency, @repeat, @start_date, sqlc.narg(end_date), @all_wallets, @all_categories)
+INSERT INTO budgets (id, household_id, name, amount_minor, currency, repeat, start_date, end_date, all_wallets, all_categories,
+                     carry_leftover, carry_overspend, rollover_from)
+VALUES (@id, @household_id, @name, @amount_minor, @currency, @repeat, @start_date, sqlc.narg(end_date), @all_wallets, @all_categories,
+        @carry_leftover, @carry_overspend, sqlc.narg(rollover_from))
 RETURNING id;
 
 -- name: UpdateBudget :execrows
 UPDATE budgets
 SET name = @name, amount_minor = @amount_minor, currency = @currency, repeat = @repeat,
     start_date = @start_date, end_date = sqlc.narg(end_date),
-    all_wallets = @all_wallets, all_categories = @all_categories, updated_at = now()
+    all_wallets = @all_wallets, all_categories = @all_categories,
+    carry_leftover = @carry_leftover, carry_overspend = @carry_overspend, rollover_from = sqlc.narg(rollover_from),
+    updated_at = now()
 WHERE id = @id AND household_id = @household_id;
 
 -- name: DeleteBudget :execrows

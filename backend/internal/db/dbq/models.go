@@ -240,18 +240,21 @@ func (ns NullTransactionKind) Value() (driver.Value, error) {
 }
 
 type Budget struct {
-	ID            uuid.UUID
-	HouseholdID   uuid.UUID
-	Name          string
-	AmountMinor   int64
-	Currency      string
-	Repeat        BudgetRepeat
-	StartDate     time.Time
-	EndDate       *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	AllWallets    bool
-	AllCategories bool
+	ID             uuid.UUID
+	HouseholdID    uuid.UUID
+	Name           string
+	AmountMinor    int64
+	Currency       string
+	Repeat         BudgetRepeat
+	StartDate      time.Time
+	EndDate        *time.Time
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	AllWallets     bool
+	AllCategories  bool
+	CarryLeftover  bool
+	CarryOverspend bool
+	RolloverFrom   *time.Time
 }
 
 type BudgetCategory struct {

@@ -40,6 +40,13 @@ message Budget {
   // When false, an empty selection counts no expenses.
   bool all_wallets = 10;
   bool all_categories = 11;
+  // Rollover (repeating budgets only): unspent money raises the next period's limit, and going
+  // over lowers it. The carry chains from period to period, starting at rollover_from.
+  bool carry_leftover = 12;
+  bool carry_overspend = 13;
+  // Read-only. The first day of the period that contained "today" when rollover was turned on;
+  // earlier periods carry nothing. Empty when both carry flags are off.
+  string rollover_from = 14;
 }
 
 enum BudgetState {
@@ -57,14 +64,19 @@ message BudgetProgress {
   DateRange period = 1;
   BudgetState state = 2;
   int64 spent_minor = 3;
-  // Budgeted minus spent; negative when over budget.
+  // limit_minor minus spent; negative when over budget.
   int64 remaining_minor = 4;
   // Remaining spread over the days left (today included); 0 when nothing is left or the
-  // period is over. Before the period, the whole amount spread over its days.
+  // period is over. Before the period, the whole limit spread over its days.
   int64 daily_allowance_minor = 5;
   int32 days_total = 6;
   // Days from today to the end of the period, today included.
   int32 days_left = 7;
+  // Carried in from the previous period: positive for leftover, negative for overspend. 0 without
+  // rollover.
+  int64 carried_minor = 8;
+  // The period's effective limit: amount_minor + carried_minor. Can be zero or negative.
+  int64 limit_minor = 9;
 }
 
 message BudgetSummary {
@@ -131,10 +143,15 @@ message BudgetInput {
   // except when editing an existing empty scope, which is preserved.
   optional bool all_wallets = 9;
   optional bool all_categories = 10;
+  // Only for repeating budgets. Omitted keeps the current value (false for a new budget).
+  optional bool carry_leftover = 11;
+  optional bool carry_overspend = 12;
 }
 
 message CreateBudgetRequest {
   BudgetInput budget = 1;
+  // Turning rollover on starts the chain at the period containing today.
+  string today = 2;
 }
 
 message CreateBudgetResponse {
@@ -144,6 +161,8 @@ message CreateBudgetResponse {
 message UpdateBudgetRequest {
   string id = 1;
   BudgetInput budget = 2;
+  // Turning rollover on starts the chain at the period containing today.
+  string today = 3;
 }
 
 message UpdateBudgetResponse {

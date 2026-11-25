@@ -30,9 +30,13 @@ func budgetToProto(b ledger.Budget) *v1.Budget {
 		Id: b.ID.String(), Name: b.Name, AmountMinor: b.Amount, Currency: b.Currency, Repeat: repeatToProto[b.Repeat],
 		StartDate: money.FormatDate(b.Start), WalletIds: idStrings(b.WalletIDs), CategoryIds: idStrings(b.CategoryIDs),
 		AllWallets: b.AllWallets, AllCategories: b.AllCategories,
+		CarryLeftover: b.CarryLeftover, CarryOverspend: b.CarryOverspend,
 	}
 	if b.End != nil {
 		out.EndDate = money.FormatDate(*b.End)
+	}
+	if b.RolloverFrom != nil {
+		out.RolloverFrom = money.FormatDate(*b.RolloverFrom)
 	}
 	return out
 }
@@ -41,6 +45,7 @@ func progressToProto(p ledger.BudgetProgress) *v1.BudgetProgress {
 	return &v1.BudgetProgress{
 		Period: &v1.DateRange{From: money.FormatDate(p.From), To: money.FormatDate(p.To)},
 		State:  stateToProto[p.State], SpentMinor: p.Spent, RemainingMinor: p.Remaining,
+		CarriedMinor: p.Carried, LimitMinor: p.Limit,
 		DailyAllowanceMinor: p.DailyAllowance, DaysTotal: int32(p.DaysTotal), DaysLeft: int32(p.DaysLeft),
 	}
 }
@@ -49,7 +54,10 @@ func budgetInputFromProto(in *v1.BudgetInput) (ledger.BudgetInput, error) {
 	if in == nil {
 		return ledger.BudgetInput{}, &ledger.InvalidError{Field: "budget", Msg: "is required"}
 	}
-	out := ledger.BudgetInput{Name: in.Name, Amount: in.AmountMinor, Currency: in.Currency, AllWallets: in.AllWallets, AllCategories: in.AllCategories}
+	out := ledger.BudgetInput{
+		Name: in.Name, Amount: in.AmountMinor, Currency: in.Currency, AllWallets: in.AllWallets, AllCategories: in.AllCategories,
+		CarryLeftover: in.CarryLeftover, CarryOverspend: in.CarryOverspend,
+	}
 	for k, v := range repeatToProto {
 		if v == in.Repeat {
 			out.Repeat = k
@@ -146,6 +154,9 @@ func (s *Server) CreateBudget(ctx context.Context, req *connect.Request[v1.Creat
 	if err != nil {
 		return nil, s.fail(ctx, err)
 	}
+	if in.Today, err = parseToday(req.Msg.Today); err != nil {
+		return nil, s.fail(ctx, err)
+	}
 	b, err := s.svc.CreateBudget(ctx, a, in)
 	if err != nil {
 		return nil, s.fail(ctx, err)
@@ -164,6 +175,9 @@ func (s *Server) UpdateBudget(ctx context.Context, req *connect.Request[v1.Updat
 	}
 	in, err := budgetInputFromProto(req.Msg.Budget)
 	if err != nil {
+		return nil, s.fail(ctx, err)
+	}
+	if in.Today, err = parseToday(req.Msg.Today); err != nil {
 		return nil, s.fail(ctx, err)
 	}
 	b, err := s.svc.UpdateBudget(ctx, a, id, in)

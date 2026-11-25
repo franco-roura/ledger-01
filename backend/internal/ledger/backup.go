@@ -153,6 +153,10 @@ type BackupBudget struct {
 	CategoryIDs   []uuid.UUID `json:"category_ids,omitempty"`
 	AllWallets    *bool       `json:"all_wallets,omitempty"`
 	AllCategories *bool       `json:"all_categories,omitempty"`
+	// Rollover; older backups have none.
+	CarryLeftover  bool   `json:"carry_leftover,omitempty"`
+	CarryOverspend bool   `json:"carry_overspend,omitempty"`
+	RolloverFrom   string `json:"rollover_from,omitempty"`
 }
 
 type BackupImportProfile struct {
@@ -336,7 +340,8 @@ func (s *Service) ExportBackup(ctx context.Context, a Actor) (*Backup, error) {
 		b.Budgets = append(b.Budgets, BackupBudget{ID: bu.ID, Name: bu.Name, AmountMinor: bu.AmountMinor,
 			Currency: strings.TrimSpace(bu.Currency), Repeat: string(bu.Repeat), StartDate: money.FormatDate(bu.StartDate),
 			EndDate: optDate(bu.EndDate), WalletIDs: budgetWallets[bu.ID], CategoryIDs: budgetCats[bu.ID],
-			AllWallets: &bu.AllWallets, AllCategories: &bu.AllCategories})
+			AllWallets: &bu.AllWallets, AllCategories: &bu.AllCategories,
+			CarryLeftover: bu.CarryLeftover, CarryOverspend: bu.CarryOverspend, RolloverFrom: optDate(bu.RolloverFrom)})
 	}
 
 	profiles, err := q.BackupImportProfiles(ctx, h)
@@ -768,9 +773,21 @@ func restoreBackup(ctx context.Context, q *dbq.Queries, a Actor, b *Backup, curr
 		if err != nil {
 			return err
 		}
+		rollFrom, err := backupOptDate("budget rollover date", bu.RolloverFrom)
+		if err != nil {
+			return err
+		}
+		leftover, overspend := bu.CarryLeftover, bu.CarryOverspend
+		switch {
+		case bu.Repeat == string(RepeatOnce) || !(leftover || overspend):
+			leftover, overspend, rollFrom = false, false, nil
+		case rollFrom == nil:
+			rollFrom = &start
+		}
 		if err := q.RestoreBudget(ctx, dbq.RestoreBudgetParams{ID: id, HouseholdID: h, Name: bu.Name, AmountMinor: bu.AmountMinor,
 			Currency: cur, Repeat: dbq.BudgetRepeat(bu.Repeat), StartDate: start, EndDate: end,
-			AllWallets: budgetAll(bu.AllWallets, bu.WalletIDs), AllCategories: budgetAll(bu.AllCategories, bu.CategoryIDs)}); err != nil {
+			AllWallets: budgetAll(bu.AllWallets, bu.WalletIDs), AllCategories: budgetAll(bu.AllCategories, bu.CategoryIDs),
+			CarryLeftover: leftover, CarryOverspend: overspend, RolloverFrom: rollFrom}); err != nil {
 			return err
 		}
 		ws, err := wallets.all(bu.WalletIDs)

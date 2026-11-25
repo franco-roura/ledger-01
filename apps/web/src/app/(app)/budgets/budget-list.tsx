@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCurrencies } from "@/lib/api/hooks";
-import { periodStatus, repeatShort, todayShare } from "@/lib/budgets";
+import { carryText, meterValues, periodStatus, repeatShort, todayShare } from "@/lib/budgets";
 import { formatPeriod, today } from "@/lib/period";
 import { BudgetEditor } from "./budget-editor";
 
@@ -86,6 +86,7 @@ function BudgetCard({ summary, index }: { summary: BudgetSummary; index: number 
   if (!b || !p) return null;
   const units = minorUnits(b.currency);
   const over = p.remainingMinor < 0n;
+  const carried = carryText(b.amountMinor, p.carriedMinor, b.currency, units);
   const missingWallets = !b.allWallets && b.walletIds.length === 0;
   const missingCategories = !b.allCategories && b.categoryIds.length === 0;
   const missing = [missingWallets && "wallets", missingCategories && "expense categories"]
@@ -117,17 +118,17 @@ function BudgetCard({ summary, index }: { summary: BudgetSummary; index: number 
               code={false}
             />
             <span className="text-body-sm text-ink-soft">
-              of {formatMoney(b.amountMinor, b.currency, units)}
+              of {formatMoney(p.limitMinor, b.currency, units)}
             </span>
           </div>
+          {carried && <p className="-mt-3 text-body-sm text-ink-soft">{carried}</p>}
           {missing && (
             <p className="text-body-sm text-expense-ink">
               This budget counts no spending. Choose {missing} in its settings.
             </p>
           )}
           <BudgetMeter
-            spent={p.spentMinor}
-            budget={b.amountMinor}
+            {...meterValues(p.spentMinor, p.limitMinor)}
             elapsed={todayShare(p)}
             label={`${b.name} budget`}
           />
